@@ -1,5 +1,39 @@
-.venv/
-__pycache__/
-*.pyc
+# Secrets
 .env
 .env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Uploaded/original documents must never land in git — they're stored in object storage
+/uploads/
+/media/
