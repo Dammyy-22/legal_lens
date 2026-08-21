@@ -1,14 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface AuthUser {
+interface AuthUser 
+{
   id: string
   email: string
   full_name: string | null
   role: string
 }
 
-interface AuthStore {
+interface AuthStore 
+{
   user: AuthUser | null
   accessToken: string | null
   refreshToken: string | null
@@ -37,7 +39,8 @@ export const useAuthStore = create<AuthStore>()(
 
       logout: () => set({ user: null, accessToken: null, refreshToken: null }),
 
-      isAuthenticated: () => {
+      isAuthenticated: () => 
+      {
         const { accessToken } = get()
         return !!accessToken
       },
@@ -48,7 +51,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-store',
-      partialize: (state) => ({
+      partialize: () => ({
         user: state.user,
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
