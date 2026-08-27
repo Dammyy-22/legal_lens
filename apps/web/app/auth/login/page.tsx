@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { apiClient, ApiClientError } from '@/lib/api-client'
-import { useAuthStore } from '@/lib/auth-store'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -12,25 +11,23 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const setAuth = useAuthStore((state) => state.setAuth)
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    try {
-      const tokens = await apiClient.login(email, password)
-      // TokenResponse has no user fields — fetch the real user record rather than
-      // trusting client-side input for identity.
-      const user = await apiClient.me(tokens.access_token)
-      setAuth(user, tokens.access_token, tokens.refresh_token)
-      router.push('/dashboard')
-    } catch (err) {
-      setError(err instanceof ApiClientError ? err.detail : 'An error occurred')
-    } finally {
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      setError(error.message)
       setLoading(false)
+      return
     }
+
+    router.push('/dashboard')
+    router.refresh() // ensures server components re-read the new session cookie
   }
 
   return (

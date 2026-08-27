@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { apiClient } from '@/lib/api-client'
+import { createClient } from '@/lib/supabase/client'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -12,15 +12,14 @@ export default function ForgotPasswordPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    try {
-      await apiClient.passwordResetRequest(email)
-    } finally {
-      // Always show the same confirmation regardless of outcome — the backend
-      // deliberately returns an identical response whether or not the email exists,
-      // so the UI must not create a distinction here either.
-      setSubmitted(true)
-      setLoading(false)
-    }
+    const supabase = createClient()
+    // Supabase's own behavior already avoids leaking account existence — it returns
+    // success regardless of whether the email is registered.
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    })
+    setSubmitted(true)
+    setLoading(false)
   }
 
   return (
@@ -30,8 +29,8 @@ export default function ForgotPasswordPage() {
 
         {submitted ? (
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-sm">
-            If that email is registered, a password reset link has been issued. Check
-            your inbox.
+            If that email is registered, a password reset link has been sent. Check your
+            inbox.
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 mt-6">

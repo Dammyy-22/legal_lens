@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { apiClient, ApiClientError } from '@/lib/api-client'
+import { createClient } from '@/lib/supabase/client'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -12,12 +11,10 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const router = useRouter()
 
-  // Mirrors the backend's actual rule (app/schemas/auth.py): length >= 10 AND not
-  // purely alphabetic or purely numeric. The old check here was `>= 8 chars`, which
-  // let users pass client-side validation and then fail on the server with a
-  // confusing error — this was never actually tested against the real backend.
+  // Supabase's own minimum is 6 characters by default (configurable in the Supabase
+  // dashboard under Auth settings). We enforce a stronger client-side floor here since
+  // Supabase won't reject a weak-but-6-char password on its own.
   function passwordError(pw: string): string | null {
     if (pw.length < 10) return 'Password must be at least 10 characters'
     if (/^[a-zA-Z]+$/.test(pw) || /^[0-9]+$/.test(pw)) {
@@ -45,15 +42,26 @@ export default function RegisterPage() {
       return
     }
 
-    try {
-      await apiClient.register(email, password)
-      setSuccess('Registration successful! Redirecting to login...')
-      setTimeout(() => router.push('/auth/login'), 1500)
-    } catch (err) {
-      setError(err instanceof ApiClientError ? err.detail : 'An error occurred')
-    } finally {
+    const supabase = createClient()
+    const { data, error } = await supabase.auth.signUp({ email, password })
+
+    if (error) {
+      setError(error.message)
       setLoading(false)
+      return
     }
+
+    // If email confirmation is enabled in Supabase (recommended), there is no active
+    // session yet after signUp — data.session will be null. Tell the user to check
+    // their inbox rather than implying they're already logged in.
+    if (!data.session) {
+      setSuccess('Check your email to confirm your account before signing in.')
+    } else {
+      setSuccess('Registration successful! Redirecting...')
+      window.location.href = '/dashboard'
+      return
+    }
+    setLoading(false)
   }
 
   return (
