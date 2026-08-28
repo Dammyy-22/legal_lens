@@ -1,66 +1,120 @@
-'use client'
-
 import Link from 'next/link'
+import { MarginaliaRail } from '@/components/MarginaliaRail'
+import { StatuteIllustration } from '@/components/StatuteIllustration'
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-blue-600">LegalLens</h1>
-            <div className="space-x-4">
-              <Link href="/auth/login" className="text-gray-600 hover:text-gray-900">
-                Login
-              </Link>
-              <Link href="/auth/register" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Register
-              </Link>
-            </div>
+    <main className="relative min-h-screen bg-paper text-charcoal overflow-x-hidden">
+      <MarginaliaRail side="left" />
+      <MarginaliaRail side="right" />
+
+      <nav className="relative z-10 border-b border-ink-100">
+        <div className="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
+          <span className="font-display italic text-2xl text-ink">
+            LegalLens<span className="text-brass not-italic">.</span>
+          </span>
+          <div className="flex items-center gap-6 text-sm font-medium">
+            <Link href="/auth/login" className="text-ink-400 hover:text-ink transition-colors">
+              Sign in
+            </Link>
+            <Link
+              href="/auth/register"
+              className="px-4 py-2 rounded bg-ink text-paper hover:bg-ink-600 transition-colors"
+            >
+              Create account
+            </Link>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Understand Your Legal Rights
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            AI-powered legal information for Nigeria. Clear, grounded, and backed by sources.
+      {/* Hero */}
+      <section className="relative z-10 max-w-6xl mx-auto px-6 pt-20 pb-24 grid md:grid-cols-2 gap-12 items-center">
+        <div className="animate-ink-in">
+          <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-4">
+            Nigeria · Legal Information
           </p>
-          <Link href="/auth/login" className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700">
-            Get Started
-          </Link>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8 py-12">
-          <div className="p-6 bg-white rounded-lg shadow">
-            <h3 className="text-xl font-bold mb-2">Ask Questions</h3>
-            <p className="text-gray-600">
-              Get plain-language answers about laws and rights in Nigeria, all backed by real legal sources.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-lg shadow">
-            <h3 className="text-xl font-bold mb-2">See Sources</h3>
-            <p className="text-gray-600">
-              Every answer includes citations so you can verify the information independently.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-lg shadow">
-            <h3 className="text-xl font-bold mb-2">Explore Guidance</h3>
-            <p className="text-gray-600">
-              Browse curated guidance for common legal situations like workplace issues and tenant rights.
-            </p>
+          <h1 className="font-display text-5xl md:text-6xl leading-[1.05] text-ink mb-6">
+            Know your rights,{' '}
+            <span className="italic">traced to the source.</span>
+          </h1>
+          <p className="text-lg text-ink-400 leading-relaxed mb-8 max-w-md">
+            LegalLens answers questions about Nigerian law in plain language — and shows
+            you exactly which statute, section, or regulation each answer comes from.
+            No source, no answer.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Link
+              href="/auth/register"
+              className="px-6 py-3 rounded bg-ink text-paper font-medium hover:bg-ink-600 transition-colors"
+            >
+              Get started free
+            </Link>
+            <Link
+              href="/auth/login"
+              className="px-6 py-3 rounded border border-ink-100 text-ink font-medium hover:bg-white transition-colors"
+            >
+              Sign in
+            </Link>
           </div>
         </div>
 
-        <div className="mt-12 p-6 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-gray-600">
-            <strong>Important:</strong> LegalLens is a legal information tool, not a lawyer. It helps you understand laws and procedures, but does not provide legal advice. Always consult with a qualified attorney for your specific situation.
-          </p>
+        <div className="animate-ink-in [animation-delay:150ms]">
+          <StatuteIllustration />
         </div>
-      </div>
+      </section>
+
+      {/* What it does — not a numbered sequence, since these run in parallel, not order */}
+      <section className="relative z-10 bg-white border-y border-ink-100">
+        <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
+          <FeatureCard
+            mark="§"
+            title="Ask in plain language"
+            body="Ask about a workplace dispute, a landlord issue, or a traffic stop the way you'd ask a knowledgeable friend — not the way you'd search a statute index."
+          />
+          <FeatureCard
+            mark="¶"
+            title="See the source, always"
+            body="Every answer links back to the actual Act, section, or regulation it came from. If we can't find a verified source, we say so — we don't guess."
+          />
+          <FeatureCard
+            mark="⚖"
+            title="Know when to escalate"
+            body="LegalLens tells you plainly when a situation needs a real lawyer, rather than pretending an AI can replace one."
+          />
+        </div>
+      </section>
+
+      {/* Disclaimer, styled as a stamp — honest tone, not fear-based */}
+      <section className="relative z-10 max-w-3xl mx-auto px-6 py-20 text-center">
+        <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full border-2 border-seal/40 text-seal font-mono text-xs uppercase tracking-wider mb-6">
+          Not a substitute for a lawyer
+        </div>
+        <p className="text-ink-400 leading-relaxed">
+          LegalLens is a legal information and education tool. It helps you understand
+          Nigerian laws and procedures, but it does not provide legal advice and is not
+          a licensed attorney. For decisions that affect your rights, consult a
+          qualified lawyer.
+        </p>
+      </section>
+
+      <footer className="relative z-10 border-t border-ink-100 py-10">
+        <div className="max-w-6xl mx-auto px-6 text-sm text-ink-400 flex justify-between items-center">
+          <span className="font-display italic">LegalLens</span>
+          <span>Built for Nigeria. Grounded in real sources.</span>
+        </div>
+      </footer>
     </main>
+  )
+}
+
+function FeatureCard({ mark, title, body }: { mark: string; title: string; body: string }) {
+  return (
+    <div>
+      <div className="font-display text-3xl text-brass-600 mb-4" aria-hidden="true">
+        {mark}
+      </div>
+      <h3 className="font-display text-xl text-ink mb-2">{title}</h3>
+      <p className="text-ink-400 leading-relaxed">{body}</p>
+    </div>
   )
 }

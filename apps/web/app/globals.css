@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 * {
     margin: 0;
     padding: 0;
@@ -12,28 +13,42 @@ html {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Reduced motion: disable all custom animation/scroll behavior per user preference.
+   This is a quality-floor requirement, not optional polish. */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
 
-/* Scrollbar styling */
-
+/* Scrollbar styling — kept subtle, matching the paper/ink palette instead of default grey */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
-
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: #F5F1E7;
 }
-
 ::-webkit-scrollbar-thumb {
-    background: #888;
+    background: #B08D3E;
     border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #8F701F;
+}
+
+/* Visible keyboard focus — accessibility quality floor, not decorative */
+:focus-visible {
+    outline: 2px solid #B08D3E;
+    outline-offset: 2px;
 }

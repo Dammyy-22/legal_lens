@@ -43,28 +43,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold mb-2 text-gray-900">LegalLens</h1>
-        <p className="text-gray-600 mb-8">Sign in to your account</p>
+    <div className="min-h-screen bg-paper flex items-center justify-center px-4">
+      <div className="w-full max-w-md p-8 bg-white rounded-lg border border-ink-100 shadow-sm animate-ink-in">
+        <Link href="/" className="font-display italic text-2xl text-ink">
+          LegalLens<span className="text-brass not-italic">.</span>
+        </Link>
+        <p className="text-ink-400 mt-2 mb-8">Sign in to your account</p>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          <div className="mb-4 p-4 bg-seal/5 border border-seal/25 text-seal rounded-lg text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
+            <label htmlFor="email" className="block text-sm font-medium text-ink mb-1">
+              Email address
             </label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-ink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brass/50 focus:border-brass"
               placeholder="you@example.com"
               required
               disabled={loading}
@@ -72,7 +74,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-ink mb-1">
               Password
             </label>
             <input
@@ -80,7 +82,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-ink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-brass/50 focus:border-brass"
               placeholder="••••••••"
               required
               disabled={loading}
@@ -90,23 +92,23 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="w-full py-2.5 bg-ink text-paper font-medium rounded-lg hover:bg-ink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
 
         <div className="mt-6 flex items-center gap-3">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs text-gray-400">OR</span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-ink-100" />
+          <span className="text-xs text-ink-400 font-mono uppercase tracking-wide">or</span>
+          <div className="flex-1 h-px bg-ink-100" />
         </div>
 
         <button
           type="button"
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="mt-4 w-full py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+          className="mt-4 w-full py-2.5 border border-ink-100 rounded-lg font-medium text-ink hover:bg-paper disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
         >
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
             <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.85 2.09-1.8 2.73v2.27h2.92c1.71-1.57 2.68-3.88 2.68-6.64z"/>
@@ -118,24 +120,22 @@ export default function LoginPage() {
         </button>
 
         <div className="mt-6 space-y-2 text-center text-sm">
-          <p>
+          <p className="text-ink-400">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/register" className="text-blue-600 hover:underline font-medium">
+            <Link href="/auth/register" className="text-brass-600 hover:underline font-medium">
               Create one
             </Link>
           </p>
           <p>
-            <Link href="/auth/forgot-password" className="text-blue-600 hover:underline font-medium">
+            <Link href="/auth/forgot-password" className="text-brass-600 hover:underline font-medium">
               Forgot your password?
             </Link>
           </p>
         </div>
 
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200 text-xs text-gray-600">
-          <p>
-            LegalLens provides legal information, not legal advice. Always consult a
-            qualified lawyer for your specific situation.
-          </p>
+        <div className="mt-8 p-4 bg-paper rounded-lg border border-ink-100 text-xs text-ink-400 leading-relaxed">
+          LegalLens provides legal information, not legal advice. Always consult a
+          qualified lawyer for your specific situation.
         </div>
       </div>
     </div>
