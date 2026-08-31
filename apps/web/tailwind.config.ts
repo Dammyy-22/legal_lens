@@ -36,8 +36,8 @@ const config: Config = {
         charcoal: '#1C1C1A',
       },
       fontFamily: {
-        display: ['Newsreader', 'Georgia', 'serif'],
-        body: ['"Public Sans"', 'system-ui', 'sans-serif'],
+        display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        body: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
       backgroundImage: {

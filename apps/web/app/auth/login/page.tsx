@@ -45,7 +45,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-paper flex items-center justify-center px-4">
       <div className="w-full max-w-md p-8 bg-white rounded-lg border border-ink-100 shadow-sm animate-ink-in">
-        <Link href="/" className="font-display italic text-2xl text-ink">
+        <Link href="/" className="font-display font-semibold text-2xl text-ink">
           LegalLens<span className="text-brass not-italic">.</span>
         </Link>
         <p className="text-ink-400 mt-2 mb-8">Sign in to your account</p>

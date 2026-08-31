@@ -7,5 +7,7 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  return <DashboardOverview email={user?.email ?? ''} />
+  const fullName = (user?.user_metadata?.full_name as string | undefined) ?? null
+
+  return <DashboardOverview fullName={fullName} />
 }

@@ -1,16 +1,19 @@
 import type { Metadata } from 'next'
 
-// Self-hosted fonts via @fontsource — no runtime dependency on Google's font CDN
-// being reachable. Weights match what's actually used in the design (see
-// tailwind.config.ts fontFamily mapping).
-import '@fontsource/newsreader/400.css'
-import '@fontsource/newsreader/400-italic.css'
-import '@fontsource/newsreader/500.css'
-import '@fontsource/newsreader/600.css'
-import '@fontsource/public-sans/400.css'
-import '@fontsource/public-sans/500.css'
-import '@fontsource/public-sans/600.css'
-import '@fontsource/public-sans/700.css'
+// Self-hosted fonts via @fontsource — no runtime dependency on any external font CDN.
+// Space Grotesk (display) + Plus Jakarta Sans (body) replace the earlier
+// Newsreader/Public Sans pairing — same "professional, modern grotesk" spirit as
+// Clash Display/Grotesk, which aren't available here (Fontshare's CDN isn't reachable
+// from this build environment, and bundling their font files without being able to
+// fetch/verify them isn't something to fake). See DECISIONS.md.
+import '@fontsource/space-grotesk/400.css'
+import '@fontsource/space-grotesk/500.css'
+import '@fontsource/space-grotesk/600.css'
+import '@fontsource/space-grotesk/700.css'
+import '@fontsource/plus-jakarta-sans/400.css'
+import '@fontsource/plus-jakarta-sans/500.css'
+import '@fontsource/plus-jakarta-sans/600.css'
+import '@fontsource/plus-jakarta-sans/700.css'
 import '@fontsource/ibm-plex-mono/400.css'
 import '@fontsource/ibm-plex-mono/500.css'
 

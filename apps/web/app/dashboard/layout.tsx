@@ -2,9 +2,6 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardShell } from '@/components/DashboardShell'
 
-// Applies to every route under /dashboard/*. Middleware already protects this path,
-// but a layout should never assume a client-side or edge guard ran — fetch the real
-// session here too.
 export default async function DashboardLayout({
   children,
 }: {
@@ -19,5 +16,11 @@ export default async function DashboardLayout({
     redirect('/auth/login')
   }
 
-  return <DashboardShell email={user.email ?? ''}>{children}</DashboardShell>
+  const fullName = (user.user_metadata?.full_name as string | undefined) ?? null
+
+  return (
+    <DashboardShell user={{ fullName, email: user.email ?? null }}>
+      {children}
+    </DashboardShell>
+  )
 }

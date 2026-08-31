@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { UserCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SettingsPage() {
   const [email, setEmail] = useState('')
+  const [fullName, setFullName] = useState('')
   const [userId, setUserId] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -16,6 +18,7 @@ export default function SettingsPage() {
     supabase.auth.getUser().then(({ data }) => {
       setEmail(data.user?.email ?? '')
       setUserId(data.user?.id ?? '')
+      setFullName((data.user?.user_metadata?.full_name as string) ?? '')
     })
   }, [])
 
@@ -63,17 +66,23 @@ export default function SettingsPage() {
       <h1 className="font-display text-4xl text-ink mb-8">Account</h1>
 
       <div className="bg-white border border-ink-100 rounded-lg p-6 mb-6">
-        <h2 className="font-display text-lg text-ink mb-4">Account details</h2>
-        <dl className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-ink-400">Email</dt>
-            <dd className="text-ink font-medium">{email || '—'}</dd>
+        <div className="flex items-center gap-4 mb-6">
+          <UserCircle size={56} strokeWidth={1.25} className="text-ink-100 shrink-0" />
+          <div>
+            <p className="font-display text-lg text-ink">{fullName || 'No name on file'}</p>
+            <p className="text-ink-400 text-sm">{email || '—'}</p>
           </div>
+        </div>
+        <dl className="space-y-3 text-sm border-t border-ink-100 pt-4">
           <div className="flex justify-between">
             <dt className="text-ink-400">User ID</dt>
             <dd className="text-ink font-mono text-xs">{userId || '—'}</dd>
           </div>
         </dl>
+        <p className="text-xs text-ink-400 mt-4">
+          Name, state, city, and phone are set at sign-up. Editing them here isn&apos;t
+          available yet.
+        </p>
       </div>
 
       <div className="bg-white border border-ink-100 rounded-lg p-6">

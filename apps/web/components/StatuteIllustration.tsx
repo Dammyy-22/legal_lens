@@ -51,7 +51,7 @@ export function StatuteIllustration() {
             x="40"
             y="36"
             textAnchor="middle"
-            fontFamily="'Public Sans', sans-serif"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
             fontWeight={700}
             fontSize="9"
             fill="#8C3B2E"
@@ -63,7 +63,7 @@ export function StatuteIllustration() {
             x="40"
             y="48"
             textAnchor="middle"
-            fontFamily="'Public Sans', sans-serif"
+            fontFamily="'Plus Jakarta Sans', sans-serif"
             fontWeight={700}
             fontSize="9"
             fill="#8C3B2E"

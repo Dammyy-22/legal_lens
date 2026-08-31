@@ -1,5 +1,7 @@
 'use client'
 
+import { Landmark, Search, Lock } from 'lucide-react'
+
 // Structural browse UI for the Constitution of the Federal Republic of Nigeria.
 // Deliberately shows NO constitutional text — that must come from a verified,
 // ingested source per the build plan's source-verification rules (never invent legal
@@ -18,6 +20,9 @@ const CHAPTERS = [
 export default function ConstitutionPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 md:py-14">
+      <div className="w-12 h-12 rounded-lg bg-brass/10 flex items-center justify-center mb-4">
+        <Landmark size={24} strokeWidth={1.5} className="text-brass-600" />
+      </div>
       <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-2">
         Primary source
       </p>
@@ -31,12 +36,13 @@ export default function ConstitutionPage() {
         a verified, checksummed original, so this shows the structure only.
       </p>
 
-      <div className="relative">
+      <div className="relative mb-8">
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-100" />
         <input
           type="text"
           disabled
           placeholder="Search will be available once the Constitution is ingested"
-          className="w-full px-4 py-3 border border-ink-100 rounded-lg bg-ink-50/40 text-ink-400 placeholder:text-ink-400 cursor-not-allowed mb-8"
+          className="w-full pl-11 pr-4 py-3 border border-ink-100 rounded-lg bg-ink-50/40 text-ink-400 placeholder:text-ink-400 cursor-not-allowed"
         />
       </div>
 
@@ -47,7 +53,8 @@ export default function ConstitutionPage() {
             className="flex items-center justify-between px-5 py-4 bg-white border border-ink-100 rounded-lg opacity-60"
           >
             <span className="font-display text-ink">{chapter}</span>
-            <span className="text-[10px] uppercase tracking-wide font-mono text-ink-400 border border-ink-100 rounded-full px-2 py-0.5 shrink-0 ml-4">
+            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide font-mono text-ink-400 border border-ink-100 rounded-full px-2 py-0.5 shrink-0 ml-4">
+              <Lock size={10} />
               Not yet ingested
             </span>
           </div>

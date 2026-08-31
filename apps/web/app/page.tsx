@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { MessageSquareQuote, ShieldCheck, Gavel, type LucideIcon } from 'lucide-react'
 import { MarginaliaRail } from '@/components/MarginaliaRail'
 import { StatuteIllustration } from '@/components/StatuteIllustration'
 
@@ -10,7 +11,7 @@ export default function Home() {
 
       <nav className="relative z-10 border-b border-ink-100">
         <div className="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
-          <span className="font-display italic text-2xl text-ink">
+          <span className="font-display font-semibold text-2xl text-ink">
             LegalLens<span className="text-brass not-italic">.</span>
           </span>
           <div className="flex items-center gap-6 text-sm font-medium">
@@ -35,7 +36,7 @@ export default function Home() {
           </p>
           <h1 className="font-display text-5xl md:text-6xl leading-[1.05] text-ink mb-6">
             Know your rights,{' '}
-            <span className="italic">traced to the source.</span>
+            <span className="text-brass-600">traced to the source.</span>
           </h1>
           <p className="text-lg text-ink-400 leading-relaxed mb-8 max-w-md">
             LegalLens answers questions about Nigerian law in plain language — and shows
@@ -67,17 +68,17 @@ export default function Home() {
       <section className="relative z-10 bg-white border-y border-ink-100">
         <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
           <FeatureCard
-            mark="§"
+            Icon={MessageSquareQuote}
             title="Ask in plain language"
             body="Ask about a workplace dispute, a landlord issue, or a traffic stop the way you'd ask a knowledgeable friend — not the way you'd search a statute index."
           />
           <FeatureCard
-            mark="¶"
+            Icon={ShieldCheck}
             title="See the source, always"
             body="Every answer links back to the actual Act, section, or regulation it came from. If we can't find a verified source, we say so — we don't guess."
           />
           <FeatureCard
-            mark="⚖"
+            Icon={Gavel}
             title="Know when to escalate"
             body="LegalLens tells you plainly when a situation needs a real lawyer, rather than pretending an AI can replace one."
           />
@@ -99,7 +100,7 @@ export default function Home() {
 
       <footer className="relative z-10 border-t border-ink-100 py-10">
         <div className="max-w-6xl mx-auto px-6 text-sm text-ink-400 flex justify-between items-center">
-          <span className="font-display italic">LegalLens</span>
+          <span className="font-display font-semibold">LegalLens</span>
           <span>Built for Nigeria. Grounded in real sources.</span>
         </div>
       </footer>
@@ -107,11 +108,19 @@ export default function Home() {
   )
 }
 
-function FeatureCard({ mark, title, body }: { mark: string; title: string; body: string }) {
+function FeatureCard({
+  Icon,
+  title,
+  body,
+}: {
+  Icon: LucideIcon
+  title: string
+  body: string
+}) {
   return (
     <div>
-      <div className="font-display text-3xl text-brass-600 mb-4" aria-hidden="true">
-        {mark}
+      <div className="w-11 h-11 rounded-lg bg-brass/10 flex items-center justify-center mb-4">
+        <Icon size={22} strokeWidth={1.75} className="text-brass-600" />
       </div>
       <h3 className="font-display text-xl text-ink mb-2">{title}</h3>
       <p className="text-ink-400 leading-relaxed">{body}</p>
