@@ -3,12 +3,7 @@
 // source. Ambient, not interactive; hidden on small screens where space is tight and
 // it would compete with content instead of framing it.
 const ANNOTATIONS = [
-  { mark: '§ 35', note: 'Right to personal liberty' },
-  { mark: '§ 41', note: 'Right of movement' },
-  { mark: 'Cap. C23', note: 'Consumer Protection' },
-  { mark: '§ 254C', note: 'Labour disputes' },
-  { mark: 'Art. 1999', note: 'Constitution' },
-  { mark: '§ 17', note: 'Tenancy notice' },
+  { mark: '', note: '' },
 ]
 
 export function MarginaliaRail({ side = 'left' }: { side?: 'left' | 'right' }) {
