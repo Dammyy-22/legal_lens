@@ -3,6 +3,7 @@
 // source. Ambient, not interactive; hidden on small screens where space is tight and
 // it would compete with content instead of framing it.
 const ANNOTATIONS = [
+  { mark: '', note: '' },
   
 ]
 
