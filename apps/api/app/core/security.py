@@ -9,11 +9,13 @@ short for that reason) + opaque refresh tokens stored server-side as a hash in
 `sessions.refresh_token_hash` (revocable, rotated on use).
 """
 import hashlib
+import json
 import secrets
+import urllib.request
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from jose import JWTError, jwt
+from jose import JWTError, jwk, jwt
 from passlib.context import CryptContext
 
 from app.core.config import settings
@@ -41,6 +43,40 @@ def decode_token(token: str) -> dict:
     """Raises jose.JWTError on any invalid/expired/malformed token — callers (see
     app/api/deps.py) catch that and translate to a 401."""
     return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+
+
+def decode_supabase_token(token: str) -> dict:
+    """Verify a Supabase Auth access token and return its claims."""
+    options = {"verify_aud": True, "verify_iss": bool(settings.SUPABASE_JWT_ISSUER)}
+    issuer_args = {"issuer": settings.SUPABASE_JWT_ISSUER} if settings.SUPABASE_JWT_ISSUER else {}
+
+    if settings.SUPABASE_JWKS_URL:
+        header = jwt.get_unverified_header(token)
+        with urllib.request.urlopen(settings.SUPABASE_JWKS_URL, timeout=5) as response:
+            keys = json.load(response).get("keys", [])
+        key_data = next((key for key in keys if key.get("kid") == header.get("kid")), None)
+        if key_data is None:
+            raise JWTError("Supabase signing key not found")
+        key = jwk.construct(key_data)
+        return jwt.decode(
+            token,
+            key,
+            algorithms=[header.get("alg", "RS256")],
+            audience=settings.SUPABASE_JWT_AUDIENCE,
+            options=options,
+            **issuer_args,
+        )
+
+    if not settings.SUPABASE_JWT_SECRET:
+        raise JWTError("Supabase JWT verification is not configured")
+    return jwt.decode(
+        token,
+        settings.SUPABASE_JWT_SECRET,
+        algorithms=["HS256"],
+        audience=settings.SUPABASE_JWT_AUDIENCE,
+        options=options,
+        **issuer_args,
+    )
 
 
 def generate_refresh_token() -> str:

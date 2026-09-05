@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
+from app.api.deps import SupabaseUser, get_current_supabase_user
+from app.api.legal import router as legal_router
 from app.core.config import settings
 
 app = FastAPI(title=settings.APP_NAME)
@@ -20,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(legal_router)
 
 
 @app.get("/health")
@@ -27,6 +30,11 @@ def health() -> dict:
     """Liveness/readiness probe. Deliberately has no DB dependency so it stays cheap;
     a separate /health/db check can be added when the app has real DB-backed routes."""
     return {"status": "ok", "env": settings.APP_ENV}
+
+
+@app.get("/api/v1/auth/supabase/me")
+def supabase_me(user: SupabaseUser = Depends(get_current_supabase_user)) -> dict:
+    return {"id": str(user.id), "role": user.role, "email": user.email}
 
 
 # Remaining domain routers (assistant, search, sources, rights, documents,

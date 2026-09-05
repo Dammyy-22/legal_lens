@@ -1,20 +1,22 @@
 {
-  "name": "legalens-ingestion",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "ingest:constitution": "tsx ingest-constitution.ts"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.45.4",
-    "openai": "^4.63.0",
-    "pdf-parse": "^1.1.1"
-  },
-  "devDependencies": {
-    "tsx": "^4.19.1",
-    "typescript": "^5.5.4",
-    "@types/node": "^20.14.0",
-    "@types/pdf-parse": "^1.1.4"
-  }
+    "name": "legalens-ingestion",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "node node_modules/typescript/bin/tsc --noEmit false --outDir dist --module NodeNext --moduleResolution NodeNext --target ES2022 --esModuleInterop --skipLibCheck --types node",
+        "ingest:constitution": "npm run build && node dist/ingest-constitution.js",
+        "ingest:corpus": "npm run build && node dist/ingest-corpus.js"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.45.4",
+        "openai": "^4.63.0",
+        "pdf-parse": "^1.1.1"
+    },
+    "devDependencies": {
+        "tsx": "^4.19.1",
+        "typescript": "^5.5.4",
+        "@types/node": "^20.14.0",
+        "@types/pdf-parse": "^1.1.4"
+    }
 }

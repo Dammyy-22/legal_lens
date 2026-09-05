@@ -23,6 +23,29 @@ OPENAI_API_KEY=your-openai-key \
 npm run ingest:constitution
 ```
 
+## Running the local corpus ingestion
+
+The repository's local `legal corpus/` folder can be ingested in one idempotent batch:
+
+```bash
+cd scripts/ingestion
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... OPENAI_API_KEY=... npm run ingest:corpus
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:SUPABASE_URL="https://your-project.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+$env:OPENAI_API_KEY="your-openai-key"
+npm run ingest:corpus
+```
+
+The command records each PDF's SHA-256 checksum and skips the same file on later runs.
+It writes all versions as `unverified`; review the extracted text and explicitly publish
+each approved version before it can be searched or cited. The local PDFs are ignored by
+Git and use `local-corpus://...` provenance until official source URLs are supplied.
+
 - `SUPABASE_SERVICE_ROLE_KEY`: from Supabase Dashboard → Project Settings → API. This
   key bypasses Row Level Security — that's required here (ingestion writes to
   admin-only tables) but is exactly why it must never reach client-side code.

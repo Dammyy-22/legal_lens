@@ -25,6 +25,15 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 14
 
+    # Supabase Auth JWT verification for domain endpoints. Set this to the project's
+    # JWT secret; it must never be exposed to the browser.
+    SUPABASE_JWT_SECRET: str | None = None
+    SUPABASE_JWKS_URL: str | None = None
+    SUPABASE_URL: str | None = None
+    SUPABASE_ANON_KEY: str | None = None
+    SUPABASE_JWT_AUDIENCE: str = "authenticated"
+    SUPABASE_JWT_ISSUER: str | None = None
+
     # Redis (introduced fully in a later phase; declared for forward compatibility)
     REDIS_URL: str = "redis://localhost:6379/0"
 

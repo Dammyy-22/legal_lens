@@ -36,3 +36,4 @@ Thumbs.db
 # Uploaded/original documents must never land in git — they're stored in object storage
 /uploads/
 /media/
+/legal corpus/
