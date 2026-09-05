@@ -154,3 +154,294 @@ The uploaded archive contained a live `.env` file with a real Supabase
 was advised to rotate it. This repository's own `.gitignore` excludes `.env`, but that
 only helps if the file is never zipped/shared outside git in the first place — worth
 remembering that `.gitignore` doesn't protect files handed over by other means.
+
+## Architecture change: Supabase Auth replaces FastAPI auth (this session)
+
+At the person's request, the frontend now uses **Supabase Auth directly** via
+`@supabase/ssr` (browser client, server client, and middleware) instead of the FastAPI
+`/api/v1/auth/*` endpoints built in Phase 5.
+
+### What changed
+- `apps/web/lib/supabase/{client,server}.ts` — new Supabase client helpers
+- `apps/web/middleware.ts` — refreshes the session cookie on every request and
+  redirects unauthenticated requests away from `/dashboard`
+- Login/register/forgot-password rewritten to call `supabase.auth.*` directly
+- New `/auth/reset-password` page — this is now a *real* feature (Supabase actually
+  sends the email), unlike the FastAPI version where the reset token was only logged
+  server-side with no delivery mechanism
+- `/dashboard` converted to a server component reading the Supabase session, with
+  interactivity (logout) split into a small client component
+- Removed: `lib/auth-store.ts` (zustand), `lib/api-client.ts`, the `zustand` dependency
+
+### Verified
+- `next build` succeeds with placeholder Supabase credentials — all 7 routes compile,
+  `/dashboard` correctly resolves as a dynamic (server-rendered) route, middleware
+  bundle builds without error.
+
+### NOT verified (real limitation, not glossed over)
+- I do not have this project's actual Supabase URL/anon key, so **no runtime
+  authentication has been tested against a real Supabase project** — unlike the
+  FastAPI Phase 5 work, which was tested against a live database end-to-end. Before
+  trusting this in production: set real `NEXT_PUBLIC_SUPABASE_URL` /
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`, and manually verify register → email
+  confirm (if enabled) → login → dashboard → logout → forgot password → reset password.
+- Whether Supabase's "Confirm email" setting is on or off changes register's behavior
+  (`data.session` is null if confirmation is required) — the code handles both cases,
+  but which one applies to this project needs to be confirmed in the Supabase dashboard
+  (Authentication → Providers → Email).
+- The `redirectTo` URL in `resetPasswordForEmail` must be added to Supabase's allowed
+  redirect URLs list (Authentication → URL Configuration) or the reset link will fail —
+  this is a Supabase-dashboard configuration step, not something fixable in code.
+
+### Architectural consequence (important, not cosmetic)
+The Phase 4/5 Postgres `users`/`sessions`/`password_reset_tokens` tables and the
+FastAPI `/api/v1/auth/*` endpoints are now **dead for authentication purposes**. They
+still exist in `apps/api/` and their tests still pass, but nothing in the frontend
+calls them anymore. Two paths forward, not decided yet:
+
+1. **Keep FastAPI only for non-auth features** (RAG, search, document Q&A) and have it
+   verify Supabase-issued JWTs on incoming requests (Supabase can expose a JWKS/JWT
+   secret for this) rather than issuing its own tokens. This means every table with a
+   `user_id` FK (conversations, messages, user_documents, etc.) should reference the
+   Supabase user's UUID, not a row in our own `users` table.
+2. **Drop the FastAPI users/sessions/auth code entirely** and rebuild remaining
+   features as Supabase Edge Functions / Postgres RLS policies instead of a separate
+   Python backend.
+
+This needs an explicit decision before Phase 6+ (source ingestion, RAG) is built,
+since the data model depends on which identity system is authoritative. Flagging this
+now rather than silently picking one.
+
+## Google OAuth added (this session)
+
+Added `/auth/callback/route.ts` (exchanges the OAuth `code` for a session — required
+by `@supabase/ssr`'s server-side flow, without it the redirect from Google completes
+but the browser never actually gets a session cookie) and "Continue with Google"
+buttons on login/register calling `supabase.auth.signInWithOAuth`.
+
+### Verified
+`next build` succeeds with the new route and buttons — 8 routes total, `/auth/callback`
+registers correctly as a dynamic route.
+
+### NOT verified
+No real Google OAuth credentials exist yet, so **the actual sign-in flow has not been
+tested**. This requires, outside of this session: (1) Google Cloud Console OAuth
+client credentials, (2) enabling + configuring the Google provider in Supabase with
+those credentials, (3) confirming the app's real redirect URLs are allow-listed in
+Supabase's URL Configuration. Until all three are done, clicking "Continue with
+Google" will fail at Supabase's end, not in this code.
+
+## Visual identity / design system (this session)
+
+Replaced the generic default-Tailwind-blue styling with a deliberate identity grounded
+in the actual subject (Nigerian legal information, citation-first trust), per the
+frontend-design skill's process.
+
+**Palette:** ink green `#14261E`, warm paper `#F5F1E7`, aged brass `#B08D3E`, muted
+sealing-wax red `#8C3B2E` for alerts only, charcoal `#1C1C1A` for text.
+
+**Type:** Newsreader (display serif — reads like a printed statute), Public Sans
+(body/UI — literally designed for U.S. government sites, a deliberate fit for a legal
+platform, not decoration), IBM Plex Mono (citations, section numbers).
+
+**Signature element:** a "marginalia rail" — small § citation annotations running down
+the page edge on wide screens — directly echoes the product's real citation-first
+principle rather than being pure decoration.
+
+**Hero:** a crafted SVG illustration of an annotated statute page (highlighted clause,
+margin citation, a "SOURCE VERIFIED" stamp with a subtle animation), used instead of a
+stock photo. Rationale: no hotlinked external image URL can be guaranteed to stay live
+in production, and a purpose-built illustration matches the palette exactly and
+reinforces the product's actual subject matter.
+
+### Verified
+`next build` succeeds — all 8 routes compile, static pages prerender.
+
+### A real build issue found and fixed
+Initially used `next/font/google` (the standard approach), which fetches font files
+from Google's servers *at build time*. That failed in this sandbox because outbound
+network access here is restricted to a specific domain allowlist that does not include
+`fonts.googleapis.com`. Rather than leave this unverified, switched to **self-hosted
+fonts via `@fontsource/*`** (npm packages — Newsreader, Public Sans, IBM Plex Mono),
+which removes the external network dependency entirely, at build time and runtime, on
+any machine including Vercel. This is arguably a better outcome than the original
+plan, not just a workaround — verified with a full offline build.
+
+### Not verified
+- Real device/browser visual QA (this sandbox has no visual browser rendering —
+  compilation success was verified, but I have not seen the rendered pixels myself).
+  Please actually look at it running before considering it final.
+- Color contrast (WCAG AA) between the brass accent and white/paper backgrounds
+  hasn't been measured with a contrast checker — worth verifying for the "Coming
+  soon" and link colors specifically, which use `text-brass-600` on white.
+- Mobile layout has not been manually tested at real device widths, only confirmed to
+  compile with responsive Tailwind classes (`md:`, `xl:`) applied.
+
+## Dashboard navigation and feature pages (this session)
+
+Added a persistent sidebar (desktop) / hamburger menu (mobile) shell wrapping all
+`/dashboard/*` routes, plus 7 pages: Ask, Search, Constitution, Rights Explorer,
+Lawyers, Documents, Settings.
+
+### A deliberate pushback, not a silent substitution
+The person asked for the Lawyers page to show "dummy" lawyer names, photos, and a
+working "Book" button. Built instead: clearly-labeled sample profiles (initials
+avatars, "Sample profile" in the name, a visible "Preview — sample data, not real
+lawyers" banner) with a **real** working action — join a waitlist — instead of a fake
+"Book" button. Reasoning: an unlabeled fake attorney directory with a live-looking
+booking button on a legal-information platform could genuinely mislead someone during
+a real legal situation into thinking they'd booked a real lawyer. This directly
+contradicts the product's own stated principle (build plan §37/§40: never create false
+confidence, trustworthiness over completeness). Same logic applied to the Constitution
+page — it shows real chapter structure but zero constitutional text, since no verified
+source has been ingested yet.
+
+### What's real vs. placeholder
+- **Real and tested:** navigation (persistent sidebar, mobile hamburger, active-route
+  highlighting), Settings page (live Supabase account info + working password change),
+  Lawyers waitlist signup (writes to a real table — see below).
+- **Honest placeholders:** Ask, Search, Documents, Rights Explorer — all show a clear
+  "coming soon" state explaining exactly what backend work is missing, not fake
+  functionality or fabricated content.
+
+### New dependency: `database/waitlist_migration.sql`
+The Lawyers page's waitlist signup requires a `lawyer_waitlist` table that does not
+exist yet in the person's Supabase project. I cannot create it myself — I don't have
+their Supabase credentials. **The person must run `database/waitlist_migration.sql` in
+their Supabase SQL Editor before the waitlist button will work.** Until then, clicking
+"Join waitlist" will show a real error (not a silent failure) pointing at this file.
+The table has RLS enabled: authenticated users can insert their own row only, and no
+read policy exists — this is intentionally a write-only signup box from the browser's
+perspective, consistent with data-minimization principles elsewhere in this project.
+
+### Verified
+`next build` succeeds — 15 routes total (up from 8), including all new dashboard
+pages, compiling and prerendering/server-rendering correctly.
+
+### NOT verified
+- The waitlist insert has not been tested against a real Supabase project (no
+  credentials available here) — the code is correct against Supabase's documented API,
+  but "correct code" and "verified working" are different claims, and I'm keeping that
+  distinction explicit per how this whole project has been tracked.
+- No visual/manual QA of the sidebar's mobile hamburger behavior on a real device.
+
+## Fonts, icons, and profile-over-email (this session)
+
+**Fonts:** Requested "Clash" (Fontshare's Clash Display/Grotesk) isn't reachable from
+this build sandbox — Fontshare's CDN isn't on the network allowlist, same class of
+issue as the earlier Google Fonts problem. Substituted **Space Grotesk** (display) +
+**Plus Jakarta Sans** (body), self-hosted via `@fontsource`, same bold-modern-grotesk
+character as Clash. Space Grotesk has no italic face, so every `italic` usage tied to
+the old Newsreader pairing was found and removed/replaced (wordmark, hero subheadline,
+footer) rather than left to fake-italicize.
+
+**Icons:** Replaced all ad-hoc unicode glyphs (§, ¶, ⚖, ⌂, ⌘, ⎘, ⚑) with real
+**Lucide** icons (`lucide-react`) — includes purpose-fit icons like `Scale`, `Gavel`,
+`Landmark`, `ShieldAlert` rather than generic shapes. The marginalia rail's § marks
+were deliberately kept as-is — they're the product's citation-style signature element,
+not a spot that needed an icon.
+
+**Profile over email:** Register now collects full name (required), state (dropdown of
+the real 36 Nigerian states + FCT), city, and phone (optional) — stored in Supabase's
+built-in `user_metadata` via `signUp({ options: { data: {...} } })`, no separate
+`profiles` table needed for this. Dashboard sidebar and greeting now show an avatar
+icon + first name instead of the raw email; email is still used internally (Settings
+page, Supabase auth) but no longer surfaced in the dashboard chrome.
+
+**Known gap, flagged not hidden:** Google OAuth sign-ups skip this form entirely.
+Supabase auto-populates `full_name`/avatar from the Google profile, so the dashboard
+greeting still works for Google users — but state/city/phone are never captured for
+that path. Acceptable since those are optional details, but worth knowing before
+building anything that assumes every user has them. Editing name/state/city/phone
+after signup isn't built yet — Settings currently only shows them read-only-ish
+(name) and handles password changes.
+
+### A real type error caught by the build
+Passed Lucide icon components through a hand-rolled prop type
+(`React.ComponentType<{ size?: number; ... }>`) that was narrower than Lucide's actual
+exported prop types — `next build`'s type-check failed on this immediately. Fixed by
+using Lucide's own exported `LucideIcon` type instead of reinventing one. Worth noting
+because it's exactly the kind of mismatch that "looks right" until actually compiled.
+
+### Verified
+`next build` succeeds — all 15 routes compile, prerender/server-render correctly, full
+type-check passes.
+
+### Not verified
+No visual QA in this sandbox (no browser rendering available) — icon sizing, avatar
+layout, and the new register form's mobile appearance need an actual look before
+considering this finished.
+
+## FastAPI retired — Supabase-only backend (this session)
+
+Per the person's decision, `apps/api/` (FastAPI + Alembic + Postgres, Phases 3–5) is
+**retired**. It is left in the repo for reference/history but is no longer part of the
+live architecture. All future backend work — RAG retrieval, the AI assistant, search,
+document Q&A — is built on **Supabase Postgres (with pgvector) + Supabase Edge
+Functions**, not a separate Python service.
+
+Consequence: `apps/api`'s tests still pass in isolation, but they test a system that
+is no longer deployed or wired to the frontend. `docker-compose.yml`'s `api` service
+is likewise dead. These are not deleted outright in case any logic needs porting, but
+should not be trusted as "the backend" going forward — `database/` (new Supabase SQL
+migrations) is now the source of truth for schema.
+
+## Legal source ingestion — Constitution (this session)
+
+### Source verification (real, not assumed)
+Fetched and verified the actual Constitution of the Federal Republic of Nigeria 1999
+from `https://nigeriarights.gov.ng/files/constitution.pdf` — a Nigerian government
+domain, the highest authority level available. This is a real, live, fetchable
+document, confirmed by directly retrieving it, not assumed from search snippets alone.
+
+### A real data-quality problem found during review
+The PDF's extracted text is **inconsistent in structure**. Some chapters (e.g. Chapter
+V, the Legislature) retain clean section numbering ("90. There shall be a House..."),
+but Chapter IV (Fundamental Rights) — likely the single most-queried chapter for a
+rights-focused product — **lost its section-number prefixes** during text extraction.
+This means naive regex-based section splitting (e.g. matching `/^\d+\./`) would
+silently mis-chunk exactly the content most users will ask about.
+
+### Scoping decision made because of this
+Rather than ship fragile section-level parsing that would look correct but chunk
+incorrectly for Chapter IV specifically, the ingestion pipeline below chunks at
+**chapter level** for this first pass — a granularity confirmed reliable from the
+document's own table of contents. Section-level chunking is left as a documented
+follow-up requiring layout-aware PDF extraction (e.g. preserving font/position data,
+not just raw text) — not attempted here rather than shipped in a state that could
+silently misattribute a citation to the wrong section.
+
+### Architecture: fetch at runtime, don't hardcode legal text into the repo
+The ingestion script fetches the PDF directly from the verified government URL at run
+time. The actual constitutional text is never copy-pasted into any file in this
+repository — only the script, schema, and provenance metadata are. This matches the
+build plan's actual ingestion architecture (SOURCE → FETCH → VALIDATE → EXTRACT →
+CHUNK → EMBED → PUBLISH) and avoids duplicating a large government document into
+version control unnecessarily.
+
+### Everything ingested starts as `unverified`
+Per the schema's own design (`legal_source_versions.verified` boolean,
+`processing_status` enum), nothing this script ingests is marked verified or
+published automatically. A human must review and flip `verified = true` before the
+AI assistant may cite it. This is enforced by the schema, not just a convention.
+
+### Verified (this ingestion work, specifically)
+- The source URL is real and fetchable — confirmed by directly retrieving it via
+  search-and-fetch, not assumed from a search snippet.
+- `database/schema.sql` — schema design carried over from the tested FastAPI version,
+  adapted to raw SQL + RLS for Supabase. Not yet run against a live Supabase project
+  (no credentials available here).
+- `scripts/ingestion/ingest-constitution.ts` — type-checks cleanly (`tsc --noEmit`,
+  zero errors).
+- Chapter-splitting regex logic — unit-tested against a realistic extraction fixture
+  (`test-chapter-split.mjs`), including a specific regression check confirming Chapter
+  IV is correctly isolated despite lacking clean section-number prefixes, and that the
+  `\bCHAPTER I\b`-style patterns don't false-match inside "CHAPTER II/III/IV" (word
+  boundary correctly prevents this).
+
+### NOT verified
+- End-to-end execution against the live government PDF and a real Supabase project —
+  this sandbox has no network access to `nigeriarights.gov.ng`, Supabase, or OpenAI's
+  APIs. The person must run this themselves and report back what actually happens.
+- Whether OpenAI's `text-embedding-3-small` is the right/available choice — picked as
+  a well-known default; swappable, but confirm you have API access before running.
