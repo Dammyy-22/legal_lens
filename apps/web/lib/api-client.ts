@@ -1,41 +1,10 @@
 import { createClient } from '@/lib/supabase/client'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-
-export type SupabaseIdentity = {
-  id: string
-  role: string
-  email: string | null
-}
-
-export async function getBackendIdentity(): Promise<SupabaseIdentity> {
-  const supabase = createClient()
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession()
-
-  if (sessionError) {
-    throw sessionError
-  }
-
-  if (!session?.access_token) {
-    throw new Error('No authenticated Supabase session')
-  }
-
-  const response = await fetch(`${API_URL}/api/v1/auth/supabase/me`, {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    cache: 'no-store',
-  })
-
-  if (!response.ok) {
-    throw new Error(`Backend identity check failed (${response.status})`)
-  }
-
-  return response.json() as Promise<SupabaseIdentity>
-}
+// Calls Supabase Edge Functions directly — FastAPI has been retired (see
+// DECISIONS.md). getBackendIdentity() and its FastAPI /supabase/me endpoint are gone
+// entirely; Supabase's own supabase.auth.getUser()/getSession() already provide
+// identity, so there was never a need for a second identity check through a
+// now-nonexistent backend.
 
 export type LegalSearchResult = {
   chunk_id: string
@@ -51,7 +20,7 @@ export type LegalSearchResult = {
   text: string
 }
 
-async function getAccessToken() {
+async function getAccessToken(): Promise<string> {
   const supabase = createClient()
   const {
     data: { session },
@@ -63,19 +32,26 @@ async function getAccessToken() {
   return session.access_token
 }
 
+function functionsUrl(path: string): string {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!base) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set')
+  return `${base}/functions/v1/${path}`
+}
+
 export async function searchLegalSources(
   query: string,
   limit = 20,
 ): Promise<LegalSearchResult[]> {
   const token = await getAccessToken()
-  const params = new URLSearchParams({ q: query, limit: String(limit) })
-  const response = await fetch(`${API_URL}/api/v1/legal/search?${params}`, {
+  const params = new URLSearchParams({ mode: 'search', q: query, limit: String(limit) })
+  const response = await fetch(`${functionsUrl('legal')}?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   })
 
   if (!response.ok) {
-    throw new Error(`Legal search failed (${response.status})`)
+    const body = await response.json().catch(() => ({}))
+    throw new Error(body.error || `Legal search failed (${response.status})`)
   }
 
   const body = (await response.json()) as { results: LegalSearchResult[] }
@@ -84,13 +60,15 @@ export async function searchLegalSources(
 
 export async function getConstitution(): Promise<LegalSearchResult[]> {
   const token = await getAccessToken()
-  const response = await fetch(`${API_URL}/api/v1/legal/constitution`, {
+  const params = new URLSearchParams({ mode: 'constitution' })
+  const response = await fetch(`${functionsUrl('legal')}?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   })
 
   if (!response.ok) {
-    throw new Error(`Constitution load failed (${response.status})`)
+    const body = await response.json().catch(() => ({}))
+    throw new Error(body.error || `Constitution load failed (${response.status})`)
   }
 
   return (await response.json()) as LegalSearchResult[]

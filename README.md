@@ -2,115 +2,88 @@
 
 AI-powered legal information and rights-assistance platform. Initial jurisdiction: Nigeria.
 
-**LegalLens is a legal-information and legal-literacy tool. It is not a lawyer and does not
-provide legal advice.** See `docs/legal/` and `AI_SAFETY.md` for the safety architecture
-that enforces this in practice.
+**LegalLens is a legal-information and legal-literacy tool. It is not a lawyer and does
+not provide legal advice.** See `AI_SAFETY.md` (where present) and the assistant's own
+system prompt in `supabase/functions/ask/index.ts` for how this is enforced in practice.
+
+## Architecture (current, as of this update)
+
+**Fully Supabase-native.** No separate backend server to host or deploy.
+
+- **Frontend:** Next.js on Vercel (`apps/web/`)
+- **Auth:** Supabase Auth (email/password + Google OAuth)
+- **Database:** Supabase Postgres + pgvector, with Row Level Security as the
+  enforcement layer for "only verified legal content is visible"
+- **Backend logic:** Supabase Edge Functions (Deno/TypeScript) — `supabase/functions/`
+- **AI:** OpenAI for embeddings, Anthropic Claude for grounded answer generation
+
+FastAPI (a Python backend that existed earlier in this project's history) has been
+**retired and removed**. It was briefly revived with Supabase-JWT verification in a
+separate work session, which is documented in `DECISIONS.md` as a real architectural
+detour — that code has now been ported to Edge Functions and the FastAPI code deleted
+to avoid maintaining two backend runtimes long-term. If you see references to
+`apps/api` in old commits or docs, that's why.
 
 ## Status
 
-Build following `LEGALENS_MASTER_BUILD_PLAN.md`. Current: **Auth architecture changed to
-Supabase Auth** — see DECISIONS.md before continuing to Phase 6.
-
-| Phase | Status |
+| Area | Status |
 |---|---|
-| 1. Product spec | DONE |
-| 2. Architecture | DONE |
-| 3. Repo init | PARTIAL — scaffold + Docker config written, `docker-compose up` not yet verified (no Docker available in the build sandbox) |
-| 4. Database | VERIFIED — schema modeled, migration generated and applied against a live local Postgres 16 + pgvector, constraints tested |
-| 5. Authentication (superseded) | The FastAPI auth code and tests still pass (11/11), but the frontend no longer calls it — see below |
-| Auth (current) | **Supabase Auth**, wired into the Next.js frontend via `@supabase/ssr`. `next build` verified (7 routes incl. a real password-reset flow). **Not runtime-tested against a real Supabase project** — needs real credentials. See DECISIONS.md "Architecture change: Supabase Auth" for the open decision on what happens to the FastAPI backend. |
-| 6+ | TODO |
+| Auth | Supabase Auth (email/password, Google OAuth), full profile fields at signup |
+| Dashboard | Sidebar/hamburger nav, avatar+name (not email) shown per product decision |
+| Legal search | `supabase/functions/legal` — keyword search over verified corpus |
+| Constitution browse | Same function, `mode=constitution` |
+| AI Assistant (Ask) | `supabase/functions/ask` — retrieval + Claude generation + citation validation. Type-checked and unit-tested; **not yet run end-to-end against live Supabase/OpenAI/Anthropic** — needs real credentials, which this build environment doesn't have |
+| Legal corpus | Constitution of Nigeria — ingestion scripts exist (`scripts/ingestion/`); **nothing is verified/published yet** until a human reviews and flips `verified = true` |
+| Lawyers | Sample profiles (clearly labeled, not real) + a real waitlist signup |
 
-See `DECISIONS.md` for what was actually tested vs. assumed.
+See `DECISIONS.md` for the full history of what's been verified vs. assumed, including
+several real bugs found by actually testing things rather than just reading code.
 
 ## Local development
 
 ### Prerequisites
-- Docker + Docker Compose
-- Python 3.12 (for running Alembic/tests outside containers if preferred)
-- Node.js 22 (for the web app)
+- Node.js 22 (web app)
+- Deno 2.x (for local Edge Function development — `supabase functions serve`)
+- A Supabase project (or the Supabase CLI's local dev stack via `supabase start`)
 
-### Setup
-```bash
-cp .env.example .env
-# edit .env — at minimum set a real JWT_SECRET_KEY for anything beyond local dev
-
-docker compose up -d db redis
-cd apps/api
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt   # includes requirements.txt + pytest/httpx
-alembic upgrade head
-uvicorn app.main:app --reload
-```
-
-In a second terminal, run the web app:
+### Web app
 ```bash
 cd apps/web
 cp .env.example .env.local
-# edit .env.local with your real Supabase project URL + anon key
-# (Supabase Dashboard → Project Settings → API)
+# fill in NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
 npm install
 npm run dev   # http://localhost:3000
 ```
 
-Auth is handled by Supabase directly (see DECISIONS.md) — the FastAPI backend is not
-currently required for register/login/logout/password-reset to work. It remains in
-`apps/api/` for future non-auth features (RAG, search, document Q&A), pending the
-architecture decision noted in DECISIONS.md.
-
-Health check: `curl http://localhost:8000/health`
-
-### Try the auth flow
-```bash
-curl -X POST localhost:8000/api/v1/auth/register -H "Content-Type: application/json" \
-  -d '{"email":"you@example.com","password":"a-long-passphrase"}'
-
-curl -X POST localhost:8000/api/v1/auth/login -H "Content-Type: application/json" \
-  -d '{"email":"you@example.com","password":"a-long-passphrase"}'
-# use the returned access_token as: -H "Authorization: Bearer <token>"
-```
-
-### Running tests
-```bash
-cd apps/api
-export DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/legalens
-export PYTHONPATH=$(pwd)
-pytest ../../tests -v
-```
-
-### Running migrations
-```bash
-cd apps/api
-alembic upgrade head      # apply
-alembic downgrade base    # revert everything (tested — see DECISIONS.md)
-alembic revision --autogenerate -m "description"   # new migration after model changes
-```
-
-## Database setup (Supabase)
-
-Run these in Supabase Dashboard → SQL Editor, in order:
-1. `database/schema.sql` — legal corpus, conversations, messages, citations, RLS
+### Database setup (Supabase Dashboard → SQL Editor, in order)
+1. `database/schema.sql` — legal corpus, conversations, messages, citations, RLS,
+   and the `match_document_chunks` vector search function
 2. `database/waitlist_migration.sql` — lawyer referral waitlist table
 
-Then see `scripts/ingestion/README.md` to populate the legal corpus with a real,
-verified source (currently: the Constitution of Nigeria).
+### Populating the legal corpus
+See `scripts/ingestion/README.md`. **Nothing ingested is visible to the app until you
+manually verify it** — this is enforced by RLS, not just a suggestion.
+
+### Deploying Edge Functions
+```bash
+supabase functions deploy ask
+supabase functions deploy legal
+supabase secrets set OPENAI_API_KEY=sk-...
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+```
 
 ## Repository structure
 
 ```
-apps/api/          FastAPI backend (modular monolith)
-apps/web/           Next.js frontend (not yet started)
-services/            ingestion, retrieval, ai, evaluation — separable workload-shaped services
-database/            migrations live in apps/api/alembic; this dir reserved for seeds
-docs/                legal, architecture, security, operations documentation
-tests/               unit, integration, e2e, security, evaluation
-infrastructure/      docker, terraform, monitoring configs
+apps/web/            Next.js frontend
+supabase/functions/  Edge Functions (ask, legal) — all backend logic lives here
+database/            SQL schema + migrations for Supabase Postgres
+scripts/ingestion/   One-off scripts to fetch/chunk/embed legal source documents
 ```
 
 ## Key docs
-
-- `PROJECT_SPEC.md` — product definition (from the master build plan)
-- `ARCHITECTURE.md` — system architecture
-- `DATABASE.md` — schema, constraints, and what's been tested
-- `SECURITY.md` / `THREAT_MODEL.md` / `AI_SAFETY.md`
-- `DECISIONS.md` — what was verified vs. assumed, and why
+- `PROJECT_SPEC.md` — original product definition
+- `DATABASE.md` — schema design and what's been tested
+- `SECURITY.md` — security posture and known gaps
+- `DECISIONS.md` — the real history: what was verified, what was assumed, what
+  changed and why, including architectural detours and how they were resolved

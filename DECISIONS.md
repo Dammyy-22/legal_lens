@@ -445,3 +445,101 @@ AI assistant may cite it. This is enforced by the schema, not just a convention.
   APIs. The person must run this themselves and report back what actually happens.
 - Whether OpenAI's `text-embedding-3-small` is the right/available choice — picked as
   a well-known default; swappable, but confirm you have API access before running.
+
+## Live repo audit and reconciliation (this session)
+
+The person shared the actual live GitHub repository
+(github.com/Dammyy-22/legal_lens), which was cloned directly into the build
+environment for the first time — everything before this point in this log was based
+on a separate local copy that was periodically zipped and handed off. This audit
+surfaced real divergence between the two, which is documented here rather than
+silently papered over.
+
+### What had diverged
+1. **FastAPI was revived**, extended with Supabase JWT verification
+   (`SUPABASE_JWT_SECRET`, `get_current_supabase_user`) and a real `legal.py` router
+   serving keyword search + constitution browsing over the verified corpus via
+   Supabase's REST API. This directly contradicted the earlier "drop FastAPI
+   entirely" decision — apparently continued in a separate work session (the repo
+   also contains `.claude/skills/` and `.agents/skills/` directories, suggesting
+   Claude Code or a similar tool was used independently of this conversation).
+2. **The `ask` Edge Function and the `match_document_chunks` SQL function — both
+   built and verified earlier in this conversation — were never actually present in
+   the live repo.** This means the person had not yet incorporated that specific zip
+   before sharing the repo, not that the work was lost — but it's a real reminder that
+   zip hand-offs and a live repo can silently drift out of sync, which is exactly why
+   auditing the real repo directly (once shareable) is more reliable going forward.
+3. A different, more capable ingestion script (`ingest-corpus.ts`, ingesting local
+   PDFs including the Labour Act and Police Act 2020, not just the Constitution) had
+   been added — real, additional progress not reflected in this log until now.
+4. Repo hygiene problems: a full nested duplicate of the entire project committed by
+   accident (`legalens-supabase-auth/legalens/...`, apparently from an extracted zip),
+   and a compiled `scripts/ingestion/dist/` directory that should never have been
+   committed.
+
+### Decision made after presenting the real tradeoff
+Given that real, working code existed on the FastAPI+Supabase-JWT side (not just
+scaffolding), a fair tradeoff was presented rather than unilaterally reverting: keep
+FastAPI (cost: a separate server to host, since Vercel doesn't run FastAPI) vs. port
+the ~80 lines of real search logic to a Deno Edge Function and retire FastAPI again
+(cost: the porting work, benefit: one deployment story — Vercel + Supabase only). The
+person chose to port and retire FastAPI, given no FastAPI hosting was set up yet.
+
+### What was done
+- Ported `apps/api/app/api/legal.py`'s search + constitution logic to
+  `supabase/functions/legal/index.ts`, preserving behavior (naive all-terms-must-match
+  substring search — a platform port, not a search-quality upgrade) while using
+  `supabase-js` with the caller's own JWT (RLS-enforced) instead of raw REST calls
+  with manual header passing.
+- Added the missing `supabase/functions/ask/index.ts` and `match_document_chunks` SQL
+  function to this actual repo (previously verified elsewhere, now actually present
+  here).
+- Deleted `apps/api/` entirely, the nested duplicate `legalens-supabase-auth/`
+  directory, and `scripts/ingestion/dist/`.
+- Removed FastAPI-specific tests (`tests/integration/test_auth.py`,
+  `test_citation_constraint.py`, `conftest.py`, `tests/unit/test_supabase_auth.py`) —
+  the citation-integrity guarantee these tested is still enforced (the
+  `ck_citation_has_source` CHECK constraint lives in `database/schema.sql` and was
+  independently verified against real Postgres in this session), just no longer via a
+  pytest file tied to a now-deleted SQLAlchemy setup.
+- Removed `docker-compose.yml` — it described local Postgres + Redis + FastAPI
+  services that no longer exist in this architecture (confirmed Redis isn't
+  referenced anywhere in current code before removing it). Local dev now uses a real
+  Supabase project or `supabase start`, not a hand-rolled compose file.
+- Rewrote `.github/workflows/` CI to test what's actually real: the Next.js build, a
+  Deno type-check of both Edge Functions, and `schema.sql` applying cleanly to a real
+  Postgres+pgvector service container (with a stubbed `auth` schema, since GitHub
+  Actions' Postgres container doesn't have Supabase's built-in auth schema either).
+- Rewrote `apps/web/lib/api-client.ts` to call the new Edge Function instead of the
+  now-deleted FastAPI endpoints; `getBackendIdentity()` was removed outright since it
+  only ever existed to bridge to a FastAPI identity-check endpoint that no longer
+  exists — Supabase's own `auth.getUser()`/`getSession()` already provide identity
+  directly, so nothing replaces it because nothing needed to.
+- Added `.gitignore` entries for `scripts/*/dist/` and `*.tsbuildinfo` so the compiled
+  ingestion output doesn't get committed again.
+
+### Verified (real, not assumed)
+- Both Edge Functions (`ask`, `legal`) type-check cleanly with Deno 2.9.6, downloaded
+  and run directly in this session (`deno check index.ts`, zero errors on both,
+  including two real type errors caught and fixed in `legal/index.ts` — an
+  under-specified `loadVerifiedCorpus` return type let TypeScript infer `Map<unknown,
+  unknown>` in one branch, which the compiler correctly rejected as incompatible with
+  the other branch's `Map<string, any>`).
+- The live repo's actual `database/schema.sql` (after the `match_document_chunks`
+  addition) applies cleanly to a fresh Postgres 16 + pgvector instance, confirmed by
+  actually running it, not by diffing against the previously-tested copy and assuming
+  equivalence.
+- `next build` succeeds on the live repo after all rewiring — 17 routes, including the
+  search and constitution pages now calling the ported Edge Function.
+
+### NOT verified
+- No push access to the GitHub repository from this environment (confirmed via `git
+  push --dry-run`, which failed on missing credentials) — all of the above exists only
+  in this sandbox's clone. **The person must apply these changes themselves**; a
+  patch/zip is provided for this purpose (see the conversation for delivery).
+- The ported `legal` Edge Function's actual runtime behavior against a live Supabase
+  project has not been tested (same live-credential limitation as `ask`).
+- Whatever real content `ingest-corpus.ts` may have already ingested (Labour Act,
+  Police Act 2020, etc.) has not been reviewed for the same PDF-extraction-quality
+  risk documented earlier for the Constitution — this should be checked before
+  verifying any of that content, not assumed fine because the script exists.

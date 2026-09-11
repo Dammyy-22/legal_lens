@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        working-directory: apps/web
+        run: npm ci
+      - name: Build
+        working-directory: apps/web
+        run: npx next build
+
+  edge-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check ask function
+        working-directory: supabase/functions/ask
+        run: deno check index.ts
+      - name: Type-check legal function
+        working-directory: supabase/functions/legal
+        run: deno check index.ts
+
+  schema:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: legalens
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stub Supabase-managed auth schema (real Supabase has this built in)
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d legalens <<'SQL'
+          create schema if not exists auth;
+          create table auth.users (id uuid primary key default gen_random_uuid(), email text);
+          create or replace function auth.uid() returns uuid as $$
+              select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+          $$ language sql stable;
+          create role authenticated;
+          grant usage on schema public to authenticated;
+          SQL
+      - name: Apply schema.sql
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/schema.sql

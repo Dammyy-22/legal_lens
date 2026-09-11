@@ -201,3 +201,58 @@ create policy "Users access citations on their own messages"
             where m.id = message_id and c.user_id = auth.uid()
         )
     );
+
+-- ============================================================
+-- Vector search RPC — used by supabase/functions/ask
+-- ============================================================
+--
+-- SECURITY DEFINER is required here: RLS on document_chunks would otherwise apply
+-- with the CALLER's permissions inside this function too, but plain SELECT-based RLS
+-- doesn't compose cleanly with a vector similarity ORDER BY across a join. Instead,
+-- this function explicitly re-implements the "only verified content" rule itself
+-- (the `and v.verified = true` clause below) as defense in depth alongside the RLS
+-- policies above — the Edge Function does not rely on this function alone, and this
+-- function does not rely on RLS alone. Never remove the verified check from this
+-- function even though RLS also restricts the underlying tables.
+create or replace function public.match_document_chunks(
+    query_embedding vector(1536),
+    match_threshold float default 0.72,
+    match_count int default 6
+)
+returns table (
+    id uuid,
+    text text,
+    similarity float,
+    section_label text,
+    section_heading text,
+    source_title text,
+    source_url text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select
+        dc.id,
+        dc.text,
+        1 - (dc.embedding <=> query_embedding) as similarity,
+        ls.label as section_label,
+        ls.heading as section_heading,
+        src.title as source_title,
+        src.source_url as source_url
+    from public.document_chunks dc
+    join public.legal_source_versions v on v.id = dc.version_id
+    join public.legal_sections ls on ls.id = dc.section_id
+    join public.legal_sources src on src.id = v.source_id
+    where v.verified = true
+      and dc.embedding is not null
+      and 1 - (dc.embedding <=> query_embedding) > match_threshold
+    order by dc.embedding <=> query_embedding
+    limit match_count;
+$$;
+
+-- Only authenticated users may call this — matches every other read path in this
+-- schema.
+revoke all on function public.match_document_chunks from public;
+grant execute on function public.match_document_chunks to authenticated;

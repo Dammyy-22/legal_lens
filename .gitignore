@@ -33,6 +33,10 @@ Thumbs.db
 *.tfstate.*
 .terraform/
 
+# Compiled/build output — should never be committed, only source
+scripts/*/dist/
+*.tsbuildinfo
+
 # Uploaded/original documents must never land in git — they're stored in object storage
 /uploads/
 /media/
