@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { BrandLogo } from '@/components/BrandLogo'
 
 // Real Nigerian states + FCT — a factual, verifiable list (geography doesn't change),
 // not fabricated data.
@@ -107,9 +108,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-paper flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md p-8 bg-white rounded-lg border border-ink-100 shadow-sm animate-ink-in">
-        <Link href="/" className="font-display font-semibold text-2xl text-ink">
-          LegalLens<span className="text-brass">.</span>
-        </Link>
+          <BrandLogo compact />
         <p className="text-ink-400 mt-2 mb-8">Create your account</p>
 
         {error && (

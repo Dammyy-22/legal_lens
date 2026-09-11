@@ -20,6 +20,22 @@ export type LegalSearchResult = {
   text: string
 }
 
+export type AskCitation = {
+  chunk_id: string
+  source_title: string
+  section_label: string
+  section_heading: string | null
+  source_url: string
+}
+
+export type AskResponse = {
+  conversation_id: string
+  answer: string
+  citations: AskCitation[]
+  uncertain: boolean
+  risk_level: 'standard' | 'high_risk'
+}
+
 async function getAccessToken(): Promise<string> {
   const supabase = createClient()
   const {
@@ -72,4 +88,23 @@ export async function getConstitution(): Promise<LegalSearchResult[]> {
   }
 
   return (await response.json()) as LegalSearchResult[]
+}
+
+export async function askLegalQuestion(question: string, conversationId?: string): Promise<AskResponse> {
+  const token = await getAccessToken()
+  const response = await fetch(functionsUrl('ask'), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ question, conversation_id: conversationId }),
+    cache: 'no-store',
+  })
+
+  const body = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(body.error || `Question failed (${response.status})`)
+  }
+  return body as AskResponse
 }

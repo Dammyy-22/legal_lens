@@ -48,6 +48,10 @@ interface RetrievedChunk {
 }
 
 Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders })
+  }
+
   if (req.method !== 'POST') {
     return jsonResponse({ error: 'Method not allowed' }, 405)
   }
@@ -56,10 +60,6 @@ Deno.serve(async (req: Request) => {
   const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
   const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
-
-  if (!openaiKey || !anthropicKey) {
-    return jsonResponse({ error: 'Server misconfigured: missing provider API keys' }, 500)
-  }
 
   // Forward the caller's auth header so RLS applies as this specific user, not as
   // an unrestricted service role — the function should only ever see what the
@@ -110,6 +110,13 @@ Deno.serve(async (req: Request) => {
       uncertain: true,
       risk_level: 'high_risk',
     })
+  }
+
+  if (!openaiKey || !anthropicKey) {
+    return jsonResponse(
+      { error: 'The AI assistant is not configured yet. Add OPENAI_API_KEY and ANTHROPIC_API_KEY to Supabase Edge Function secrets.' },
+      503,
+    )
   }
 
   // --- Embed the question ---
@@ -366,6 +373,12 @@ async function persistExchange(
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
+}
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }

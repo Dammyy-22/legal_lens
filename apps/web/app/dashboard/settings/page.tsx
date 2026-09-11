@@ -59,13 +59,13 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 md:py-14">
+    <div className="max-w-2xl mx-auto px-6 py-10 md:py-14 animate-ink-in">
       <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-2">
         Settings
       </p>
-      <h1 className="font-display text-4xl text-ink mb-8">Account</h1>
+      <h1 className="font-display text-5xl text-ink mb-8 ink-rule">Account</h1>
 
-      <div className="bg-white border border-ink-100 rounded-lg p-6 mb-6">
+      <div className="bg-white/90 border border-ink-100 rounded-2xl p-6 mb-6 surface-lift">
         <div className="flex items-center gap-4 mb-6">
           <UserCircle size={56} strokeWidth={1.25} className="text-ink-100 shrink-0" />
           <div>
@@ -85,7 +85,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="bg-white border border-ink-100 rounded-lg p-6">
+      <div className="bg-white/90 border border-ink-100 rounded-2xl p-6">
         <h2 className="font-display text-lg text-ink mb-1">Change password</h2>
         <p className="text-ink-400 text-sm mb-4">
           Note: if you signed up with Google, you don&apos;t have a password to change

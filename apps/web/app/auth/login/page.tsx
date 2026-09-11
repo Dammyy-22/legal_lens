@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -45,9 +46,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-paper flex items-center justify-center px-4">
       <div className="w-full max-w-md p-8 bg-white rounded-lg border border-ink-100 shadow-sm animate-ink-in">
-        <Link href="/" className="font-display font-semibold text-2xl text-ink">
-          LegalLens<span className="text-brass not-italic">.</span>
-        </Link>
+        <BrandLogo />
         <p className="text-ink-400 mt-2 mb-8">Sign in to your account</p>
 
         {error && (

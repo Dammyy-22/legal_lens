@@ -2,18 +2,17 @@ import Link from 'next/link'
 import { MessageSquareQuote, ShieldCheck, Gavel, type LucideIcon } from 'lucide-react'
 import { MarginaliaRail } from '@/components/MarginaliaRail'
 import { StatuteIllustration } from '@/components/StatuteIllustration'
+import { BrandLogo } from '@/components/BrandLogo'
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-paper text-charcoal overflow-x-hidden">
+    <main className="relative min-h-screen bg-paper legal-grid text-charcoal overflow-x-hidden">
       <MarginaliaRail side="left" />
       <MarginaliaRail side="right" />
 
-      <nav className="relative z-10 border-b border-ink-100">
+      <nav className="relative z-10 border-b border-ink-100 bg-paper/80 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
-          <span className="font-display font-semibold text-2xl text-ink">
-            LegalLens<span className="text-brass not-italic">.</span>
-          </span>
+          <BrandLogo />
           <div className="flex items-center gap-6 text-sm font-medium">
             <Link href="/auth/login" className="text-ink-400 hover:text-ink transition-colors">
               Sign in
@@ -29,12 +28,12 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 pt-20 pb-24 grid md:grid-cols-2 gap-12 items-center">
+      <section className="relative z-10 max-w-6xl mx-auto px-6 pt-20 pb-24 grid md:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
         <div className="animate-ink-in">
           <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-4">
             Nigeria · Legal Information
           </p>
-          <h1 className="font-display text-5xl md:text-6xl leading-[1.05] text-ink mb-6">
+          <h1 className="font-display text-5xl md:text-7xl leading-[0.98] text-ink mb-6">
             Know your rights,{' '}
             <span className="text-brass-600">traced to the source.</span>
           </h1>
@@ -46,7 +45,7 @@ export default function Home() {
           <div className="flex flex-wrap gap-4">
             <Link
               href="/auth/register"
-              className="px-6 py-3 rounded bg-ink text-paper font-medium hover:bg-ink-600 transition-colors"
+              className="px-6 py-3 rounded bg-ink text-paper font-medium shadow-[0_12px_24px_rgba(20,38,30,0.16)] hover:bg-ink-600 hover:-translate-y-0.5 transition-all"
             >
               Get started free
             </Link>
@@ -59,13 +58,13 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="animate-ink-in [animation-delay:150ms]">
+        <div className="animate-ink-in [animation-delay:150ms] float-slow">
           <StatuteIllustration />
         </div>
       </section>
 
       {/* What it does — not a numbered sequence, since these run in parallel, not order */}
-      <section className="relative z-10 bg-white border-y border-ink-100">
+      <section className="relative z-10 bg-white/85 backdrop-blur border-y border-ink-100">
         <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
           <FeatureCard
             Icon={MessageSquareQuote}
@@ -86,7 +85,7 @@ export default function Home() {
       </section>
 
       {/* Disclaimer, styled as a stamp — honest tone, not fear-based */}
-      <section className="relative z-10 max-w-3xl mx-auto px-6 py-20 text-center">
+      <section className="relative z-10 max-w-3xl mx-auto px-6 py-20 text-center animate-ink-in">
         <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full border-2 border-seal/40 text-seal font-mono text-xs uppercase tracking-wider mb-6">
           Not a substitute for a lawyer
         </div>
@@ -100,7 +99,7 @@ export default function Home() {
 
       <footer className="relative z-10 border-t border-ink-100 py-10">
         <div className="max-w-6xl mx-auto px-6 text-sm text-ink-400 flex justify-between items-center">
-          <span className="font-display font-semibold">LegalLens</span>
+          <BrandLogo compact />
           <span>Built for Nigeria. Grounded in real sources.</span>
         </div>
       </footer>
@@ -118,9 +117,9 @@ function FeatureCard({
   body: string
 }) {
   return (
-    <div>
-      <div className="w-11 h-11 rounded-lg bg-brass/10 flex items-center justify-center mb-4">
-        <Icon size={22} strokeWidth={1.75} className="text-brass-600" />
+    <div className="group hover-lift p-5 rounded-2xl border border-transparent hover:border-ink-100 hover:bg-paper/50">
+      <div className="w-11 h-11 rounded-lg bg-brass/10 flex items-center justify-center mb-4 group-hover:bg-ink transition-colors">
+        <Icon size={22} strokeWidth={1.75} className="text-brass-600 group-hover:text-brass-400 transition-colors" />
       </div>
       <h3 className="font-display text-xl text-ink mb-2">{title}</h3>
       <p className="text-ink-400 leading-relaxed">{body}</p>

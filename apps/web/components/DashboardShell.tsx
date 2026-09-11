@@ -18,6 +18,7 @@ import {
   UserCircle,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { BrandLogo } from '@/components/BrandLogo'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Overview', Icon: LayoutDashboard },
@@ -58,12 +59,10 @@ export function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen bg-paper md:flex">
+    <div className="min-h-screen bg-paper legal-grid md:flex">
       {/* Mobile top bar with hamburger */}
       <div className="md:hidden flex items-center justify-between bg-white border-b border-ink-100 px-4 py-3 sticky top-0 z-30">
-        <span className="font-display font-semibold text-xl text-ink">
-          LegalLens<span className="text-brass">.</span>
-        </span>
+        <BrandLogo compact />
         <button
           aria-label={open ? 'Close menu' : 'Open menu'}
           aria-expanded={open}
@@ -78,12 +77,11 @@ export function DashboardShell({
       <aside
         className={`${
           open ? 'flex' : 'hidden'
-        } md:flex flex-col w-full md:w-64 shrink-0 bg-white border-b md:border-b-0 md:border-r border-ink-100 md:h-screen md:sticky md:top-0`}
+        } md:flex flex-col w-full md:w-64 shrink-0 bg-white/95 backdrop-blur border-b md:border-b-0 md:border-r border-ink-100 md:h-screen md:sticky md:top-0`}
       >
-        <div className="hidden md:block px-6 py-6">
-          <Link href="/dashboard" className="font-display font-semibold text-xl text-ink">
-            LegalLens<span className="text-brass">.</span>
-          </Link>
+        <div className="hidden md:block px-6 py-7">
+          <BrandLogo href="/dashboard" compact />
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">Nigeria / source desk</p>
         </div>
 
         <nav className="px-3 py-3 md:py-0 space-y-1 flex-1 overflow-y-auto">
@@ -94,13 +92,13 @@ export function DashboardShell({
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   active
-                    ? 'bg-ink text-paper'
+                    ? 'bg-ink text-paper shadow-[0_8px_18px_rgba(20,38,30,0.16)]'
                     : 'text-ink-400 hover:bg-paper hover:text-ink'
                 }`}
               >
-                <Icon size={18} strokeWidth={1.75} className="shrink-0" />
+                <Icon size={18} strokeWidth={1.75} className={`shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-brass-400' : ''}`} />
                 {label}
               </Link>
             )
@@ -121,7 +119,7 @@ export function DashboardShell({
             Settings
           </Link>
 
-          <div className="flex items-center justify-between px-3 py-2.5 mt-1 rounded-lg">
+          <div className="flex items-center justify-between px-3 py-3 mt-1 rounded-lg bg-paper/70">
             <div className="flex items-center gap-2 min-w-0">
               <UserCircle size={28} strokeWidth={1.5} className="text-ink-100 shrink-0" />
               <span className="text-sm text-ink font-medium truncate">{displayName}</span>

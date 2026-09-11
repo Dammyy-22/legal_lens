@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 * {
     margin: 0;
     padding: 0;
@@ -15,39 +14,135 @@ html {
 body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background: radial-gradient(circle at 85% -10%, rgba(176, 141, 62, 0.14), transparent 34rem), linear-gradient(135deg, rgba(255, 255, 255, 0.65), transparent 42%), #F5F1E7;
+    color: #1C1C1A;
 }
+
+::selection {
+    background: #B08D3E;
+    color: #FFFFFF;
+}
+
+.legal-grid {
+    background-image: linear-gradient(rgba(20, 38, 30, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 38, 30, 0.035) 1px, transparent 1px);
+    background-size: 32px 32px;
+}
+
+.legal-grain {
+    background-image: radial-gradient(circle at 1px 1px, rgba(20, 38, 30, 0.055) 1px, transparent 0);
+    background-size: 18px 18px;
+}
+
+.ink-rule {
+    position: relative;
+}
+
+.ink-rule::after {
+    content: '';
+    display: block;
+    width: 3.5rem;
+    height: 2px;
+    margin-top: 1rem;
+    background: #B08D3E;
+}
+
+.surface-lift {
+    box-shadow: 0 18px 50px rgba(20, 38, 30, 0.08), 0 2px 5px rgba(20, 38, 30, 0.05);
+}
+
+.hover-lift {
+    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 45px rgba(20, 38, 30, 0.12);
+}
+
+.float-slow {
+    animation: float-slow 7s ease-in-out infinite;
+}
+
+.shimmer-line {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    animation: shimmer 3.8s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-9px) rotate(1deg);
+    }
+}
+
+@keyframes shimmer {
+    0%,
+    45% {
+        transform: translateX(-100%);
+    }
+    75%,
+    100% {
+        transform: translateX(100%);
+    }
+}
+
 
 /* Reduced motion: disable all custom animation/scroll behavior per user preference.
    This is a quality-floor requirement, not optional polish. */
+
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
     }
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
         animation-duration: 0.001ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
     }
+    .hover-lift:hover {
+        transform: none;
+    }
 }
 
+
 /* Scrollbar styling — kept subtle, matching the paper/ink palette instead of default grey */
+
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
+
 ::-webkit-scrollbar-track {
     background: #F5F1E7;
 }
+
 ::-webkit-scrollbar-thumb {
     background: #B08D3E;
     border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
     background: #8F701F;
 }
 
+
 /* Visible keyboard focus — accessibility quality floor, not decorative */
+
 :focus-visible {
     outline: 2px solid #B08D3E;
     outline-offset: 2px;

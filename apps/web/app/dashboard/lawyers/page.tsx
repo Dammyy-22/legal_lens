@@ -60,11 +60,11 @@ export default function LawyersPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10 md:py-14">
+    <div className="max-w-5xl mx-auto px-6 py-10 md:py-14 animate-ink-in">
       <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-2">
         Find a lawyer
       </p>
-      <h1 className="font-display text-4xl text-ink mb-3">Lawyer referrals</h1>
+      <h1 className="font-display text-5xl text-ink mb-3 ink-rule">Lawyer referrals</h1>
       <p className="text-ink-400 leading-relaxed mb-4 max-w-2xl">
         LegalLens is building a directory of verified lawyers by practice area. It
         isn&apos;t live yet — the profiles below are sample layout only, not real
@@ -77,7 +77,7 @@ export default function LawyersPage() {
       </div>
 
       {/* Real waitlist signup */}
-      <div className="bg-white border border-ink-100 rounded-lg p-6 mb-10">
+      <div className="bg-white/90 border border-ink-100 rounded-2xl p-6 mb-10 surface-lift">
         <h2 className="font-display text-xl text-ink mb-1">Join the waitlist</h2>
         <p className="text-ink-400 text-sm mb-4">
           We&apos;ll email you when verified lawyer referrals are available.
@@ -131,7 +131,7 @@ export default function LawyersPage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {filtered.map((lawyer) => (
-          <div key={lawyer.name} className="p-6 bg-white border border-ink-100 rounded-lg">
+          <div key={lawyer.name} className="p-6 bg-white/90 border border-ink-100 rounded-2xl hover-lift">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-11 h-11 rounded-full bg-ink-50 flex items-center justify-center font-display text-ink-600 text-sm shrink-0">
                 {lawyer.initials}
