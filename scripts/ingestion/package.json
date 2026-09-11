@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@supabase/supabase-js": "^2.45.4",
+        "dotenv": "^16.4.7",
         "openai": "^4.63.0",
         "pdf-parse": "^1.1.1"
     },
@@ -18,5 +19,8 @@
         "typescript": "^5.5.4",
         "@types/node": "^20.14.0",
         "@types/pdf-parse": "^1.1.4"
+    },
+    "allowScripts": {
+        "esbuild@0.28.2": true
     }
 }

@@ -25,6 +25,7 @@
  * of contents. Section-level parsing is a documented follow-up requiring
  * layout-aware PDF extraction, not naive text splitting.
  */
+import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { createHash } from 'node:crypto'
@@ -58,13 +59,29 @@ function requireEnv(name: string): string {
   return v
 }
 
+function requireSupabaseUrl(): string {
+  const value = requireEnv('SUPABASE_URL')
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    throw new Error('SUPABASE_URL must be a valid project URL such as https://your-project-ref.supabase.co')
+  }
+  if (!url.hostname.endsWith('.supabase.co') || url.pathname !== '/') {
+    throw new Error('SUPABASE_URL must be the project API URL, not the Supabase dashboard URL')
+  }
+  return value.replace(/\/$/, '')
+}
+
 async function main() {
-  const supabaseUrl = requireEnv('SUPABASE_URL')
+  const supabaseUrl = requireSupabaseUrl()
   const serviceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
-  const openaiKey = requireEnv('OPENAI_API_KEY')
+  const skipEmbeddings = process.env.SKIP_EMBEDDINGS === 'true'
+  const openaiKey = skipEmbeddings ? undefined : requireEnv('OPENAI_API_KEY')
 
   const supabase = createClient(supabaseUrl, serviceRoleKey)
-  const openai = new OpenAI({ apiKey: openaiKey })
+  const openai = openaiKey ? new OpenAI({ apiKey: openaiKey }) : null
+  if (skipEmbeddings) console.log('SKIP_EMBEDDINGS=true: storing text chunks without vector embeddings.')
 
   console.log(`Fetching ${SOURCE_URL} ...`)
   const res = await fetch(SOURCE_URL)
@@ -127,10 +144,20 @@ async function main() {
     .maybeSingle()
 
   if (existingVersion) {
-    console.log(
-      `A version with this exact checksum already exists (${existingVersion.id}) — the source hasn't changed since last ingestion. Nothing to do.`
-    )
-    return
+    const { count } = await supabase
+      .from('document_chunks')
+      .select('id', { count: 'exact', head: true })
+      .eq('version_id', existingVersion.id)
+    if ((count ?? 0) > 0) {
+      console.log(`A completed version with this exact checksum already exists (${existingVersion.id}). Nothing to do.`)
+      return
+    }
+    console.log(`Removing incomplete version ${existingVersion.id} so ingestion can resume.`)
+    const { error: deleteError } = await supabase
+      .from('legal_source_versions')
+      .delete()
+      .eq('id', existingVersion.id)
+    if (deleteError) throw deleteError
   }
 
   const { data: version, error: versionError } = await supabase
@@ -205,11 +232,9 @@ async function main() {
 
     for (let j = 0; j < subChunks.length; j++) {
       const chunkText = subChunks[j]
-      const embeddingRes = await openai.embeddings.create({
-        model: EMBEDDING_MODEL,
-        input: chunkText,
-      })
-      const embedding = embeddingRes.data[0].embedding
+      const embedding = openai
+        ? (await openai.embeddings.create({ model: EMBEDDING_MODEL, input: chunkText })).data[0].embedding
+        : null
 
       const { error: chunkError } = await supabase.from('document_chunks').insert({
         section_id: section.id,

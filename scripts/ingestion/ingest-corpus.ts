@@ -3,6 +3,7 @@
  * The raw PDFs stay local and are never committed; provenance is recorded through
  * the checksum and local corpus filename until an official URL is supplied.
  */
+import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { createHash } from 'node:crypto'
@@ -79,6 +80,20 @@ function requireEnv(name: string): string {
   return value
 }
 
+function requireSupabaseUrl(): string {
+  const value = requireEnv('SUPABASE_URL')
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    throw new Error('SUPABASE_URL must be a valid project URL such as https://your-project-ref.supabase.co')
+  }
+  if (!url.hostname.endsWith('.supabase.co') || url.pathname !== '/') {
+    throw new Error('SUPABASE_URL must be the project API URL, not the Supabase dashboard URL')
+  }
+  return value.replace(/\/$/, '')
+}
+
 function splitIntoChunks(text: string): string[] {
   const chunks: string[] = []
   for (let offset = 0; offset < text.length; offset += MAX_CHUNK_CHARS) {
@@ -89,9 +104,13 @@ function splitIntoChunks(text: string): string[] {
 
 async function main() {
   const corpusDir = process.env.CORPUS_DIR ?? DEFAULT_CORPUS_DIR
-  const supabase = createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SERVICE_ROLE_KEY'))
-  const openai = new OpenAI({ apiKey: requireEnv('OPENAI_API_KEY') })
+  const supabase = createClient(requireSupabaseUrl(), requireEnv('SUPABASE_SERVICE_ROLE_KEY'))
+  const skipEmbeddings = process.env.SKIP_EMBEDDINGS === 'true'
+  const openaiKey = skipEmbeddings ? undefined : requireEnv('OPENAI_API_KEY')
+  const openai = openaiKey ? new OpenAI({ apiKey: openaiKey }) : null
+  if (skipEmbeddings) console.log('SKIP_EMBEDDINGS=true: storing text chunks without vector embeddings.')
   const files = (await readdir(corpusDir)).filter((file) => file.toLowerCase().endsWith('.pdf'))
+  const skippedFiles: string[] = []
 
   if (files.length === 0) throw new Error(`No PDF files found in ${corpusDir}`)
   console.log(`Found ${files.length} PDF file(s) in ${corpusDir}`)
@@ -107,7 +126,11 @@ async function main() {
     const checksum = createHash('sha256').update(buffer).digest('hex')
     const parsed = await pdfParse(buffer)
     const text = parsed.text.replace(/\s+\n/g, '\n').trim()
-    if (text.length < 1000) throw new Error(`${file}: extracted text is suspiciously short (${text.length} chars)`)
+    if (text.length < 1000) {
+      console.warn(`${file}: extracted text is suspiciously short (${text.length} chars); skipping until OCR is available.`)
+      skippedFiles.push(file)
+      continue
+    }
 
     const sourceUrl = `local-corpus://${encodeURIComponent(file)}`
     const { data: existingSource, error: sourceLookupError } = await supabase
@@ -146,8 +169,17 @@ async function main() {
       .eq('checksum_sha256', checksum)
       .maybeSingle()
     if (existing) {
-      console.log(`Skipping ${file}: checksum already ingested (${existing.id})`)
-      continue
+      const { count } = await supabase
+        .from('document_chunks')
+        .select('id', { count: 'exact', head: true })
+        .eq('version_id', existing.id)
+      if ((count ?? 0) > 0) {
+        console.log(`Skipping ${file}: completed version already exists (${existing.id})`)
+        continue
+      }
+      console.log(`Removing incomplete version ${existing.id} so ingestion can resume.`)
+      const { error: deleteError } = await supabase.from('legal_source_versions').delete().eq('id', existing.id)
+      if (deleteError) throw deleteError
     }
 
     const { data: version, error: versionError } = await supabase
@@ -181,19 +213,27 @@ async function main() {
 
     const chunks = splitIntoChunks(text)
     for (let index = 0; index < chunks.length; index++) {
-      const embeddingResponse = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: chunks[index] })
+      const embedding = openai
+        ? (await openai.embeddings.create({ model: EMBEDDING_MODEL, input: chunks[index] })).data[0].embedding
+        : null
       const { error: chunkError } = await supabase.from('document_chunks').insert({
         section_id: section.id,
         version_id: version.id,
         chunk_index: index,
         text: chunks[index],
-        embedding: embeddingResponse.data[0].embedding,
+        embedding,
       })
       if (chunkError) throw chunkError
     }
 
     await supabase.from('legal_source_versions').update({ processing_status: 'indexed' }).eq('id', version.id)
     console.log(`Indexed ${file}: ${chunks.length} chunk(s), version ${version.id}, still unverified`)
+  }
+
+  if (skippedFiles.length > 0) {
+    console.warn(`\nSkipped ${skippedFiles.length} file(s) requiring OCR:`)
+    skippedFiles.forEach((file) => console.warn(`  - ${file}`))
+    console.warn('Install an OCR tool and rerun npm run ingest:corpus to process them.')
   }
 }
 

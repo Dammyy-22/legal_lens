@@ -17,9 +17,9 @@ Requires three environment variables — **never commit these, never expose the 
 role key to a browser**:
 
 ```bash
-SUPABASE_URL=https://your-project-ref.supabase.co \
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key \
-OPENAI_API_KEY=your-openai-key \
+SUPABASE_URL=https://fhmxbjwvflgxdhvestqp.supabase.co \
+SUPABASE_SERVICE_ROLE_KEY=replace-with-your-service-role-key \
+OPENAI_API_KEY=replace-with-your-openai-api-key \
 npm run ingest:constitution
 ```
 
@@ -52,6 +52,10 @@ Git and use `local-corpus://...` provenance until official source URLs are suppl
 - `OPENAI_API_KEY`: used for `text-embedding-3-small` (1536 dimensions, matching
   `database/schema.sql`). A different embedding provider/model can be substituted, but
   the vector column dimension in the schema must match.
+- `SKIP_EMBEDDINGS=true`: optional emergency mode when OpenAI credits are unavailable.
+  The legal text and chunks are still ingested for verified lexical search, with null
+  embeddings. Set it back to `false` later and re-ingest after adding OpenAI credits to
+  enable semantic retrieval.
 
 ## What this does NOT do
 
