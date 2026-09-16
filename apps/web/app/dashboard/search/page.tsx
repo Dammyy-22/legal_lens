@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { Search } from 'lucide-react'
+import Image from 'next/image'
 import { searchLegalSources, type LegalSearchResult } from '@/lib/api-client'
 
 export default function SearchPage() {
@@ -36,6 +37,12 @@ export default function SearchPage() {
       <p className="text-ink-400 leading-relaxed mb-8 max-w-2xl">
         Search verified Nigerian legal sources. Every result keeps its source and section provenance.
       </p>
+
+      <div className="relative h-32 mb-7 overflow-hidden rounded-2xl border border-ink-100 bg-white surface-lift image-reveal">
+        <Image src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1400&q=85" alt="Rows of law books in a library" fill className="object-cover image-drift opacity-80" sizes="(max-width: 768px) 100vw, 1000px" />
+        <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/70 to-transparent" />
+        <div className="absolute inset-y-0 left-5 flex flex-col justify-center"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-600">Verified corpus</p><p className="font-display text-2xl text-ink mt-1">Find the passage that matters.</p></div>
+      </div>
 
       <form onSubmit={handleSearch} className="flex gap-3 mb-10">
         <label className="relative flex-1">

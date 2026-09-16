@@ -30,8 +30,8 @@ export default function RightsPage() {
         ready. None of these are populated yet.
       </p>
 
-      <div className="relative h-44 md:h-56 mb-10 overflow-hidden rounded-2xl surface-lift border border-ink-100">
-        <Image src="/brand/rights-archive.svg" alt="Illustration of a courthouse and scales of justice" fill className="object-cover" priority />
+      <div className="relative h-44 md:h-56 mb-10 overflow-hidden rounded-2xl surface-lift border border-ink-100 image-reveal">
+        <Image src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1600&q=85" alt="Courthouse columns in warm light" fill className="object-cover image-drift" priority sizes="(max-width: 768px) 100vw, 1100px" />
         <div className="absolute inset-0 bg-gradient-to-r from-ink/70 via-ink/20 to-transparent" />
         <p className="absolute left-6 bottom-5 max-w-xs font-display text-xl text-paper">A field guide for the moments when procedure matters.</p>
       </div>

@@ -1,7 +1,7 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { MessageSquareQuote, ShieldCheck, Gavel, type LucideIcon } from 'lucide-react'
 import { MarginaliaRail } from '@/components/MarginaliaRail'
-import { StatuteIllustration } from '@/components/StatuteIllustration'
 import { BrandLogo } from '@/components/BrandLogo'
 
 export default function Home() {
@@ -58,8 +58,23 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="animate-ink-in [animation-delay:150ms] float-slow">
-          <StatuteIllustration />
+        <div className="relative animate-ink-in [animation-delay:150ms] float-slow">
+          <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] border border-ink-100/60 shadow-[0_22px_60px_rgba(20,38,30,0.18)] image-reveal">
+            <Image
+              src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=85"
+              alt="Courthouse columns in warm afternoon light"
+              fill
+              priority
+              className="object-cover image-drift"
+              sizes="(max-width: 768px) 80vw, 38vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-7">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-400">Nigeria / legal clarity</p>
+              <p className="font-display text-3xl text-paper mt-2">Start with what matters.</p>
+            </div>
+          </div>
+          <div className="absolute -right-1 top-12 z-20 px-3 py-2 rounded-lg bg-paper/90 border border-brass/40 shadow-lg font-mono text-[10px] uppercase tracking-widest text-brass-600 animate-float-note">Source verified</div>
         </div>
       </section>
 
@@ -81,6 +96,49 @@ export default function Home() {
             title="Know when to escalate"
             body="LegalLens tells you plainly when a situation needs a real lawyer, rather than pretending an AI can replace one."
           />
+        </div>
+      </section>
+
+      <section id="about" className="relative z-10 max-w-6xl mx-auto px-6 py-20 grid lg:grid-cols-[0.85fr_1.15fr] gap-10 items-center">
+        <div className="relative min-h-[280px] overflow-hidden rounded-2xl border border-ink-100 bg-ink surface-lift">
+          <Image
+            src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1400&q=85"
+            alt="Rows of law books in a library"
+            fill
+            className="object-cover image-drift"
+            sizes="(max-width: 768px) 100vw, 600px"
+          />
+          <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-ink via-ink/75 to-transparent">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-400">The source desk</p>
+            <p className="font-display text-2xl text-paper mt-1">Read the law with the paper trail intact.</p>
+          </div>
+        </div>
+        <div>
+          <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-3">Built for confidence</p>
+          <h2 className="font-display text-4xl md:text-5xl leading-tight text-ink mb-5">From first question to next action.</h2>
+          <p className="text-ink-400 leading-relaxed max-w-xl mb-7">LegalLens brings research, plain-language explanation, and practical orientation into one calm workspace. Explore a source, ask a follow-up, and keep the citation close.</p>
+          <div className="grid sm:grid-cols-2 gap-3 text-sm text-ink">
+            <div className="p-4 rounded-xl bg-paper border border-ink-100"><span className="block font-display text-lg mb-1">Plain language</span><span className="text-ink-400">No statute-index vocabulary required.</span></div>
+            <div className="p-4 rounded-xl bg-paper border border-ink-100"><span className="block font-display text-lg mb-1">Source first</span><span className="text-ink-400">Verified passages stay visible.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative z-10 max-w-6xl mx-auto px-6 pb-20">
+        <div className="relative overflow-hidden rounded-2xl min-h-[240px] border border-ink-100 surface-lift image-reveal">
+          <Image
+            src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1800&q=85"
+            alt="Columns of a courthouse in warm afternoon light"
+            fill
+            className="object-cover image-drift"
+            sizes="(max-width: 768px) 100vw, 1200px"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/55 to-ink/10" />
+          <div className="relative z-10 max-w-xl px-6 py-10 md:px-10 md:py-14">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-400 mb-3">A calmer way to begin</p>
+            <h2 className="font-display text-3xl md:text-4xl text-paper leading-tight mb-3">Legal clarity should feel close, not intimidating.</h2>
+            <p className="text-paper/70 leading-relaxed">Start with the question you actually have. LegalLens helps you understand the terrain before you decide what to do next.</p>
+          </div>
         </div>
       </section>
 

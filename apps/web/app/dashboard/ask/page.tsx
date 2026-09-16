@@ -1,11 +1,14 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { AlertTriangle, LoaderCircle, MessageCircleQuestion, Send } from 'lucide-react'
 import { askLegalQuestion, type AskResponse } from '@/lib/api-client'
 
 export default function AskPage() {
-  const [question, setQuestion] = useState('')
+  const searchParams = useSearchParams()
+  const [question, setQuestion] = useState(() => searchParams.get('prompt') ?? '')
   const [response, setResponse] = useState<AskResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -39,6 +42,12 @@ export default function AskPage() {
         Ask about Nigerian law in plain language. Answers are limited to verified sources
         and will say when the corpus does not contain enough evidence.
       </p>
+
+      <div className="relative h-36 mb-6 overflow-hidden rounded-2xl border border-ink-100 bg-ink surface-lift image-reveal">
+        <Image src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1400&q=85" alt="Courthouse columns in warm light" fill className="object-cover image-drift opacity-90" sizes="(max-width: 768px) 100vw, 900px" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/50 to-transparent" />
+        <div className="absolute inset-y-0 left-5 flex flex-col justify-center"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-400">Grounded answers</p><p className="font-display text-2xl text-paper mt-1">Ask freely. Verify everything.</p></div>
+      </div>
 
       <form onSubmit={handleSubmit} className="bg-white border border-ink-100 rounded-lg p-4 mb-8">
         <label htmlFor="legal-question" className="sr-only">Your legal question</label>
