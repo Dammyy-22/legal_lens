@@ -29,7 +29,6 @@ import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { createHash } from 'node:crypto'
-// @ts-expect-error — pdf-parse ships no ESM types for this import path
 import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 
 const SOURCE_URL = 'https://nigeriarights.gov.ng/files/constitution.pdf'

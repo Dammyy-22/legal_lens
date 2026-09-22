@@ -256,3 +256,48 @@ $$;
 -- schema.
 revoke all on function public.match_document_chunks from public;
 grant execute on function public.match_document_chunks to authenticated;
+
+-- ============================================================
+-- Admin access to unverified corpus content
+-- ============================================================
+--
+-- Admin status is read from the JWT's app_metadata claim, NOT user_metadata.
+-- app_metadata can only be set via the service_role key / Supabase Admin API — a
+-- user can never grant themselves admin by editing their own profile, unlike
+-- user_metadata (used elsewhere in this project for full name/state/city, which IS
+-- user-editable and appropriately so for that data). This is verified: a regular
+-- user's SELECT against unverified rows returns 0 rows, and their UPDATE attempt
+-- silently affects 0 rows, tested directly against Postgres.
+--
+-- To make a user an admin, run this from a trusted server context (never the
+-- browser) using the service_role key:
+--   update auth.users set raw_app_meta_data =
+--     raw_app_meta_data || '{"role": "admin"}'::jsonb
+--   where email = 'admin@example.com';
+
+create policy "Admins can read unverified versions for review"
+    on public.legal_source_versions for select to authenticated
+    using (
+        verified = true
+        or (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
+    );
+
+create policy "Admins can verify versions"
+    on public.legal_source_versions for update to authenticated
+    using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+    with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+create policy "Admins can read sections of unverified versions"
+    on public.legal_sections for select to authenticated
+    using (
+        exists (
+            select 1 from public.legal_source_versions v
+            where v.id = version_id
+              and (v.verified = true or (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+        )
+    );
+
+-- Postgres combines multiple permissive SELECT policies on the same table with OR,
+-- so this is additive to the existing "verified only" policies above, not a
+-- replacement — together they allow "verified content for everyone, unverified
+-- content for admins only."

@@ -16,6 +16,7 @@ import {
   X,
   LogOut,
   UserCircle,
+  ShieldCheck,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { BrandLogo } from '@/components/BrandLogo'
@@ -33,6 +34,7 @@ const NAV_ITEMS = [
 export interface DashboardUser {
   fullName: string | null
   email: string | null
+  isAdmin?: boolean
 }
 
 export function DashboardShell({
@@ -106,6 +108,20 @@ export function DashboardShell({
         </nav>
 
         <div className="px-3 py-3 border-t border-ink-100">
+          {user.isAdmin && (
+            <Link
+              href="/dashboard/admin"
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                pathname === '/dashboard/admin'
+                  ? 'bg-ink text-paper'
+                  : 'text-brass-600 hover:bg-paper'
+              }`}
+            >
+              <ShieldCheck size={18} strokeWidth={1.75} className="shrink-0" />
+              Admin
+            </Link>
+          )}
           <Link
             href="/dashboard/settings"
             onClick={() => setOpen(false)}

@@ -543,3 +543,72 @@ person chose to port and retire FastAPI, given no FastAPI hosting was set up yet
   Police Act 2020, etc.) has not been reviewed for the same PDF-extraction-quality
   risk documented earlier for the Constitution — this should be checked before
   verifying any of that content, not assumed fine because the script exists.
+
+## Second live-repo sync: real independent progress found, real gaps closed (this session)
+
+Re-cloned the live repo and found substantial further independent progress —
+apparently from another session, since `.claude/skills/` persists in this repo —
+alongside the same-shaped gap as before: several fixes from earlier sessions still
+hadn't been applied to the actual pushed repo.
+
+### What had genuinely improved independently (kept as-is, not overwritten)
+- **A much better Ask page** (`apps/web/app/dashboard/ask/page.tsx`) — a polished
+  single-form UI with a hero image, calling `askLegalQuestion()` from
+  `lib/api-client.ts`, correctly matching the `ask` Edge Function's exact response
+  contract (verified by reading both sides). This is better than the chat-bubble UI
+  built in this log's earlier session, and was kept rather than replaced.
+- `ingest-corpus.ts` gained real resilience: `SUPABASE_URL` format validation,
+  resumable ingestion (detects and deletes incomplete versions so a failed run can be
+  retried without duplicate rows), a `SKIP_EMBEDDINGS` dry-run flag, and OCR-needed
+  detection that skips (rather than corrupts) documents with too-little extracted
+  text. None of this existed in the version reviewed earlier in this log.
+- `DashboardShell` gained a `BrandLogo` component and refined hover/shadow states —
+  a real design polish pass.
+- **Next.js was upgraded to 16.3.4 (Turbopack)** from 14.2.35. The build now warns
+  that the `middleware.ts` file convention is deprecated in favor of `proxy.ts` — not
+  yet broken, but a real, actionable migration to do before the next major version
+  removes the old convention entirely. Not fixed in this session (out of scope for
+  this pass) but flagged here so it isn't missed later.
+
+### What was still missing, and fixed again in this session
+Confirmed via direct inspection (not assumed from the previous log entry) that three
+things from the earlier session's work had not made it into this version of the repo:
+1. **Structural chunking in `ingest-corpus.ts` was still absent** — every document was
+   still one undivided section, chunked by raw character count. Re-applied
+   `splitByStructure()` to this current, improved version of the script, carefully
+   preserving its new resumability/OCR-skip/dry-run logic rather than reverting it.
+   Re-tested the splitting logic itself against realistic fixture text (initially hit
+   a test-fixture bug of my own — a fake final "PART III" section was shorter than
+   the 50-character minimum-length safety filter, correctly rejecting it as
+   suspiciously short; not a bug in the real logic, fixed the fixture and re-verified
+   3/3 sections split correctly).
+2. **Admin RLS policies were absent from `schema.sql`.** Re-added the same
+   `app_metadata`-gated SELECT/UPDATE policies for `legal_source_versions` and
+   `legal_sections`, and re-verified end-to-end against real Postgres: a regular user
+   sees `count = 0` for unverified versions, an admin (simulated via a stubbed
+   `auth.jwt()`) sees and successfully verifies the row.
+3. **The admin review page did not exist anywhere in `apps/web`.** Rebuilt
+   `apps/web/app/dashboard/admin/page.tsx` and `AdminCorpusReview.tsx`, and wired an
+   admin-only nav link into the now-updated `DashboardShell` (matching its current
+   `BrandLogo`-based structure, not the earlier version).
+
+Also re-found and re-fixed the same unnecessary `@ts-expect-error` directive causing
+a real compile failure in both ingestion scripts (this recurred because it's a
+different, independently-edited copy of the file, not because the earlier fix was
+undone).
+
+### Verified
+- `next build` succeeds on this current repo state — 16 routes (Turbopack), including
+  the new admin page, using this session's real `BrandLogo`/design system as-is.
+- Both ingestion scripts type-check cleanly after removing the unnecessary directive.
+- The structural splitter, admin RLS policies, and cross-user/admin visibility
+  behavior were all re-verified against real Postgres in this session, independent of
+  (not copy-pasted from) the previous session's test run.
+
+### NOT verified (same real limitation as before)
+- No push access to this GitHub repo from this environment — confirmed again. The
+  person must apply these changes themselves via the zip/patch provided this session.
+- Whether any content has actually been run through `ingest-corpus.ts` against a real
+  Supabase project yet is unknown — this audit only reviewed the script's code, not
+  any resulting database state, since no live credentials are available here.
+- The Next.js 16 middleware→proxy migration is flagged, not performed.

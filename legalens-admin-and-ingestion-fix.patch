@@ -1,0 +1,588 @@
+diff --git a/DECISIONS.md b/DECISIONS.md
+index 1cf4a8d..24e7e69 100644
+--- a/DECISIONS.md
++++ b/DECISIONS.md
+@@ -543,3 +543,72 @@ person chose to port and retire FastAPI, given no FastAPI hosting was set up yet
+   Police Act 2020, etc.) has not been reviewed for the same PDF-extraction-quality
+   risk documented earlier for the Constitution — this should be checked before
+   verifying any of that content, not assumed fine because the script exists.
++
++## Second live-repo sync: real independent progress found, real gaps closed (this session)
++
++Re-cloned the live repo and found substantial further independent progress —
++apparently from another session, since `.claude/skills/` persists in this repo —
++alongside the same-shaped gap as before: several fixes from earlier sessions still
++hadn't been applied to the actual pushed repo.
++
++### What had genuinely improved independently (kept as-is, not overwritten)
++- **A much better Ask page** (`apps/web/app/dashboard/ask/page.tsx`) — a polished
++  single-form UI with a hero image, calling `askLegalQuestion()` from
++  `lib/api-client.ts`, correctly matching the `ask` Edge Function's exact response
++  contract (verified by reading both sides). This is better than the chat-bubble UI
++  built in this log's earlier session, and was kept rather than replaced.
++- `ingest-corpus.ts` gained real resilience: `SUPABASE_URL` format validation,
++  resumable ingestion (detects and deletes incomplete versions so a failed run can be
++  retried without duplicate rows), a `SKIP_EMBEDDINGS` dry-run flag, and OCR-needed
++  detection that skips (rather than corrupts) documents with too-little extracted
++  text. None of this existed in the version reviewed earlier in this log.
++- `DashboardShell` gained a `BrandLogo` component and refined hover/shadow states —
++  a real design polish pass.
++- **Next.js was upgraded to 16.3.4 (Turbopack)** from 14.2.35. The build now warns
++  that the `middleware.ts` file convention is deprecated in favor of `proxy.ts` — not
++  yet broken, but a real, actionable migration to do before the next major version
++  removes the old convention entirely. Not fixed in this session (out of scope for
++  this pass) but flagged here so it isn't missed later.
++
++### What was still missing, and fixed again in this session
++Confirmed via direct inspection (not assumed from the previous log entry) that three
++things from the earlier session's work had not made it into this version of the repo:
++1. **Structural chunking in `ingest-corpus.ts` was still absent** — every document was
++   still one undivided section, chunked by raw character count. Re-applied
++   `splitByStructure()` to this current, improved version of the script, carefully
++   preserving its new resumability/OCR-skip/dry-run logic rather than reverting it.
++   Re-tested the splitting logic itself against realistic fixture text (initially hit
++   a test-fixture bug of my own — a fake final "PART III" section was shorter than
++   the 50-character minimum-length safety filter, correctly rejecting it as
++   suspiciously short; not a bug in the real logic, fixed the fixture and re-verified
++   3/3 sections split correctly).
++2. **Admin RLS policies were absent from `schema.sql`.** Re-added the same
++   `app_metadata`-gated SELECT/UPDATE policies for `legal_source_versions` and
++   `legal_sections`, and re-verified end-to-end against real Postgres: a regular user
++   sees `count = 0` for unverified versions, an admin (simulated via a stubbed
++   `auth.jwt()`) sees and successfully verifies the row.
++3. **The admin review page did not exist anywhere in `apps/web`.** Rebuilt
++   `apps/web/app/dashboard/admin/page.tsx` and `AdminCorpusReview.tsx`, and wired an
++   admin-only nav link into the now-updated `DashboardShell` (matching its current
++   `BrandLogo`-based structure, not the earlier version).
++
++Also re-found and re-fixed the same unnecessary `@ts-expect-error` directive causing
++a real compile failure in both ingestion scripts (this recurred because it's a
++different, independently-edited copy of the file, not because the earlier fix was
++undone).
++
++### Verified
++- `next build` succeeds on this current repo state — 16 routes (Turbopack), including
++  the new admin page, using this session's real `BrandLogo`/design system as-is.
++- Both ingestion scripts type-check cleanly after removing the unnecessary directive.
++- The structural splitter, admin RLS policies, and cross-user/admin visibility
++  behavior were all re-verified against real Postgres in this session, independent of
++  (not copy-pasted from) the previous session's test run.
++
++### NOT verified (same real limitation as before)
++- No push access to this GitHub repo from this environment — confirmed again. The
++  person must apply these changes themselves via the zip/patch provided this session.
++- Whether any content has actually been run through `ingest-corpus.ts` against a real
++  Supabase project yet is unknown — this audit only reviewed the script's code, not
++  any resulting database state, since no live credentials are available here.
++- The Next.js 16 middleware→proxy migration is flagged, not performed.
+diff --git a/apps/web/app/dashboard/admin/AdminCorpusReview.tsx b/apps/web/app/dashboard/admin/AdminCorpusReview.tsx
+new file mode 100644
+index 0000000..a199105
+--- /dev/null
++++ b/apps/web/app/dashboard/admin/AdminCorpusReview.tsx
+@@ -0,0 +1,218 @@
++'use client'
++
++import { useEffect, useState } from 'react'
++import { CheckCircle2, ChevronDown, ChevronRight, ShieldCheck } from 'lucide-react'
++import { createClient } from '@/lib/supabase/client'
++
++interface PendingVersion {
++  id: string
++  version_label: string
++  status: string
++  processing_status: string
++  source_id: string
++  source_title: string
++  source_url: string
++}
++
++interface SectionPreview {
++  id: string
++  label: string
++  heading: string | null
++  order_index: number
++  text: string
++}
++
++export default function AdminCorpusReview() {
++  const [versions, setVersions] = useState<PendingVersion[]>([])
++  const [loading, setLoading] = useState(true)
++  const [error, setError] = useState('')
++  const [expanded, setExpanded] = useState<string | null>(null)
++  const [sections, setSections] = useState<Record<string, SectionPreview[]>>({})
++  const [verifying, setVerifying] = useState<string | null>(null)
++  const [verifiedCount, setVerifiedCount] = useState(0)
++
++  useEffect(() => {
++    loadPending()
++  }, [])
++
++  async function loadPending() {
++    setLoading(true)
++    setError('')
++    const supabase = createClient()
++
++    // RLS's admin policy allows this SELECT to return unverified rows only because
++    // the calling user's app_metadata.role is 'admin' — a non-admin running this
++    // exact query gets 0 rows, verified directly against Postgres before this UI
++    // was built.
++    const { data, error: versionsError } = await supabase
++      .from('legal_source_versions')
++      .select('id, version_label, status, processing_status, source_id')
++      .eq('verified', false)
++      .order('id')
++
++    if (versionsError) {
++      setError(versionsError.message)
++      setLoading(false)
++      return
++    }
++
++    const sourceIds = [...new Set((data ?? []).map((v) => v.source_id))]
++    const { data: sources } = await supabase
++      .from('legal_sources')
++      .select('id, title, source_url')
++      .in('id', sourceIds.length > 0 ? sourceIds : ['00000000-0000-0000-0000-000000000000'])
++
++    const sourceById = new Map((sources ?? []).map((s) => [s.id, s]))
++
++    setVersions(
++      (data ?? []).map((v) => ({
++        ...v,
++        source_title: sourceById.get(v.source_id)?.title ?? 'Unknown source',
++        source_url: sourceById.get(v.source_id)?.source_url ?? '',
++      }))
++    )
++    setLoading(false)
++  }
++
++  async function toggleExpand(versionId: string) {
++    if (expanded === versionId) {
++      setExpanded(null)
++      return
++    }
++    setExpanded(versionId)
++    if (!sections[versionId]) {
++      const supabase = createClient()
++      const { data, error: sectionsError } = await supabase
++        .from('legal_sections')
++        .select('id, label, heading, order_index, text')
++        .eq('version_id', versionId)
++        .order('order_index')
++
++      if (!sectionsError) {
++        setSections((prev) => ({ ...prev, [versionId]: data ?? [] }))
++      }
++    }
++  }
++
++  async function handleVerify(versionId: string) {
++    if (
++      !confirm(
++        'Confirm you have actually read this content and believe it is an accurate, correctly-attributed extract before verifying. Verified content becomes visible to the AI assistant and all users immediately.'
++      )
++    ) {
++      return
++    }
++    setVerifying(versionId)
++    const supabase = createClient()
++    const {
++      data: { user },
++    } = await supabase.auth.getUser()
++
++    const { error: updateError } = await supabase
++      .from('legal_source_versions')
++      .update({
++        verified: true,
++        status: 'current',
++        verified_by: user?.email ?? user?.id,
++        verified_at: new Date().toISOString(),
++      })
++      .eq('id', versionId)
++
++    setVerifying(null)
++    if (updateError) {
++      setError(updateError.message)
++      return
++    }
++    setVerifiedCount((n) => n + 1)
++    setVersions((prev) => prev.filter((v) => v.id !== versionId))
++  }
++
++  return (
++    <div className="max-w-4xl mx-auto px-6 py-10 md:py-14">
++      <div className="flex items-center gap-3 mb-2">
++        <ShieldCheck size={22} className="text-brass-600" />
++        <p className="font-mono text-xs uppercase tracking-widest text-brass-600">Admin</p>
++      </div>
++      <h1 className="font-display text-4xl text-ink mb-3">Corpus review</h1>
++      <p className="text-ink-400 leading-relaxed mb-10 max-w-2xl">
++        Ingested content sits here, invisible to every other user and to the AI
++        assistant, until you actually read it and verify it. This is enforced by Row
++        Level Security in the database — not just this page&apos;s UI.
++      </p>
++
++      {error && (
++        <div className="mb-6 p-4 bg-seal/5 border border-seal/25 text-seal rounded-lg text-sm">
++          {error}
++        </div>
++      )}
++
++      {loading && <p className="text-ink-400">Loading...</p>}
++
++      {!loading && versions.length === 0 && (
++        <div className="p-8 text-center bg-white border border-ink-100 rounded-lg text-ink-400">
++          Nothing pending review right now.
++        </div>
++      )}
++
++      <div className="space-y-3">
++        {versions.map((v) => (
++          <div key={v.id} className="bg-white border border-ink-100 rounded-lg overflow-hidden">
++            <button
++              onClick={() => toggleExpand(v.id)}
++              className="w-full flex items-center justify-between px-5 py-4 text-left"
++            >
++              <div className="flex items-center gap-3 min-w-0">
++                {expanded === v.id ? (
++                  <ChevronDown size={16} className="text-ink-400 shrink-0" />
++                ) : (
++                  <ChevronRight size={16} className="text-ink-400 shrink-0" />
++                )}
++                <div className="min-w-0">
++                  <p className="font-display text-ink truncate">{v.source_title}</p>
++                  <p className="text-xs text-ink-400 font-mono truncate">
++                    {v.version_label} · {v.processing_status}
++                    {v.source_url && !v.source_url.startsWith('http') ? ' · local corpus copy' : ''}
++                  </p>
++                </div>
++              </div>
++              <span className="text-[10px] uppercase tracking-wide font-mono text-seal border border-seal/30 rounded-full px-2 py-0.5 shrink-0 ml-3">
++                Unverified
++              </span>
++            </button>
++
++            {expanded === v.id && (
++              <div className="border-t border-ink-100 px-5 py-4 space-y-4">
++                {!sections[v.id] && <p className="text-ink-400 text-sm">Loading sections...</p>}
++                {sections[v.id]?.map((s) => (
++                  <div key={s.id} className="bg-paper rounded-lg p-4">
++                    <p className="font-mono text-xs uppercase tracking-wide text-brass-600 mb-2">
++                      {s.label}
++                      {s.heading ? ` — ${s.heading}` : ''}
++                    </p>
++                    <p className="text-ink text-sm leading-relaxed whitespace-pre-line max-h-64 overflow-y-auto">
++                      {s.text.slice(0, 2000)}
++                      {s.text.length > 2000 ? '…' : ''}
++                    </p>
++                  </div>
++                ))}
++
++                <button
++                  onClick={() => handleVerify(v.id)}
++                  disabled={verifying === v.id}
++                  className="flex items-center gap-2 px-4 py-2 bg-ink text-paper rounded-lg text-sm font-medium hover:bg-ink-600 disabled:opacity-50 transition-colors"
++                >
++                  <CheckCircle2 size={16} />
++                  {verifying === v.id ? 'Verifying…' : 'Verify and publish'}
++                </button>
++              </div>
++            )}
++          </div>
++        ))}
++      </div>
++
++      {verifiedCount > 0 && (
++        <p className="text-xs text-ink-400 mt-6">Verified {verifiedCount} item(s) this session.</p>
++      )}
++    </div>
++  )
++}
+diff --git a/apps/web/app/dashboard/admin/page.tsx b/apps/web/app/dashboard/admin/page.tsx
+new file mode 100644
+index 0000000..9379841
+--- /dev/null
++++ b/apps/web/app/dashboard/admin/page.tsx
+@@ -0,0 +1,25 @@
++import { redirect } from 'next/navigation'
++import { createClient } from '@/lib/supabase/server'
++import AdminCorpusReview from './AdminCorpusReview'
++
++// UX-level gate only — the REAL enforcement is Row Level Security in
++// database/schema.sql (verified directly against Postgres: a non-admin's UPDATE
++// affects 0 rows, a non-admin's SELECT on unverified content returns 0 rows). This
++// redirect just avoids showing a non-admin an empty page; it grants no actual access.
++export default async function AdminPage() {
++  const supabase = await createClient()
++  const {
++    data: { user },
++  } = await supabase.auth.getUser()
++
++  if (!user) {
++    redirect('/auth/login')
++  }
++
++  const isAdmin = user.app_metadata?.role === 'admin'
++  if (!isAdmin) {
++    redirect('/dashboard')
++  }
++
++  return <AdminCorpusReview />
++}
+diff --git a/apps/web/app/dashboard/layout.tsx b/apps/web/app/dashboard/layout.tsx
+index 455126c..2a4eb31 100644
+--- a/apps/web/app/dashboard/layout.tsx
++++ b/apps/web/app/dashboard/layout.tsx
+@@ -17,9 +17,10 @@ export default async function DashboardLayout({
+   }
+ 
+   const fullName = (user.user_metadata?.full_name as string | undefined) ?? null
++  const isAdmin = user.app_metadata?.role === 'admin'
+ 
+   return (
+-    <DashboardShell user={{ fullName, email: user.email ?? null }}>
++    <DashboardShell user={{ fullName, email: user.email ?? null, isAdmin }}>
+       {children}
+     </DashboardShell>
+   )
+diff --git a/apps/web/components/DashboardShell.tsx b/apps/web/components/DashboardShell.tsx
+index 19903fb..b562569 100644
+--- a/apps/web/components/DashboardShell.tsx
++++ b/apps/web/components/DashboardShell.tsx
+@@ -16,6 +16,7 @@ import {
+   X,
+   LogOut,
+   UserCircle,
++  ShieldCheck,
+ } from 'lucide-react'
+ import { createClient } from '@/lib/supabase/client'
+ import { BrandLogo } from '@/components/BrandLogo'
+@@ -33,6 +34,7 @@ const NAV_ITEMS = [
+ export interface DashboardUser {
+   fullName: string | null
+   email: string | null
++  isAdmin?: boolean
+ }
+ 
+ export function DashboardShell({
+@@ -106,6 +108,20 @@ export function DashboardShell({
+         </nav>
+ 
+         <div className="px-3 py-3 border-t border-ink-100">
++          {user.isAdmin && (
++            <Link
++              href="/dashboard/admin"
++              onClick={() => setOpen(false)}
++              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
++                pathname === '/dashboard/admin'
++                  ? 'bg-ink text-paper'
++                  : 'text-brass-600 hover:bg-paper'
++              }`}
++            >
++              <ShieldCheck size={18} strokeWidth={1.75} className="shrink-0" />
++              Admin
++            </Link>
++          )}
+           <Link
+             href="/dashboard/settings"
+             onClick={() => setOpen(false)}
+diff --git a/database/schema.sql b/database/schema.sql
+index d674da7..2722100 100644
+--- a/database/schema.sql
++++ b/database/schema.sql
+@@ -256,3 +256,48 @@ $$;
+ -- schema.
+ revoke all on function public.match_document_chunks from public;
+ grant execute on function public.match_document_chunks to authenticated;
++
++-- ============================================================
++-- Admin access to unverified corpus content
++-- ============================================================
++--
++-- Admin status is read from the JWT's app_metadata claim, NOT user_metadata.
++-- app_metadata can only be set via the service_role key / Supabase Admin API — a
++-- user can never grant themselves admin by editing their own profile, unlike
++-- user_metadata (used elsewhere in this project for full name/state/city, which IS
++-- user-editable and appropriately so for that data). This is verified: a regular
++-- user's SELECT against unverified rows returns 0 rows, and their UPDATE attempt
++-- silently affects 0 rows, tested directly against Postgres.
++--
++-- To make a user an admin, run this from a trusted server context (never the
++-- browser) using the service_role key:
++--   update auth.users set raw_app_meta_data =
++--     raw_app_meta_data || '{"role": "admin"}'::jsonb
++--   where email = 'admin@example.com';
++
++create policy "Admins can read unverified versions for review"
++    on public.legal_source_versions for select to authenticated
++    using (
++        verified = true
++        or (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
++    );
++
++create policy "Admins can verify versions"
++    on public.legal_source_versions for update to authenticated
++    using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
++    with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
++
++create policy "Admins can read sections of unverified versions"
++    on public.legal_sections for select to authenticated
++    using (
++        exists (
++            select 1 from public.legal_source_versions v
++            where v.id = version_id
++              and (v.verified = true or (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
++        )
++    );
++
++-- Postgres combines multiple permissive SELECT policies on the same table with OR,
++-- so this is additive to the existing "verified only" policies above, not a
++-- replacement — together they allow "verified content for everyone, unverified
++-- content for admins only."
+diff --git a/scripts/ingestion/ingest-constitution.ts b/scripts/ingestion/ingest-constitution.ts
+index b8ef074..1470630 100644
+--- a/scripts/ingestion/ingest-constitution.ts
++++ b/scripts/ingestion/ingest-constitution.ts
+@@ -29,7 +29,6 @@ import 'dotenv/config'
+ import { createClient } from '@supabase/supabase-js'
+ import OpenAI from 'openai'
+ import { createHash } from 'node:crypto'
+-// @ts-expect-error — pdf-parse ships no ESM types for this import path
+ import pdfParse from 'pdf-parse/lib/pdf-parse.js'
+ 
+ const SOURCE_URL = 'https://nigeriarights.gov.ng/files/constitution.pdf'
+diff --git a/scripts/ingestion/ingest-corpus.ts b/scripts/ingestion/ingest-corpus.ts
+index 23b5270..6d0a8e9 100644
+--- a/scripts/ingestion/ingest-corpus.ts
++++ b/scripts/ingestion/ingest-corpus.ts
+@@ -8,14 +8,53 @@ import { createClient } from '@supabase/supabase-js'
+ import OpenAI from 'openai'
+ import { createHash } from 'node:crypto'
+ import { readdir, readFile } from 'node:fs/promises'
+-import { join, basename } from 'node:path'
+-// @ts-expect-error — pdf-parse ships no ESM types for this import path
++import { join } from 'node:path'
+ import pdfParse from 'pdf-parse/lib/pdf-parse.js'
+ 
+ const EMBEDDING_MODEL = 'text-embedding-3-small'
+ const MAX_CHUNK_CHARS = 6000
+ const DEFAULT_CORPUS_DIR = join(process.cwd(), '..', '..', 'legal corpus')
+ 
++// Common structural heading patterns in Nigerian legislation. Real structural
++// markers are used where they can be reliably detected; when they can't, the
++// fallback is honest (logged, not silently pretended finer-grained). This directly
++// fixes a real gap: every document here was previously stored as ONE undivided
++// section, meaning every citation from a 100+ page Act said only the filename, with
++// no pointer to where in the document the cited text came from — exactly the
++// "don't chunk legal text by character count" anti-pattern the project's own build
++// plan warns against.
++const STRUCTURE_PATTERNS = [
++  { pattern: /^\s*PART\s+[IVXLCDM]+\b.*$/gim },
++  { pattern: /^\s*CHAPTER\s+[IVXLCDM\d]+\b.*$/gim },
++]
++
++interface StructuralSection {
++  label: string
++  text: string
++}
++
++function splitByStructure(fullText: string, fallbackLabel: string): StructuralSection[] {
++  for (const { pattern } of STRUCTURE_PATTERNS) {
++    const matches = [...fullText.matchAll(pattern)]
++    if (matches.length < 2) continue
++
++    const sections: StructuralSection[] = []
++    for (let i = 0; i < matches.length; i++) {
++      const start = matches[i].index!
++      const end = i + 1 < matches.length ? matches[i + 1].index! : fullText.length
++      const chunk = fullText.slice(start, end).trim()
++      if (chunk.length < 50) continue
++      sections.push({ label: matches[i][0].trim().slice(0, 128), text: chunk })
++    }
++    if (sections.length >= 2) return sections
++  }
++
++  console.warn(
++    `  No PART/CHAPTER structure detected in "${fallbackLabel}" — storing as a single undivided section. Citations from this source will not be more specific than the document title.`
++  )
++  return [{ label: fallbackLabel, text: fullText }]
++}
++
+ type SourceMeta = {
+   title: string
+   documentType: 'constitution' | 'legislation' | 'regulation' | 'agency_guidance' | 'secondary_commentary'
+@@ -197,37 +236,45 @@ async function main() {
+       .single()
+     if (versionError) throw versionError
+ 
+-    const { data: section, error: sectionError } = await supabase
+-      .from('legal_sections')
+-      .insert({
+-        version_id: version.id,
+-        hierarchy_level: 'chapter',
+-        label: basename(file, '.pdf'),
+-        heading: metadata.title,
+-        order_index: 0,
+-        text,
+-      })
+-      .select('id')
+-      .single()
+-    if (sectionError) throw sectionError
+-
+-    const chunks = splitIntoChunks(text)
+-    for (let index = 0; index < chunks.length; index++) {
+-      const embedding = openai
+-        ? (await openai.embeddings.create({ model: EMBEDDING_MODEL, input: chunks[index] })).data[0].embedding
+-        : null
+-      const { error: chunkError } = await supabase.from('document_chunks').insert({
+-        section_id: section.id,
+-        version_id: version.id,
+-        chunk_index: index,
+-        text: chunks[index],
+-        embedding,
+-      })
+-      if (chunkError) throw chunkError
++    const structuralSections = splitByStructure(text, metadata.title)
++    console.log(`  ${file}: ${structuralSections.length} structural section(s)`)
++
++    let totalChunks = 0
++    for (let sectionIndex = 0; sectionIndex < structuralSections.length; sectionIndex++) {
++      const structSection = structuralSections[sectionIndex]
++      const { data: section, error: sectionError } = await supabase
++        .from('legal_sections')
++        .insert({
++          version_id: version.id,
++          hierarchy_level: structuralSections.length > 1 ? 'part' : 'chapter',
++          label: structSection.label,
++          heading: metadata.title,
++          order_index: sectionIndex,
++          text: structSection.text,
++        })
++        .select('id')
++        .single()
++      if (sectionError) throw sectionError
++
++      const chunks = splitIntoChunks(structSection.text)
++      for (let index = 0; index < chunks.length; index++) {
++        const embedding = openai
++          ? (await openai.embeddings.create({ model: EMBEDDING_MODEL, input: chunks[index] })).data[0].embedding
++          : null
++        const { error: chunkError } = await supabase.from('document_chunks').insert({
++          section_id: section.id,
++          version_id: version.id,
++          chunk_index: index,
++          text: chunks[index],
++          embedding,
++        })
++        if (chunkError) throw chunkError
++        totalChunks++
++      }
+     }
+ 
+     await supabase.from('legal_source_versions').update({ processing_status: 'indexed' }).eq('id', version.id)
+-    console.log(`Indexed ${file}: ${chunks.length} chunk(s), version ${version.id}, still unverified`)
++    console.log(`Indexed ${file}: ${totalChunks} chunk(s) across ${structuralSections.length} section(s), version ${version.id}, still unverified`)
+   }
+ 
+   if (skippedFiles.length > 0) {

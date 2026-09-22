@@ -17,9 +17,10 @@ export default async function DashboardLayout({
   }
 
   const fullName = (user.user_metadata?.full_name as string | undefined) ?? null
+  const isAdmin = user.app_metadata?.role === 'admin'
 
   return (
-    <DashboardShell user={{ fullName, email: user.email ?? null }}>
+    <DashboardShell user={{ fullName, email: user.email ?? null, isAdmin }}>
       {children}
     </DashboardShell>
   )

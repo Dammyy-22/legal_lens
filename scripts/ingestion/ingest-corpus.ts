@@ -8,13 +8,52 @@ import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { createHash } from 'node:crypto'
 import { readdir, readFile } from 'node:fs/promises'
-import { join, basename } from 'node:path'
-// @ts-expect-error — pdf-parse ships no ESM types for this import path
+import { join } from 'node:path'
 import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const MAX_CHUNK_CHARS = 6000
 const DEFAULT_CORPUS_DIR = join(process.cwd(), '..', '..', 'legal corpus')
+
+// Common structural heading patterns in Nigerian legislation. Real structural
+// markers are used where they can be reliably detected; when they can't, the
+// fallback is honest (logged, not silently pretended finer-grained). This directly
+// fixes a real gap: every document here was previously stored as ONE undivided
+// section, meaning every citation from a 100+ page Act said only the filename, with
+// no pointer to where in the document the cited text came from — exactly the
+// "don't chunk legal text by character count" anti-pattern the project's own build
+// plan warns against.
+const STRUCTURE_PATTERNS = [
+  { pattern: /^\s*PART\s+[IVXLCDM]+\b.*$/gim },
+  { pattern: /^\s*CHAPTER\s+[IVXLCDM\d]+\b.*$/gim },
+]
+
+interface StructuralSection {
+  label: string
+  text: string
+}
+
+function splitByStructure(fullText: string, fallbackLabel: string): StructuralSection[] {
+  for (const { pattern } of STRUCTURE_PATTERNS) {
+    const matches = [...fullText.matchAll(pattern)]
+    if (matches.length < 2) continue
+
+    const sections: StructuralSection[] = []
+    for (let i = 0; i < matches.length; i++) {
+      const start = matches[i].index!
+      const end = i + 1 < matches.length ? matches[i + 1].index! : fullText.length
+      const chunk = fullText.slice(start, end).trim()
+      if (chunk.length < 50) continue
+      sections.push({ label: matches[i][0].trim().slice(0, 128), text: chunk })
+    }
+    if (sections.length >= 2) return sections
+  }
+
+  console.warn(
+    `  No PART/CHAPTER structure detected in "${fallbackLabel}" — storing as a single undivided section. Citations from this source will not be more specific than the document title.`
+  )
+  return [{ label: fallbackLabel, text: fullText }]
+}
 
 type SourceMeta = {
   title: string
@@ -197,37 +236,45 @@ async function main() {
       .single()
     if (versionError) throw versionError
 
-    const { data: section, error: sectionError } = await supabase
-      .from('legal_sections')
-      .insert({
-        version_id: version.id,
-        hierarchy_level: 'chapter',
-        label: basename(file, '.pdf'),
-        heading: metadata.title,
-        order_index: 0,
-        text,
-      })
-      .select('id')
-      .single()
-    if (sectionError) throw sectionError
+    const structuralSections = splitByStructure(text, metadata.title)
+    console.log(`  ${file}: ${structuralSections.length} structural section(s)`)
 
-    const chunks = splitIntoChunks(text)
-    for (let index = 0; index < chunks.length; index++) {
-      const embedding = openai
-        ? (await openai.embeddings.create({ model: EMBEDDING_MODEL, input: chunks[index] })).data[0].embedding
-        : null
-      const { error: chunkError } = await supabase.from('document_chunks').insert({
-        section_id: section.id,
-        version_id: version.id,
-        chunk_index: index,
-        text: chunks[index],
-        embedding,
-      })
-      if (chunkError) throw chunkError
+    let totalChunks = 0
+    for (let sectionIndex = 0; sectionIndex < structuralSections.length; sectionIndex++) {
+      const structSection = structuralSections[sectionIndex]
+      const { data: section, error: sectionError } = await supabase
+        .from('legal_sections')
+        .insert({
+          version_id: version.id,
+          hierarchy_level: structuralSections.length > 1 ? 'part' : 'chapter',
+          label: structSection.label,
+          heading: metadata.title,
+          order_index: sectionIndex,
+          text: structSection.text,
+        })
+        .select('id')
+        .single()
+      if (sectionError) throw sectionError
+
+      const chunks = splitIntoChunks(structSection.text)
+      for (let index = 0; index < chunks.length; index++) {
+        const embedding = openai
+          ? (await openai.embeddings.create({ model: EMBEDDING_MODEL, input: chunks[index] })).data[0].embedding
+          : null
+        const { error: chunkError } = await supabase.from('document_chunks').insert({
+          section_id: section.id,
+          version_id: version.id,
+          chunk_index: index,
+          text: chunks[index],
+          embedding,
+        })
+        if (chunkError) throw chunkError
+        totalChunks++
+      }
     }
 
     await supabase.from('legal_source_versions').update({ processing_status: 'indexed' }).eq('id', version.id)
-    console.log(`Indexed ${file}: ${chunks.length} chunk(s), version ${version.id}, still unverified`)
+    console.log(`Indexed ${file}: ${totalChunks} chunk(s) across ${structuralSections.length} section(s), version ${version.id}, still unverified`)
   }
 
   if (skippedFiles.length > 0) {
