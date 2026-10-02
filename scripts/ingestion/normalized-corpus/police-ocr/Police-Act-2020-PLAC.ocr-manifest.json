@@ -1,0 +1,409 @@
+{
+  "source_file": "Police-Act-2020-PLAC.pdf",
+  "source_path": "C:\\Users\\hp\\Documents\\legal_lens\\legal corpus\\Police-Act-2020-PLAC.pdf",
+  "pages": 57,
+  "ocr_engine": "Tesseract",
+  "language": "eng",
+  "psm": 6,
+  "pages_output": [
+    {
+      "page": 1,
+      "image": "page-001.png",
+      "text": "page-001.txt",
+      "characters": 993,
+      "words": 160
+    },
+    {
+      "page": 2,
+      "image": "page-002.png",
+      "text": "page-002.txt",
+      "characters": 2438,
+      "words": 370
+    },
+    {
+      "page": 3,
+      "image": "page-003.png",
+      "text": "page-003.txt",
+      "characters": 2793,
+      "words": 466
+    },
+    {
+      "page": 4,
+      "image": "page-004.png",
+      "text": "page-004.txt",
+      "characters": 2208,
+      "words": 323
+    },
+    {
+      "page": 5,
+      "image": "page-005.png",
+      "text": "page-005.txt",
+      "characters": 2097,
+      "words": 346
+    },
+    {
+      "page": 6,
+      "image": "page-006.png",
+      "text": "page-006.txt",
+      "characters": 2192,
+      "words": 373
+    },
+    {
+      "page": 7,
+      "image": "page-007.png",
+      "text": "page-007.txt",
+      "characters": 3028,
+      "words": 491
+    },
+    {
+      "page": 8,
+      "image": "page-008.png",
+      "text": "page-008.txt",
+      "characters": 3187,
+      "words": 520
+    },
+    {
+      "page": 9,
+      "image": "page-009.png",
+      "text": "page-009.txt",
+      "characters": 3382,
+      "words": 534
+    },
+    {
+      "page": 10,
+      "image": "page-010.png",
+      "text": "page-010.txt",
+      "characters": 3441,
+      "words": 561
+    },
+    {
+      "page": 11,
+      "image": "page-011.png",
+      "text": "page-011.txt",
+      "characters": 1929,
+      "words": 314
+    },
+    {
+      "page": 12,
+      "image": "page-012.png",
+      "text": "page-012.txt",
+      "characters": 2199,
+      "words": 330
+    },
+    {
+      "page": 13,
+      "image": "page-013.png",
+      "text": "page-013.txt",
+      "characters": 2704,
+      "words": 438
+    },
+    {
+      "page": 14,
+      "image": "page-014.png",
+      "text": "page-014.txt",
+      "characters": 2998,
+      "words": 497
+    },
+    {
+      "page": 15,
+      "image": "page-015.png",
+      "text": "page-015.txt",
+      "characters": 2910,
+      "words": 502
+    },
+    {
+      "page": 16,
+      "image": "page-016.png",
+      "text": "page-016.txt",
+      "characters": 2962,
+      "words": 501
+    },
+    {
+      "page": 17,
+      "image": "page-017.png",
+      "text": "page-017.txt",
+      "characters": 3032,
+      "words": 522
+    },
+    {
+      "page": 18,
+      "image": "page-018.png",
+      "text": "page-018.txt",
+      "characters": 2623,
+      "words": 469
+    },
+    {
+      "page": 19,
+      "image": "page-019.png",
+      "text": "page-019.txt",
+      "characters": 3088,
+      "words": 533
+    },
+    {
+      "page": 20,
+      "image": "page-020.png",
+      "text": "page-020.txt",
+      "characters": 3000,
+      "words": 524
+    },
+    {
+      "page": 21,
+      "image": "page-021.png",
+      "text": "page-021.txt",
+      "characters": 3694,
+      "words": 657
+    },
+    {
+      "page": 22,
+      "image": "page-022.png",
+      "text": "page-022.txt",
+      "characters": 2879,
+      "words": 524
+    },
+    {
+      "page": 23,
+      "image": "page-023.png",
+      "text": "page-023.txt",
+      "characters": 2418,
+      "words": 441
+    },
+    {
+      "page": 24,
+      "image": "page-024.png",
+      "text": "page-024.txt",
+      "characters": 2789,
+      "words": 494
+    },
+    {
+      "page": 25,
+      "image": "page-025.png",
+      "text": "page-025.txt",
+      "characters": 2162,
+      "words": 391
+    },
+    {
+      "page": 26,
+      "image": "page-026.png",
+      "text": "page-026.txt",
+      "characters": 3072,
+      "words": 544
+    },
+    {
+      "page": 27,
+      "image": "page-027.png",
+      "text": "page-027.txt",
+      "characters": 2160,
+      "words": 395
+    },
+    {
+      "page": 28,
+      "image": "page-028.png",
+      "text": "page-028.txt",
+      "characters": 2334,
+      "words": 422
+    },
+    {
+      "page": 29,
+      "image": "page-029.png",
+      "text": "page-029.txt",
+      "characters": 3991,
+      "words": 699
+    },
+    {
+      "page": 30,
+      "image": "page-030.png",
+      "text": "page-030.txt",
+      "characters": 3526,
+      "words": 593
+    },
+    {
+      "page": 31,
+      "image": "page-031.png",
+      "text": "page-031.txt",
+      "characters": 3045,
+      "words": 519
+    },
+    {
+      "page": 32,
+      "image": "page-032.png",
+      "text": "page-032.txt",
+      "characters": 3086,
+      "words": 566
+    },
+    {
+      "page": 33,
+      "image": "page-033.png",
+      "text": "page-033.txt",
+      "characters": 3178,
+      "words": 568
+    },
+    {
+      "page": 34,
+      "image": "page-034.png",
+      "text": "page-034.txt",
+      "characters": 3164,
+      "words": 546
+    },
+    {
+      "page": 35,
+      "image": "page-035.png",
+      "text": "page-035.txt",
+      "characters": 3205,
+      "words": 582
+    },
+    {
+      "page": 36,
+      "image": "page-036.png",
+      "text": "page-036.txt",
+      "characters": 2601,
+      "words": 464
+    },
+    {
+      "page": 37,
+      "image": "page-037.png",
+      "text": "page-037.txt",
+      "characters": 2826,
+      "words": 479
+    },
+    {
+      "page": 38,
+      "image": "page-038.png",
+      "text": "page-038.txt",
+      "characters": 3141,
+      "words": 545
+    },
+    {
+      "page": 39,
+      "image": "page-039.png",
+      "text": "page-039.txt",
+      "characters": 2988,
+      "words": 539
+    },
+    {
+      "page": 40,
+      "image": "page-040.png",
+      "text": "page-040.txt",
+      "characters": 3126,
+      "words": 536
+    },
+    {
+      "page": 41,
+      "image": "page-041.png",
+      "text": "page-041.txt",
+      "characters": 3811,
+      "words": 659
+    },
+    {
+      "page": 42,
+      "image": "page-042.png",
+      "text": "page-042.txt",
+      "characters": 2349,
+      "words": 409
+    },
+    {
+      "page": 43,
+      "image": "page-043.png",
+      "text": "page-043.txt",
+      "characters": 2315,
+      "words": 387
+    },
+    {
+      "page": 44,
+      "image": "page-044.png",
+      "text": "page-044.txt",
+      "characters": 2315,
+      "words": 416
+    },
+    {
+      "page": 45,
+      "image": "page-045.png",
+      "text": "page-045.txt",
+      "characters": 3102,
+      "words": 494
+    },
+    {
+      "page": 46,
+      "image": "page-046.png",
+      "text": "page-046.txt",
+      "characters": 2672,
+      "words": 408
+    },
+    {
+      "page": 47,
+      "image": "page-047.png",
+      "text": "page-047.txt",
+      "characters": 2982,
+      "words": 487
+    },
+    {
+      "page": 48,
+      "image": "page-048.png",
+      "text": "page-048.txt",
+      "characters": 2790,
+      "words": 498
+    },
+    {
+      "page": 49,
+      "image": "page-049.png",
+      "text": "page-049.txt",
+      "characters": 2862,
+      "words": 473
+    },
+    {
+      "page": 50,
+      "image": "page-050.png",
+      "text": "page-050.txt",
+      "characters": 2909,
+      "words": 488
+    },
+    {
+      "page": 51,
+      "image": "page-051.png",
+      "text": "page-051.txt",
+      "characters": 3178,
+      "words": 529
+    },
+    {
+      "page": 52,
+      "image": "page-052.png",
+      "text": "page-052.txt",
+      "characters": 3398,
+      "words": 571
+    },
+    {
+      "page": 53,
+      "image": "page-053.png",
+      "text": "page-053.txt",
+      "characters": 859,
+      "words": 147
+    },
+    {
+      "page": 54,
+      "image": "page-054.png",
+      "text": "page-054.txt",
+      "characters": 1248,
+      "words": 185
+    },
+    {
+      "page": 55,
+      "image": "page-055.png",
+      "text": "page-055.txt",
+      "characters": 324,
+      "words": 68
+    },
+    {
+      "page": 56,
+      "image": "page-056.png",
+      "text": "page-056.txt",
+      "characters": 1421,
+      "words": 237
+    },
+    {
+      "page": 57,
+      "image": "page-057.png",
+      "text": "page-057.txt",
+      "characters": 582,
+      "words": 102
+    }
+  ]
+}

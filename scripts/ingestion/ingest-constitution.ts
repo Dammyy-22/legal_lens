@@ -29,8 +29,7 @@ import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { createHash } from 'node:crypto'
-import pdfParse from 'pdf-parse/lib/pdf-parse.js'
-
+import pdfParse from 'pdf-parse'
 const SOURCE_URL = 'https://nigeriarights.gov.ng/files/constitution.pdf'
 const EMBEDDING_MODEL = 'text-embedding-3-small' // 1536 dimensions — must match database/schema.sql
 const MAX_CHUNK_CHARS = 6000 // keeps each embedding call comfortably under the model's token limit

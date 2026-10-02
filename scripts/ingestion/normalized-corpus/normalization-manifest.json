@@ -1,0 +1,62 @@
+{
+  "generatedAt": "2026-09-28T14:45:19.576Z",
+  "parser": "pdf-parse",
+  "documents": [
+    {
+      "file": "Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.pdf",
+      "status": "processed",
+      "pages": 280,
+      "sourceType": "constitution",
+      "authorityLevel": "primary"
+    },
+    {
+      "file": "DCRMA-COMPENDIUM_2022.pdf",
+      "status": "processed",
+      "pages": 24,
+      "sourceType": "compendium",
+      "authorityLevel": "secondary"
+    },
+    {
+      "file": "FCCPA-2018.pdf",
+      "status": "processed",
+      "pages": 99,
+      "sourceType": "act",
+      "authorityLevel": "primary"
+    },
+    {
+      "file": "Labour Act.pdf",
+      "status": "processed",
+      "pages": 80,
+      "sourceType": "act_with_subsidiary",
+      "authorityLevel": "primary"
+    },
+    {
+      "file": "Lagos-State-Road-Traffic-Law.pdf",
+      "status": "processed",
+      "pages": 51,
+      "sourceType": "state_act_with_subsidiary",
+      "authorityLevel": "primary"
+    },
+    {
+      "file": "Police-Act-2020.pdf",
+      "status": "processed",
+      "pages": 57,
+      "sourceType": "act",
+      "authorityLevel": "primary"
+    },
+    {
+      "file": "RC-COMPENDIUM-2024.pdf",
+      "status": "processed",
+      "pages": 82,
+      "sourceType": "compendium",
+      "authorityLevel": "secondary"
+    },
+    {
+      "file": "Roles-Rights-Responsibilities-Under-New-Police-Act.pdf",
+      "status": "processed",
+      "pages": 8,
+      "sourceType": "secondary_explanatory",
+      "authorityLevel": "secondary"
+    }
+  ]
+}

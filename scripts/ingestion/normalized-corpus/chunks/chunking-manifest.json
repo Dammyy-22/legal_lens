@@ -1,0 +1,44 @@
+{
+  "documents": [
+    {
+      "file": "Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.json",
+      "chunks": 814,
+      "strategy": "section-aware"
+    },
+    {
+      "file": "DCRMA-COMPENDIUM_2022.json",
+      "chunks": 1,
+      "strategy": "paragraph-group"
+    },
+    {
+      "file": "FCCPA-2018.json",
+      "chunks": 105,
+      "strategy": "section-aware"
+    },
+    {
+      "file": "Labour Act.json",
+      "chunks": 278,
+      "strategy": "section-aware"
+    },
+    {
+      "file": "Lagos-State-Road-Traffic-Law.json",
+      "chunks": 670,
+      "strategy": "section-aware"
+    },
+    {
+      "file": "Police-Act-2020.json",
+      "chunks": 150,
+      "strategy": "section-aware"
+    },
+    {
+      "file": "RC-COMPENDIUM-2024.json",
+      "chunks": 1,
+      "strategy": "paragraph-group"
+    },
+    {
+      "file": "Roles-Rights-Responsibilities-Under-New-Police-Act.json",
+      "chunks": 1,
+      "strategy": "paragraph-group"
+    }
+  ]
+}

@@ -1,0 +1,1273 @@
+{
+  "generatedAt": "2026-09-28T15:15:32.958Z",
+  "official": {
+    "file": "Police-Act-2020.pdf",
+    "pages": 57,
+    "characters": 164141,
+    "indicators": {
+      "hasActTitle": true,
+      "hasEnacted": true,
+      "hasSchedule": true,
+      "hasCertification": false,
+      "hasABill": true
+    }
+  },
+  "plac": {
+    "file": "Police-Act-2020-PLAC.pdf",
+    "pages": 57,
+    "characters": 114,
+    "indicators": {
+      "hasActTitle": false,
+      "hasEnacted": false,
+      "hasSchedule": false,
+      "hasCertification": false,
+      "hasABill": false
+    }
+  },
+  "coverage": [
+    {
+      "section": 1,
+      "officialMatches": 10,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 2,
+      "officialMatches": 14,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 3,
+      "officialMatches": 5,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 4,
+      "officialMatches": 7,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 5,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 6,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 7,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 8,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 9,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 10,
+      "officialMatches": 5,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 11,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 12,
+      "officialMatches": 6,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 13,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 14,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 15,
+      "officialMatches": 6,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 16,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 17,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 18,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 19,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 20,
+      "officialMatches": 5,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 21,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 22,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 23,
+      "officialMatches": 5,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 24,
+      "officialMatches": 9,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 25,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 26,
+      "officialMatches": 7,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 27,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 28,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 29,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 30,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 31,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 32,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 33,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 34,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 35,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 36,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 37,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 38,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 39,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 40,
+      "officialMatches": 9,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 41,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 42,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 43,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 44,
+      "officialMatches": 8,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 45,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 46,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 47,
+      "officialMatches": 5,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 48,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 49,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 50,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 51,
+      "officialMatches": 5,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 52,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 53,
+      "officialMatches": 6,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 54,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 55,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 56,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 57,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 58,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 59,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 60,
+      "officialMatches": 5,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 61,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 62,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 63,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 64,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 65,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 66,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 67,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 68,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 69,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 70,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 71,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 72,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 73,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 74,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 75,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 76,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 77,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 78,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 79,
+      "officialMatches": 5,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 80,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 81,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 82,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 83,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 84,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 85,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 86,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 87,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 88,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 89,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 90,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 91,
+      "officialMatches": 5,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 92,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 93,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 94,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 95,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 96,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 97,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 98,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 99,
+      "officialMatches": 6,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 100,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 101,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 102,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 103,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 104,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 105,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 106,
+      "officialMatches": 11,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 107,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 108,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 109,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 110,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 111,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 112,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 113,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 114,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 115,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 116,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 117,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 118,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 119,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 120,
+      "officialMatches": 4,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 121,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 122,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 123,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 124,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 125,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 126,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 127,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 128,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 129,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 130,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 131,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 132,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 133,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 134,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 135,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 136,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 137,
+      "officialMatches": 0,
+      "placMatches": 0,
+      "officialFound": false,
+      "placFound": false
+    },
+    {
+      "section": 138,
+      "officialMatches": 1,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 139,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 140,
+      "officialMatches": 3,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 141,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    },
+    {
+      "section": 142,
+      "officialMatches": 2,
+      "placMatches": 0,
+      "officialFound": true,
+      "placFound": false
+    }
+  ],
+  "selected": [
+    {
+      "section": 1,
+      "official": {
+        "offset": 1055,
+        "text": "nationwide. \n\n- . NIGERIA POLICE ACT, 2020 \nArrangement of Sections \nSection: \nPART I - PRELIMINARY \n1.  General objective. \n2.  Specific objectives. \nPART II - ESTABLISHMENT, COMPOSITION AND DUTIES OF THE NIGERIA POLICE FORCE \n3.  Establishment, composition and duties of the Nigeria Police Force. \n4.  Primary functions of  the Police Force, . . \n5.  Duty of Police Force to enforce certain constitutional provisions, etc. \n6.  Establishment and functions of the Nigeria Police Council. \nPARTOIEIIIé é&PPOINTMENT, REMOVAL, FUNCTIONS AND POWERS, ETC. OF INSPECTOR-GENERAL \nOF P s \n7.  Appointment, tenure, removal, etc., of Inspector-General of Police. \n8.  Command of:{police in case of active service. \n9.  Functions and  powers of the Inspector-General of Police. \n10. Delegation of powers. \nPART"
+      },
+      "plac": null
+    },
+    {
+      "section": 2,
+      "official": {
+        "offset": 1079,
+        "text": "A POLICE ACT, 2020 \nArrangement of Sections \nSection: \nPART I - PRELIMINARY \n1.  General objective. \n2.  Specific objectives. \nPART II - ESTABLISHMENT, COMPOSITION AND DUTIES OF THE NIGERIA POLICE FORCE \n3.  Establishment, composition and duties of the Nigeria Police Force. \n4.  Primary functions of  the Police Force, . . \n5.  Duty of Police Force to enforce certain constitutional provisions, etc. \n6.  Establishment and functions of the Nigeria Police Council. \nPARTOIEIIIé é&PPOINTMENT, REMOVAL, FUNCTIONS AND POWERS, ETC. OF INSPECTOR-GENERAL \nOF P s \n7.  Appointment, tenure, removal, etc., of Inspector-General of Police. \n8.  Command of:{police in case of active service. \n9.  Functions and  powers of the Inspector-General of Police. \n10. Delegation of powers. \nPART \nIV- \nAPPOINTMENT \nAND"
+      },
+      "plac": null
+    },
+    {
+      "section": 3,
+      "official": {
+        "offset": 1182,
+        "text": "Specific objectives. \nPART II - ESTABLISHMENT, COMPOSITION AND DUTIES OF THE NIGERIA POLICE FORCE \n3.  Establishment, composition and duties of the Nigeria Police Force. \n4.  Primary functions of  the Police Force, . . \n5.  Duty of Police Force to enforce certain constitutional provisions, etc. \n6.  Establishment and functions of the Nigeria Police Council. \nPARTOIEIIIé é&PPOINTMENT, REMOVAL, FUNCTIONS AND POWERS, ETC. OF INSPECTOR-GENERAL \nOF P s \n7.  Appointment, tenure, removal, etc., of Inspector-General of Police. \n8.  Command of:{police in case of active service. \n9.  Functions and  powers of the Inspector-General of Police. \n10. Delegation of powers. \nPART \nIV- \nAPPOINTMENT \nAND \nFUNCTIONS \nETC. \nOF \nTHE \nDEPUTY \nINSPECTOR-GENERAL \nOF \nPOLICE, ASSISTANT INSPECTORS-GENERAL OF POLIC"
+      },
+      "plac": null
+    },
+    {
+      "section": 4,
+      "official": {
+        "offset": 1254,
+        "text": "OF THE NIGERIA POLICE FORCE \n3.  Establishment, composition and duties of the Nigeria Police Force. \n4.  Primary functions of  the Police Force, . . \n5.  Duty of Police Force to enforce certain constitutional provisions, etc. \n6.  Establishment and functions of the Nigeria Police Council. \nPARTOIEIIIé é&PPOINTMENT, REMOVAL, FUNCTIONS AND POWERS, ETC. OF INSPECTOR-GENERAL \nOF P s \n7.  Appointment, tenure, removal, etc., of Inspector-General of Police. \n8.  Command of:{police in case of active service. \n9.  Functions and  powers of the Inspector-General of Police. \n10. Delegation of powers. \nPART \nIV- \nAPPOINTMENT \nAND \nFUNCTIONS \nETC. \nOF \nTHE \nDEPUTY \nINSPECTOR-GENERAL \nOF \nPOLICE, ASSISTANT INSPECTORS-GENERAL OF POLICE, COMMISSIONERS OF POLICE AND \nOTHER PERSONS INTO THE NIGERIA POLICE FO"
+      },
+      "plac": null
+    },
+    {
+      "section": 5,
+      "official": {
+        "offset": 1303,
+        "text": "omposition and duties of the Nigeria Police Force. \n4.  Primary functions of  the Police Force, . . \n5.  Duty of Police Force to enforce certain constitutional provisions, etc. \n6.  Establishment and functions of the Nigeria Police Council. \nPARTOIEIIIé é&PPOINTMENT, REMOVAL, FUNCTIONS AND POWERS, ETC. OF INSPECTOR-GENERAL \nOF P s \n7.  Appointment, tenure, removal, etc., of Inspector-General of Police. \n8.  Command of:{police in case of active service. \n9.  Functions and  powers of the Inspector-General of Police. \n10. Delegation of powers. \nPART \nIV- \nAPPOINTMENT \nAND \nFUNCTIONS \nETC. \nOF \nTHE \nDEPUTY \nINSPECTOR-GENERAL \nOF \nPOLICE, ASSISTANT INSPECTORS-GENERAL OF POLICE, COMMISSIONERS OF POLICE AND \nOTHER PERSONS INTO THE NIGERIA POLICE FORCE \n11. Appointment and duties of the Deputy Ins"
+      },
+      "plac": null
+    },
+    {
+      "section": 10,
+      "official": {
+        "offset": 1723,
+        "text": "f:{police in case of active service. \n9.  Functions and  powers of the Inspector-General of Police. \n10. Delegation of powers. \nPART \nIV- \nAPPOINTMENT \nAND \nFUNCTIONS \nETC. \nOF \nTHE \nDEPUTY \nINSPECTOR-GENERAL \nOF \nPOLICE, ASSISTANT INSPECTORS-GENERAL OF POLICE, COMMISSIONERS OF POLICE AND \nOTHER PERSONS INTO THE NIGERIA POLICE FORCE \n11. Appointment and duties of the Deputy Inspector-General of Police and Assistant Inspector-General of \nPolice. \n12. Appointment of Commissioners of Police. \n13. Functions of Commissioners of Police of States. \n14. Appointment of other persons. \n15. Pensions and gratuities. \n16. Standing orders. \nPARTV - GENERAL ADMINISTRATION \n17. Oath to be taken by officers on appointment. \n18. Recruitment and Police Recruitment Comunittee. \n19. Training programumes. \n20."
+      },
+      "plac": null
+    },
+    {
+      "section": 20,
+      "official": {
+        "offset": 2418,
+        "text": "cers on appointment. \n18. Recruitment and Police Recruitment Comunittee. \n19. Training programumes. \n20. Remuneration. \n21. Appointment of supernumerary police officers to protect property. \n22.  Appointment of supernumerary police officers for employment on administrative duties on police \nremises. \n23. l?Appqintment of supernumerary police officers where necessary in the public interest. \n24. Appointment of supernumerary police officers for attachment as orderlies. \n25. Provisions supplementary to sections 21 to 23. . \nPART VI- FINANCIAL PROVISIONS \n26, Funding of the Police Force. \n27. Bxpenditures by the Police Force. \n28. Bstimates. \n29. Accountsand audit. \n30. Annual report. \nPART VI[ - POWERS OF POLICE OFFICERS \n31. Investigation of an allegation by the Police. \n32. Arrest generally"
+      },
+      "plac": null
+    },
+    {
+      "section": 30,
+      "official": {
+        "offset": 2988,
+        "text": "of the Police Force. \n27. Bxpenditures by the Police Force. \n28. Bstimates. \n29. Accountsand audit. \n30. Annual report. \nPART VI[ - POWERS OF POLICE OFFICERS \n31. Investigation of an allegation by the Police. \n32. Arrest generally. \n33, Mode of arrest. \n34. No Lmnecessarfy restraint. \n35. Notification of  cause of arrest and rights of suspect. \n36. Arrest in lieu prohibited. \n37. Humane treatment of arrested suspect. \n38, Arrest by  police officer without warrant. \n39. Arrest without warrant by private person. \n40. Handing over of an arrested suspect by private person. \n\n41. Arrest for offence committed in presence of a judge or magistrate. \n47, When public is bound to assist in arrest, \n43, Arrested suspect to be taken immediately to police-station. \n44, Recording of  arrests. \n45. Power"
+      },
+      "plac": null
+    },
+    {
+      "section": 31,
+      "official": {
+        "offset": 3046,
+        "text": ". \n28. Bstimates. \n29. Accountsand audit. \n30. Annual report. \nPART VI[ - POWERS OF POLICE OFFICERS \n31. Investigation of an allegation by the Police. \n32. Arrest generally. \n33, Mode of arrest. \n34. No Lmnecessarfy restraint. \n35. Notification of  cause of arrest and rights of suspect. \n36. Arrest in lieu prohibited. \n37. Humane treatment of arrested suspect. \n38, Arrest by  police officer without warrant. \n39. Arrest without warrant by private person. \n40. Handing over of an arrested suspect by private person. \n\n41. Arrest for offence committed in presence of a judge or magistrate. \n47, When public is bound to assist in arrest, \n43, Arrested suspect to be taken immediately to police-station. \n44, Recording of  arrests. \n45. Power to  break out of a house or place for the purpose of liber"
+      },
+      "plac": null
+    },
+    {
+      "section": 32,
+      "official": {
+        "offset": 3097,
+        "text": "al report. \nPART VI[ - POWERS OF POLICE OFFICERS \n31. Investigation of an allegation by the Police. \n32. Arrest generally. \n33, Mode of arrest. \n34. No Lmnecessarfy restraint. \n35. Notification of  cause of arrest and rights of suspect. \n36. Arrest in lieu prohibited. \n37. Humane treatment of arrested suspect. \n38, Arrest by  police officer without warrant. \n39. Arrest without warrant by private person. \n40. Handing over of an arrested suspect by private person. \n\n41. Arrest for offence committed in presence of a judge or magistrate. \n47, When public is bound to assist in arrest, \n43, Arrested suspect to be taken immediately to police-station. \n44, Recording of  arrests. \n45. Power to  break out of a house or place for the purpose of liberation. \n46. Inventory of property of arrested suspe"
+      },
+      "plac": null
+    },
+    {
+      "section": 40,
+      "official": {
+        "offset": 3404,
+        "text": "ect. \n38, Arrest by  police officer without warrant. \n39. Arrest without warrant by private person. \n40. Handing over of an arrested suspect by private person. \n\n41. Arrest for offence committed in presence of a judge or magistrate. \n47, When public is bound to assist in arrest, \n43, Arrested suspect to be taken immediately to police-station. \n44, Recording of  arrests. \n45. Power to  break out of a house or place for the purpose of liberation. \n46. Inventory of property of arrested suspect. \n47, Quarterly report of arrests to the Attorney-General. \n48. Power to search. \n49, Power to stop and search. \n50. Action before a search takes Ig)lacc. \n51. General conduct of the search. \n52. Search of arrested suspect. \n53. Examinaticn of arrested suspect. \n54. Where reasonable suspicion never exis"
+      },
+      "plac": null
+    },
+    {
+      "section": 41,
+      "official": {
+        "offset": 3464,
+        "text": "rest without warrant by private person. \n40. Handing over of an arrested suspect by private person. \n\n41. Arrest for offence committed in presence of a judge or magistrate. \n47, When public is bound to assist in arrest, \n43, Arrested suspect to be taken immediately to police-station. \n44, Recording of  arrests. \n45. Power to  break out of a house or place for the purpose of liberation. \n46. Inventory of property of arrested suspect. \n47, Quarterly report of arrests to the Attorney-General. \n48. Power to search. \n49, Power to stop and search. \n50. Action before a search takes Ig)lacc. \n51. General conduct of the search. \n52. Search of arrested suspect. \n53. Examinaticn of arrested suspect. \n54. Where reasonable suspicion never exist. \n55, Search of place entered by suspect sought to be arre"
+      },
+      "plac": null
+    },
+    {
+      "section": 42,
+      "official": {
+        "offset": 55749,
+        "text": "s presence and shall hand him over to a police officer who shall proceed to take necessary \naction. \n42, A person is bound to assist a judge, magistrate or police officer or other person reasonably \ndemanding his aid in arresting or preventing the escape of a suspect whom the judge, \nmagisirate, police officer or other person is authorised to arrest. \n43, (1)  A suspect who is  arrested, whether with or  without a  warrant, shall be  taken \nimmediately to a police station, or other place for the reception of suspect, and shall be \npromptly informed of the allegation against him in the langnage he understands. \n(2) A person who has the custody of an arrested suspect shall give the suspect reasonable \nfacilities for obtaining legal advice, access to  communication for taking steps to \nfurnis"
+      },
+      "plac": null
+    },
+    {
+      "section": 43,
+      "official": {
+        "offset": 3584,
+        "text": "ence committed in presence of a judge or magistrate. \n47, When public is bound to assist in arrest, \n43, Arrested suspect to be taken immediately to police-station. \n44, Recording of  arrests. \n45. Power to  break out of a house or place for the purpose of liberation. \n46. Inventory of property of arrested suspect. \n47, Quarterly report of arrests to the Attorney-General. \n48. Power to search. \n49, Power to stop and search. \n50. Action before a search takes Ig)lacc. \n51. General conduct of the search. \n52. Search of arrested suspect. \n53. Examinaticn of arrested suspect. \n54. Where reasonable suspicion never exist. \n55, Search of place entered by suspect sought to be arrested. \n56. Action after search is carried out. \n57. Search record. \n58. Search warrant sateguards. \n59. Execution of sea"
+      },
+      "plac": null
+    },
+    {
+      "section": 44,
+      "official": {
+        "offset": 3649,
+        "text": "blic is bound to assist in arrest, \n43, Arrested suspect to be taken immediately to police-station. \n44, Recording of  arrests. \n45. Power to  break out of a house or place for the purpose of liberation. \n46. Inventory of property of arrested suspect. \n47, Quarterly report of arrests to the Attorney-General. \n48. Power to search. \n49, Power to stop and search. \n50. Action before a search takes Ig)lacc. \n51. General conduct of the search. \n52. Search of arrested suspect. \n53. Examinaticn of arrested suspect. \n54. Where reasonable suspicion never exist. \n55, Search of place entered by suspect sought to be arrested. \n56. Action after search is carried out. \n57. Search record. \n58. Search warrant sateguards. \n59. Execution of search warrant. \n60. Recording of statement of susgect. \n61. Refusal"
+      },
+      "plac": null
+    },
+    {
+      "section": 50,
+      "official": {
+        "offset": 3912,
+        "text": "rly report of arrests to the Attorney-General. \n48. Power to search. \n49, Power to stop and search. \n50. Action before a search takes Ig)lacc. \n51. General conduct of the search. \n52. Search of arrested suspect. \n53. Examinaticn of arrested suspect. \n54. Where reasonable suspicion never exist. \n55, Search of place entered by suspect sought to be arrested. \n56. Action after search is carried out. \n57. Search record. \n58. Search warrant sateguards. \n59. Execution of search warrant. \n60. Recording of statement of susgect. \n61. Refusal to  give name and residence. \n62, Release on  bail of a suspect arrested without warrant. \n63. Power to release on bail  before charge is accepted. \n64. Remedy of suspect detained in custody. \n63. Summons. \n66. Powers to prosecute. \n67. Ceniral Criminal Records"
+      },
+      "plac": null
+    },
+    {
+      "section": 60,
+      "official": {
+        "offset": 4297,
+        "text": "carried out. \n57. Search record. \n58. Search warrant sateguards. \n59. Execution of search warrant. \n60. Recording of statement of susgect. \n61. Refusal to  give name and residence. \n62, Release on  bail of a suspect arrested without warrant. \n63. Power to release on bail  before charge is accepted. \n64. Remedy of suspect detained in custody. \n63. Summons. \n66. Powers to prosecute. \n67. Ceniral Criminal Records Registry. \n€8. Power to take fingerprints. \n69. Police to report to supervising magistrates. \n70. Chief magistrate to visit police stations every month. \nPART VIII - WARRANTS \n71. General authority to issue warrant. \n72. Form and requisites of warrant of arrest. \n73. Warrant to be issued on complaint only if on cath. \n74. Warrant may be issued on any day. \n75. Warrant, to whom direc"
+      },
+      "plac": null
+    },
+    {
+      "section": 70,
+      "official": {
+        "offset": 4705,
+        "text": "ecords Registry. \n€8. Power to take fingerprints. \n69. Police to report to supervising magistrates. \n70. Chief magistrate to visit police stations every month. \nPART VIII - WARRANTS \n71. General authority to issue warrant. \n72. Form and requisites of warrant of arrest. \n73. Warrant to be issued on complaint only if on cath. \n74. Warrant may be issued on any day. \n75. Warrant, to whom directed and duration. \n76. Warrant of arrest may in exceptional cases be directed to other persons. \n77.  Execution of warrant and procedure. \n78. Power to arrest without possession of warrant. \n79. Cowrt may direct particulars of security to be taken an execution of warrant. \n80. Warrant issued by the Federal High Court. \n81. Re-arrest of suspect cscapi_ng. \n82. Provisions of sections 43 and  53 to apply to"
+      },
+      "plac": null
+    },
+    {
+      "section": 80,
+      "official": {
+        "offset": 5270,
+        "text": "sion of warrant. \n79. Cowrt may direct particulars of security to be taken an execution of warrant. \n80. Warrant issued by the Federal High Court. \n81. Re-arrest of suspect cscapi_ng. \n82. Provisions of sections 43 and  53 to apply to arrests under sections 74 and 79. \n83. Public safety and public order. \nPART IX - PREVENTION OF OFFENCES AND SECURITY FOR GOOD BEHAVIOUR \n84. Police to prevent offences and injury to public property. \n85. Information of plan to commit offerce. \n86. Arrest by police to prevent offences. L \n87. Prevention by other public officers of offences and injury to public property. \nPART X- PROPERTY FOUND AND UNCLAIMED, ETC. \n88. Found and unclaimed property. \n89. Documentation of arrest, witnesses and death in police station. \n90. Missing persons. \nPART X{ - ESTABLISHME"
+      },
+      "plac": null
+    },
+    {
+      "section": 90,
+      "official": {
+        "offset": 5926,
+        "text": "Found and unclaimed property. \n89. Documentation of arrest, witnesses and death in police station. \n90. Missing persons. \nPART X{ - ESTABLISHMENT OF THE POLICE REWARD FUND, ETC. AND OTHER PROVISIONS RELATING TO \nTHE POLICE FORCE \n91. Establishment of the Police Reward Fund. \n92, Recognition and cormmendation for gallanity and exemplary service. \n93. Police officer and indebtedness. \n94. Exception to debt recovery,. \n95. Private business and conflict of interest. \n\nv \nPART XI[-OFFENCES \n96, Offences by a police officer. \n97. \n98. \n99. \n100. \n101 \n102 \n103 \n104. \nApprehension of deserters. \nssault on police officer. \nRefusing \nto \naid \npolice \nofficer \nassaulted. \ni \ni \n. \nDrinking \nof \nalcohol \nor \nuse \nof \npsychotrapic \nsubstances \nand \nstimulants \nwhile \non \nduty. \n.  Impersonation of po"
+      },
+      "plac": null
+    },
+    {
+      "section": 100,
+      "official": {
+        "offset": 113054,
+        "text": "ery. \nPrivate business \nand contliet of \nIntarest. \nOftfences by a \npolice officer. \n\n97. \n98. \n99. \n100. \nState; \n(h) \nfails \nto \ncome \nto \nthe \naid \nor \nto \nassist \nany \nperson \nin \nneed \nof \nassistance \nat \nthe \ntime \nof \ndistress: \n(i)  \nshall \nbe  \nsubject \nto  \nappropriate \ndisciplinary \nproceedings \nin \naccordance \nwith \nthe \npolice \ndisciplinary \nmechanisms, \nand \n(if)  \nif \nfound \nliable, \nshall \nbe \nrecommended \nfor \ndismissal \nand \ncharged \nto \ncourt \nfor \nprosecution \nin \naccordance \nwith \nthe \nrelevant \nlaws \nin \nforce. \n(2) A police officer shall not, in discharging his duty: \n(a)  discriminate against a person in Nigerie, based on the person’s- \ni) place of origin, \nii) gender, \niil)socio-economic status, \nivjethnic, political or religious affiliation, or \n{v)any form of dis"
+      },
+      "plac": null
+    },
+    {
+      "section": 106,
+      "official": {
+        "offset": 7106,
+        "text": "s. \ni \nRésignation, \nsuspension \nand \ndismissal \nof \nspecial \nconstables \nappointed \nunder \nsection \n106. \nAppointment of emergency special constables. \nProvisions supplementary to section 108. \nEquipment. \nInstruction of special constables. \nAllowances, pensions, efc. \nPART \nXIV \n- \nCOMMUNITY \nPOLICING \nCOMMITTEE \n113. \n114. \n115. \n116. \n117. \n118. \n119. \nEstablishment of Community Policing Committee. \nEstablishment of Divisional Community Policing Committee. \nEstablishment of State Community Policing Committees. \nQbjectives of Community Policing Committees. \nDulies of community policing officers. \nFunctions of Community Policing Committees. \nProcedural matters. \nPART XV - TRAFFIC WARDEN SERVICE \n120. \n21 \n122. \n123, \n124. \n125. \n126. \n127, \n128. \n129. \n130. \nEstablishment of Traffic Ward"
+      },
+      "plac": null
+    },
+    {
+      "section": 110,
+      "official": {
+        "offset": 6922,
+        "text": "the \nsame \noffence \nunder \nthis \nAct. \nPART XIII - SPECIAL CONSTABLES \n105 \n106. \n107. \n108. \n109. \n110. \nill. \n112, \n.  The Special Constabulary. \nAppointment \nof \nspecial \nconstables. \ni \nRésignation, \nsuspension \nand \ndismissal \nof \nspecial \nconstables \nappointed \nunder \nsection \n106. \nAppointment of emergency special constables. \nProvisions supplementary to section 108. \nEquipment. \nInstruction of special constables. \nAllowances, pensions, efc. \nPART \nXIV \n- \nCOMMUNITY \nPOLICING \nCOMMITTEE \n113. \n114. \n115. \n116. \n117. \n118. \n119. \nEstablishment of Community Policing Committee. \nEstablishment of Divisional Community Policing Committee. \nEstablishment of State Community Policing Committees. \nQbjectives of Community Policing Committees. \nDulies of community policing officers. \nFunctions"
+      },
+      "plac": null
+    },
+    {
+      "section": 119,
+      "official": {
+        "offset": 7358,
+        "text": "s, pensions, efc. \nPART \nXIV \n- \nCOMMUNITY \nPOLICING \nCOMMITTEE \n113. \n114. \n115. \n116. \n117. \n118. \n119. \nEstablishment of Community Policing Committee. \nEstablishment of Divisional Community Policing Committee. \nEstablishment of State Community Policing Committees. \nQbjectives of Community Policing Committees. \nDulies of community policing officers. \nFunctions of Community Policing Committees. \nProcedural matters. \nPART XV - TRAFFIC WARDEN SERVICE \n120. \n21 \n122. \n123, \n124. \n125. \n126. \n127, \n128. \n129. \n130. \nEstablishment of Traffic Warden Service. \nRecruitment of traffic wardens. \nDeclarations by traffic wardens. \nTenure of office of traffic wardens. \nPowers of traffic wardens. \nCertificate of appointment and discharge. \nRanks of traffic wardens. \nResignation. \nDiscipline. \nProvision"
+      },
+      "plac": null
+    },
+    {
+      "section": 120,
+      "official": {
+        "offset": 141830,
+        "text": "ent shall elect one of \nthem present to preside over the meeting. \nPART XV - TRAFFIC WARDEN SERVICE \n120 (1) There is established a Traffic Warden Service (in this Act referred to as “the Warden  Estwblistment \nService”). of Traffic \nWarden Service \n2) '1;1116 ‘Warden Service shall consist of traffic wardens appointed from time to time under \nthis Act. \n(3) The Warden Service shall be a part of the Police Force and agcordingly, references to \nthe Police Force shall, subject to the provisions of this Act, includs references to the \nWarden Service, \n(4) Notwithstanding subsection (3),  where any Act, whether passed before or after the \ncommencement of this Act, requires police officers to  discharge military duties, or \nconfers any power on any person whether expressly or in  general terms t"
+      },
+      "plac": null
+    },
+    {
+      "section": 130,
+      "official": {
+        "offset": 7770,
+        "text": "atters. \nPART XV - TRAFFIC WARDEN SERVICE \n120. \n21 \n122. \n123, \n124. \n125. \n126. \n127, \n128. \n129. \n130. \nEstablishment of Traffic Warden Service. \nRecruitment of traffic wardens. \nDeclarations by traffic wardens. \nTenure of office of traffic wardens. \nPowers of traffic wardens. \nCertificate of appointment and discharge. \nRanks of traffic wardens. \nResignation. \nDiscipline. \nProvision of equipment. \nInstruction of traffic warden. \nPART XVI - POLICE PUBLIC COMPLAINTS AND DISCIPLINE \n131. Establishment of Police Complaints Response Unit. \n132 \n133 \n134 \n.  Composition of the Unit. \n.  Functions of the Unit. \n.  Stepsto be taken after investigation. \nPART XVII - MISCELLANEOUS PROVISIONS \n135. Prohibition against gender discrimination. \n136. \n137. \n138. \n139. \n140. \n141, \n142. \nApplication of"
+      },
+      "plac": null
+    },
+    {
+      "section": 131,
+      "official": {
+        "offset": 8157,
+        "text": "n of equipment. \nInstruction of traffic warden. \nPART XVI - POLICE PUBLIC COMPLAINTS AND DISCIPLINE \n131. Establishment of Police Complaints Response Unit. \n132 \n133 \n134 \n.  Composition of the Unit. \n.  Functions of the Unit. \n.  Stepsto be taken after investigation. \nPART XVII - MISCELLANEOUS PROVISIONS \n135. Prohibition against gender discrimination. \n136. \n137. \n138. \n139. \n140. \n141, \n142. \nApplication of the Act. \nDisobeying of unlawful orders. \nPower io make regulations. \nRepeal. \nSavings and transitional provisions. \nInterpretation. \nCitation. \nSchedule \n\nNIGERIA POLICE ACT, 2020 \nA Bill \nFor \nAn \nAct \nto \nrepeal \nthe \nPolice \nAct \nCap. \nP19, \nLaws \nof \nthe \nFederation \nof \nNigeria, \n2004 \nand \nenact \nNigeria \nPolice \nAct, \n2020 \nto \nprovide \nthe \nframework \nfor \nthe \nPolice \nForce"
+      },
+      "plac": null
+    },
+    {
+      "section": 132,
+      "official": {
+        "offset": 8213,
+        "text": "I - POLICE PUBLIC COMPLAINTS AND DISCIPLINE \n131. Establishment of Police Complaints Response Unit. \n132 \n133 \n134 \n.  Composition of the Unit. \n.  Functions of the Unit. \n.  Stepsto be taken after investigation. \nPART XVII - MISCELLANEOUS PROVISIONS \n135. Prohibition against gender discrimination. \n136. \n137. \n138. \n139. \n140. \n141, \n142. \nApplication of the Act. \nDisobeying of unlawful orders. \nPower io make regulations. \nRepeal. \nSavings and transitional provisions. \nInterpretation. \nCitation. \nSchedule \n\nNIGERIA POLICE ACT, 2020 \nA Bill \nFor \nAn \nAct \nto \nrepeal \nthe \nPolice \nAct \nCap. \nP19, \nLaws \nof \nthe \nFederation \nof \nNigeria, \n2004 \nand \nenact \nNigeria \nPolice \nAct, \n2020 \nto \nprovide \nthe \nframework \nfor \nthe \nPolice \nForce \nand \nensure \ncooperation \nand \npartnership \nbetween \nt"
+      },
+      "plac": null
+    },
+    {
+      "section": 140,
+      "official": {
+        "offset": 152436,
+        "text": "Unit, \nComposition of \nthe Unit. \nFunctions of the \nUnit. \nSteps to be \nfaken after \ninvestigation. \n\n140. \nknowingly gave false information against the police officer or should \nhave reasonably known that the information is false, the complainant \nshall \nbe \ntried \naccording \nto \nrelevant \nlaws \nfor \nthe \ntime \nbeing \nin \nforce. \nPART XVII - MISCELLANEOUS PROVISIONS \nThe \nPolice \nForce \nor \nother \npersons \nshail \nnot, \niz \nthe  \nperformance \nof \nhis \nor \nits \nfunctions \nunder \nthis \nAct, \nregulations \nor \nstanding \norders \nmade \nunder \nto \nthis \nAct, \ndiscriminate \nagainst \nany \nEerson \non \nthe \nbasis \nof \ngender \nas \nprovided \nunder \nsection \n42 \nof \nthe \nConstitution \nof \nthe \nederal \nRepublic \nof \nNigeria, \n1999. \nAll \nthe \nprovisions \nof \nthis \nAct \nshall \nextend \nto \nall  \npersons \nw"
+      },
+      "plac": null
+    },
+    {
+      "section": 141,
+      "official": {
+        "offset": 155716,
+        "text": "ers. \nPower to  maks \nregulations. \nActNo. 4, 2014 \nRopeal. \nSavings and \ntransitional \nprovisions. \n\n141 \nunder this Act. \n(3) \nAny \ncontract \nor \ninstrument \nreferred \nto \nin \nsubsection \n(2) \nhas \nthe \nsame \neffect \nagainst \nor \nin \nFavour \nof \nthe \nPolice \nForce \nestablished \nunder \nthis \nAct \nand \nshall \nbe \nenforced \nas \nfully \nand \neffectively \nas \nif, \ninstead \nof \nthe \nPolice \nForce \nexistin \nimmediately \nbefore \nthe \ncommencement \nof \nthis \nAct, \nthe \nPolice \nForce \nestablished \nunder \nthis \nAct \nhad \nbeen \nnamed in it or had been a party to it. \n(4)  \nAny \nproceeding \nor  \ncauss \nof \naction \npending \nor  \nexisting \nimmediately \nbefore \nthe \ncommencement \nof \nthis \nAct \nin \nrespeet \nof \nany \nright, \ninterest, \nobligation \nor \nLiability \nof \nthe \nPolice \nForce \nexisting \nimmediate"
+      },
+      "plac": null
+    },
+    {
+      "section": 142,
+      "official": {
+        "offset": 8449,
+        "text": "OUS PROVISIONS \n135. Prohibition against gender discrimination. \n136. \n137. \n138. \n139. \n140. \n141, \n142. \nApplication of the Act. \nDisobeying of unlawful orders. \nPower io make regulations. \nRepeal. \nSavings and transitional provisions. \nInterpretation. \nCitation. \nSchedule \n\nNIGERIA POLICE ACT, 2020 \nA Bill \nFor \nAn \nAct \nto \nrepeal \nthe \nPolice \nAct \nCap. \nP19, \nLaws \nof \nthe \nFederation \nof \nNigeria, \n2004 \nand \nenact \nNigeria \nPolice \nAct, \n2020 \nto \nprovide \nthe \nframework \nfor \nthe \nPolice \nForce \nand \nensure \ncooperation \nand \npartnership \nbetween \nthe \npolice \nand \nhost \ncommunities \nin \nmaintaining \npeace, \ncombating \ncrime, \nprotecting \nliberties, \nlife \nand \nproperty; \nand \nfor \nrelated \nmatters. \n{ }  Commencement. \nENACTED by the National Assembly of the Federal Republic of N"
+      },
+      "plac": null
+    }
+  ]
+}

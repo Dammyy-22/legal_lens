@@ -1,0 +1,234 @@
+[
+  {
+    "file": "Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.pdf",
+    "type": "constitution",
+    "pages": 280,
+    "characters": 495078,
+    "words": 80985,
+    "status": "PASS",
+    "warnings": [],
+    "structure": {
+      "arrangementFound": true,
+      "firstSectionFound": true,
+      "chapters": [
+        "I",
+        "II",
+        "III",
+        "IV",
+        "V",
+        "VI",
+        "VII",
+        "VIII",
+        "I",
+        "II",
+        "III",
+        "IV",
+        "V",
+        "VI",
+        "VII",
+        "VIII"
+      ],
+      "schedules": 32
+    }
+  },
+  {
+    "file": "DCRMA-COMPENDIUM_2022.pdf",
+    "type": "compendium",
+    "pages": 24,
+    "characters": 29429,
+    "words": 4823,
+    "status": "PASS",
+    "warnings": [],
+    "structure": {
+      "arrangementFound": false,
+      "firstSectionFound": true,
+      "parts": 0,
+      "chapters": 0,
+      "schedules": 0
+    }
+  },
+  {
+    "file": "FCCPA-2018.pdf",
+    "type": "act",
+    "pages": 99,
+    "characters": 234524,
+    "words": 35814,
+    "status": "REVIEW",
+    "warnings": [
+      "Required structural pattern not found: /ARRANGEMENT OF SECTIONS/i",
+      "Required structural pattern not found: /PART II/i",
+      "Required structural pattern not found: /PART III/i",
+      "Detected last section 168; expected approximately 163.",
+      "Suspicious extraction pattern: obvious_encoding_corruption"
+    ],
+    "structure": {
+      "arrangementFound": false,
+      "firstSectionFound": false,
+      "detectedSectionCount": 71,
+      "uniqueSectionCount": 64,
+      "firstDetectedSection": 2,
+      "lastDetectedSection": 168,
+      "expectedLastSection": 163,
+      "parts": [
+        "X"
+      ],
+      "schedules": 7,
+      "suspicious": [
+        {
+          "type": "obvious_encoding_corruption",
+          "sample": "€"
+        }
+      ]
+    }
+  },
+  {
+    "file": "Labour Act.pdf",
+    "type": "act_with_subsidiary",
+    "pages": 80,
+    "characters": 200204,
+    "words": 32674,
+    "status": "REVIEW",
+    "warnings": [
+      "Required structural pattern not found: /PART III/i",
+      "Detected last section 92; expected approximately 91."
+    ],
+    "structure": {
+      "arrangementFound": true,
+      "firstSectionFound": true,
+      "detectedSectionCount": 268,
+      "uniqueSectionCount": 92,
+      "firstDetectedSection": 1,
+      "lastDetectedSection": 92,
+      "expectedLastSection": 91,
+      "parts": [
+        "I",
+        "II",
+        "ill",
+        "IV",
+        "I",
+        "II",
+        "Ill",
+        "I",
+        "IV",
+        "I",
+        "II",
+        "ill",
+        "IV"
+      ],
+      "schedules": 5
+    }
+  },
+  {
+    "file": "Lagos-State-Road-Traffic-Law.pdf",
+    "type": "state_act_with_subsidiary",
+    "pages": 51,
+    "characters": 133270,
+    "words": 22147,
+    "status": "PASS",
+    "warnings": [],
+    "structure": {
+      "arrangementFound": true,
+      "firstSectionFound": true
+    }
+  },
+  {
+    "file": "Police-Act-2020.pdf",
+    "type": "act",
+    "pages": 57,
+    "characters": 163457,
+    "words": 24711,
+    "status": "REVIEW",
+    "warnings": [
+      "Suspicious extraction pattern: reversed_or_garbled_tail",
+      "Suspicious extraction pattern: obvious_encoding_corruption",
+      "Potential corrupted PDF text layer detected after the valid legal content. Preserve raw PDF; exclude the corrupted tail during normalization."
+    ],
+    "structure": {
+      "arrangementFound": true,
+      "firstSectionFound": true,
+      "detectedSectionCount": 95,
+      "uniqueSectionCount": 89,
+      "firstDetectedSection": 1,
+      "lastDetectedSection": 142,
+      "expectedLastSection": 142,
+      "parts": [
+        "I",
+        "II",
+        "IV",
+        "VI",
+        "VI",
+        "VIII",
+        "IX",
+        "X",
+        "X",
+        "XI",
+        "XIII",
+        "XIV",
+        "XV",
+        "XVI",
+        "XVII",
+        "I",
+        "Il",
+        "III",
+        "IV",
+        "V",
+        "VI",
+        "XIV",
+        "VII",
+        "VII",
+        "IX",
+        "X",
+        "XI",
+        "XII",
+        "XIII",
+        "XV",
+        "XV",
+        "XVII"
+      ],
+      "schedules": 3,
+      "suspicious": [
+        {
+          "type": "reversed_or_garbled_tail",
+          "sample": "VLo \no)"
+        },
+        {
+          "type": "obvious_encoding_corruption",
+          "sample": "€"
+        }
+      ],
+      "corruptedTailDetected": true,
+      "corruptedTailIndex": 161349
+    }
+  },
+  {
+    "file": "RC-COMPENDIUM-2024.pdf",
+    "type": "compendium",
+    "pages": 82,
+    "characters": 137724,
+    "words": 21472,
+    "status": "PASS",
+    "warnings": [],
+    "structure": {
+      "arrangementFound": false,
+      "firstSectionFound": true,
+      "parts": 1,
+      "chapters": 0,
+      "schedules": 0
+    }
+  },
+  {
+    "file": "Roles-Rights-Responsibilities-Under-New-Police-Act.pdf",
+    "type": "secondary_explanatory",
+    "pages": 8,
+    "characters": 18026,
+    "words": 2714,
+    "status": "PASS",
+    "warnings": [],
+    "structure": {
+      "arrangementFound": false,
+      "firstSectionFound": false,
+      "parts": 0,
+      "chapters": 0
+    }
+  }
+]

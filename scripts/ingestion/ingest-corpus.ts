@@ -9,7 +9,7 @@ import OpenAI from 'openai'
 import { createHash } from 'node:crypto'
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import pdfParse from 'pdf-parse/lib/pdf-parse.js'
+import pdfParse from 'pdf-parse'
 
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const MAX_CHUNK_CHARS = 6000

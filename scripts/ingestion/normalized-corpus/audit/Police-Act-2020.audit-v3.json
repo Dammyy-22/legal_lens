@@ -1,0 +1,891 @@
+{
+  "document": {
+    "sourceFile": "Police-Act-2020.pdf",
+    "normalizedFile": "Police-Act-2020.json",
+    "actualActStart": 8687,
+    "scheduleStart": 16963,
+    "bodyCharacters": 8276
+  },
+  "parts": [
+    {
+      "roman": "I",
+      "title": "PRELIMINARY",
+      "bodyOffset": 68
+    },
+    {
+      "roman": "IL",
+      "title": "ESTABLISHMENT,",
+      "bodyOffset": 1659
+    },
+    {
+      "roman": "III",
+      "title": "APPOINTMENT,",
+      "bodyOffset": 6819
+    }
+  ],
+  "summary": {
+    "expectedSections": 142,
+    "detectedCandidates": 0,
+    "found": 0,
+    "missing": 142,
+    "ocrReview": 0,
+    "duplicateReview": 0,
+    "orderingProblems": 0
+  },
+  "sections": [
+    {
+      "number": 1,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 2,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 3,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 4,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 5,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 6,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 7,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 8,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 9,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 10,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 11,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 12,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 13,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 14,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 15,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 16,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 17,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 18,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 19,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 20,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 21,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 22,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 23,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 24,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 25,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 26,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 27,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 28,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 29,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 30,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 31,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 32,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 33,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 34,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 35,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 36,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 37,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 38,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 39,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 40,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 41,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 42,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 43,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 44,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 45,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 46,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 47,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 48,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 49,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 50,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 51,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 52,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 53,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 54,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 55,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 56,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 57,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 58,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 59,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 60,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 61,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 62,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 63,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 64,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 65,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 66,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 67,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 68,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 69,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 70,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 71,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 72,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 73,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 74,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 75,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 76,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 77,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 78,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 79,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 80,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 81,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 82,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 83,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 84,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 85,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 86,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 87,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 88,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 89,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 90,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 91,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 92,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 93,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 94,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 95,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 96,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 97,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 98,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 99,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 100,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 101,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 102,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 103,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 104,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 105,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 106,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 107,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 108,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 109,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 110,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 111,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 112,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 113,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 114,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 115,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 116,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 117,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 118,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 119,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 120,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 121,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 122,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 123,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 124,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 125,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 126,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 127,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 128,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 129,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 130,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 131,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 132,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 133,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 134,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 135,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 136,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 137,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 138,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 139,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 140,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 141,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    },
+    {
+      "number": 142,
+      "status": "MISSING",
+      "selected": null,
+      "alternatives": []
+    }
+  ],
+  "orderingProblems": [],
+  "generatedAt": "2026-09-28T15:00:55.280Z"
+}

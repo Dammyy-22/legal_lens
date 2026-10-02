@@ -1,0 +1,3606 @@
+{
+  "generatedAt": "2026-09-28T14:31:28.411Z",
+  "corpusDir": "C:\\Users\\hp\\Documents\\legal_lens\\legal corpus",
+  "results": [
+    {
+      "file": "Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.pdf",
+      "rule": {
+        "type": "constitution",
+        "expectedSectionMax": 320,
+        "requireArrangement": true,
+        "requireChapters": true,
+        "requireSchedules": true
+      },
+      "pages": 280,
+      "characters": 495078,
+      "words": 80985,
+      "sectionValidation": {
+        "totalDetected": 821,
+        "uniqueDetected": 320,
+        "firstDetected": 1,
+        "lastDetected": 320,
+        "missing": [],
+        "duplicates": [
+          {
+            "section": 1,
+            "occurrences": 13
+          },
+          {
+            "section": 2,
+            "occurrences": 13
+          },
+          {
+            "section": 3,
+            "occurrences": 8
+          },
+          {
+            "section": 4,
+            "occurrences": 8
+          },
+          {
+            "section": 5,
+            "occurrences": 8
+          },
+          {
+            "section": 6,
+            "occurrences": 8
+          },
+          {
+            "section": 7,
+            "occurrences": 7
+          },
+          {
+            "section": 8,
+            "occurrences": 7
+          },
+          {
+            "section": 9,
+            "occurrences": 7
+          },
+          {
+            "section": 10,
+            "occurrences": 7
+          },
+          {
+            "section": 11,
+            "occurrences": 7
+          },
+          {
+            "section": 12,
+            "occurrences": 7
+          },
+          {
+            "section": 13,
+            "occurrences": 7
+          },
+          {
+            "section": 14,
+            "occurrences": 7
+          },
+          {
+            "section": 15,
+            "occurrences": 7
+          },
+          {
+            "section": 16,
+            "occurrences": 7
+          },
+          {
+            "section": 17,
+            "occurrences": 6
+          },
+          {
+            "section": 18,
+            "occurrences": 6
+          },
+          {
+            "section": 19,
+            "occurrences": 6
+          },
+          {
+            "section": 20,
+            "occurrences": 5
+          },
+          {
+            "section": 21,
+            "occurrences": 5
+          },
+          {
+            "section": 22,
+            "occurrences": 5
+          },
+          {
+            "section": 23,
+            "occurrences": 5
+          },
+          {
+            "section": 24,
+            "occurrences": 5
+          },
+          {
+            "section": 25,
+            "occurrences": 5
+          },
+          {
+            "section": 26,
+            "occurrences": 5
+          },
+          {
+            "section": 27,
+            "occurrences": 5
+          },
+          {
+            "section": 28,
+            "occurrences": 5
+          },
+          {
+            "section": 29,
+            "occurrences": 5
+          },
+          {
+            "section": 30,
+            "occurrences": 5
+          },
+          {
+            "section": 31,
+            "occurrences": 4
+          },
+          {
+            "section": 32,
+            "occurrences": 4
+          },
+          {
+            "section": 33,
+            "occurrences": 3
+          },
+          {
+            "section": 34,
+            "occurrences": 3
+          },
+          {
+            "section": 35,
+            "occurrences": 3
+          },
+          {
+            "section": 36,
+            "occurrences": 3
+          },
+          {
+            "section": 37,
+            "occurrences": 3
+          },
+          {
+            "section": 38,
+            "occurrences": 3
+          },
+          {
+            "section": 39,
+            "occurrences": 3
+          },
+          {
+            "section": 40,
+            "occurrences": 3
+          },
+          {
+            "section": 41,
+            "occurrences": 3
+          },
+          {
+            "section": 42,
+            "occurrences": 3
+          },
+          {
+            "section": 43,
+            "occurrences": 3
+          },
+          {
+            "section": 44,
+            "occurrences": 3
+          },
+          {
+            "section": 45,
+            "occurrences": 3
+          },
+          {
+            "section": 46,
+            "occurrences": 3
+          },
+          {
+            "section": 47,
+            "occurrences": 3
+          },
+          {
+            "section": 48,
+            "occurrences": 3
+          },
+          {
+            "section": 49,
+            "occurrences": 3
+          },
+          {
+            "section": 50,
+            "occurrences": 3
+          },
+          {
+            "section": 51,
+            "occurrences": 3
+          },
+          {
+            "section": 52,
+            "occurrences": 3
+          },
+          {
+            "section": 53,
+            "occurrences": 3
+          },
+          {
+            "section": 54,
+            "occurrences": 3
+          },
+          {
+            "section": 55,
+            "occurrences": 3
+          },
+          {
+            "section": 56,
+            "occurrences": 3
+          },
+          {
+            "section": 57,
+            "occurrences": 3
+          },
+          {
+            "section": 58,
+            "occurrences": 3
+          },
+          {
+            "section": 59,
+            "occurrences": 3
+          },
+          {
+            "section": 60,
+            "occurrences": 3
+          },
+          {
+            "section": 61,
+            "occurrences": 3
+          },
+          {
+            "section": 62,
+            "occurrences": 3
+          },
+          {
+            "section": 63,
+            "occurrences": 3
+          },
+          {
+            "section": 64,
+            "occurrences": 3
+          },
+          {
+            "section": 65,
+            "occurrences": 3
+          },
+          {
+            "section": 66,
+            "occurrences": 3
+          },
+          {
+            "section": 67,
+            "occurrences": 3
+          },
+          {
+            "section": 68,
+            "occurrences": 3
+          },
+          {
+            "section": 69,
+            "occurrences": 2
+          },
+          {
+            "section": 70,
+            "occurrences": 2
+          },
+          {
+            "section": 71,
+            "occurrences": 2
+          },
+          {
+            "section": 72,
+            "occurrences": 2
+          },
+          {
+            "section": 73,
+            "occurrences": 2
+          },
+          {
+            "section": 74,
+            "occurrences": 2
+          },
+          {
+            "section": 75,
+            "occurrences": 2
+          },
+          {
+            "section": 76,
+            "occurrences": 2
+          },
+          {
+            "section": 77,
+            "occurrences": 2
+          },
+          {
+            "section": 78,
+            "occurrences": 2
+          },
+          {
+            "section": 79,
+            "occurrences": 2
+          },
+          {
+            "section": 80,
+            "occurrences": 2
+          },
+          {
+            "section": 81,
+            "occurrences": 2
+          },
+          {
+            "section": 82,
+            "occurrences": 2
+          },
+          {
+            "section": 83,
+            "occurrences": 2
+          },
+          {
+            "section": 84,
+            "occurrences": 2
+          },
+          {
+            "section": 85,
+            "occurrences": 2
+          },
+          {
+            "section": 86,
+            "occurrences": 2
+          },
+          {
+            "section": 87,
+            "occurrences": 2
+          },
+          {
+            "section": 88,
+            "occurrences": 2
+          },
+          {
+            "section": 89,
+            "occurrences": 2
+          },
+          {
+            "section": 90,
+            "occurrences": 2
+          },
+          {
+            "section": 91,
+            "occurrences": 2
+          },
+          {
+            "section": 92,
+            "occurrences": 2
+          },
+          {
+            "section": 93,
+            "occurrences": 2
+          },
+          {
+            "section": 94,
+            "occurrences": 2
+          },
+          {
+            "section": 95,
+            "occurrences": 2
+          },
+          {
+            "section": 96,
+            "occurrences": 2
+          },
+          {
+            "section": 97,
+            "occurrences": 2
+          },
+          {
+            "section": 98,
+            "occurrences": 2
+          },
+          {
+            "section": 99,
+            "occurrences": 2
+          },
+          {
+            "section": 100,
+            "occurrences": 2
+          },
+          {
+            "section": 101,
+            "occurrences": 2
+          },
+          {
+            "section": 102,
+            "occurrences": 2
+          },
+          {
+            "section": 103,
+            "occurrences": 2
+          },
+          {
+            "section": 104,
+            "occurrences": 2
+          },
+          {
+            "section": 105,
+            "occurrences": 2
+          },
+          {
+            "section": 106,
+            "occurrences": 2
+          },
+          {
+            "section": 107,
+            "occurrences": 2
+          },
+          {
+            "section": 108,
+            "occurrences": 2
+          },
+          {
+            "section": 109,
+            "occurrences": 2
+          },
+          {
+            "section": 110,
+            "occurrences": 2
+          },
+          {
+            "section": 111,
+            "occurrences": 2
+          },
+          {
+            "section": 112,
+            "occurrences": 2
+          },
+          {
+            "section": 113,
+            "occurrences": 2
+          },
+          {
+            "section": 114,
+            "occurrences": 2
+          },
+          {
+            "section": 115,
+            "occurrences": 2
+          },
+          {
+            "section": 116,
+            "occurrences": 2
+          },
+          {
+            "section": 117,
+            "occurrences": 2
+          },
+          {
+            "section": 118,
+            "occurrences": 2
+          },
+          {
+            "section": 119,
+            "occurrences": 2
+          },
+          {
+            "section": 120,
+            "occurrences": 2
+          },
+          {
+            "section": 121,
+            "occurrences": 2
+          },
+          {
+            "section": 122,
+            "occurrences": 2
+          },
+          {
+            "section": 123,
+            "occurrences": 2
+          },
+          {
+            "section": 124,
+            "occurrences": 2
+          },
+          {
+            "section": 125,
+            "occurrences": 2
+          },
+          {
+            "section": 126,
+            "occurrences": 2
+          },
+          {
+            "section": 127,
+            "occurrences": 2
+          },
+          {
+            "section": 128,
+            "occurrences": 2
+          },
+          {
+            "section": 129,
+            "occurrences": 2
+          },
+          {
+            "section": 130,
+            "occurrences": 2
+          },
+          {
+            "section": 131,
+            "occurrences": 2
+          },
+          {
+            "section": 132,
+            "occurrences": 2
+          },
+          {
+            "section": 133,
+            "occurrences": 2
+          },
+          {
+            "section": 134,
+            "occurrences": 2
+          },
+          {
+            "section": 135,
+            "occurrences": 2
+          },
+          {
+            "section": 136,
+            "occurrences": 2
+          },
+          {
+            "section": 137,
+            "occurrences": 2
+          },
+          {
+            "section": 138,
+            "occurrences": 2
+          },
+          {
+            "section": 139,
+            "occurrences": 2
+          },
+          {
+            "section": 140,
+            "occurrences": 2
+          },
+          {
+            "section": 141,
+            "occurrences": 2
+          },
+          {
+            "section": 142,
+            "occurrences": 2
+          },
+          {
+            "section": 143,
+            "occurrences": 2
+          },
+          {
+            "section": 144,
+            "occurrences": 2
+          },
+          {
+            "section": 145,
+            "occurrences": 2
+          },
+          {
+            "section": 146,
+            "occurrences": 2
+          },
+          {
+            "section": 147,
+            "occurrences": 2
+          },
+          {
+            "section": 148,
+            "occurrences": 2
+          },
+          {
+            "section": 149,
+            "occurrences": 2
+          },
+          {
+            "section": 150,
+            "occurrences": 2
+          },
+          {
+            "section": 151,
+            "occurrences": 2
+          },
+          {
+            "section": 152,
+            "occurrences": 2
+          },
+          {
+            "section": 153,
+            "occurrences": 2
+          },
+          {
+            "section": 154,
+            "occurrences": 2
+          },
+          {
+            "section": 155,
+            "occurrences": 2
+          },
+          {
+            "section": 156,
+            "occurrences": 2
+          },
+          {
+            "section": 157,
+            "occurrences": 2
+          },
+          {
+            "section": 158,
+            "occurrences": 2
+          },
+          {
+            "section": 159,
+            "occurrences": 2
+          },
+          {
+            "section": 160,
+            "occurrences": 2
+          },
+          {
+            "section": 161,
+            "occurrences": 2
+          },
+          {
+            "section": 162,
+            "occurrences": 2
+          },
+          {
+            "section": 163,
+            "occurrences": 2
+          },
+          {
+            "section": 164,
+            "occurrences": 2
+          },
+          {
+            "section": 165,
+            "occurrences": 2
+          },
+          {
+            "section": 166,
+            "occurrences": 2
+          },
+          {
+            "section": 167,
+            "occurrences": 2
+          },
+          {
+            "section": 168,
+            "occurrences": 2
+          },
+          {
+            "section": 169,
+            "occurrences": 2
+          },
+          {
+            "section": 170,
+            "occurrences": 2
+          },
+          {
+            "section": 171,
+            "occurrences": 2
+          },
+          {
+            "section": 172,
+            "occurrences": 2
+          },
+          {
+            "section": 173,
+            "occurrences": 2
+          },
+          {
+            "section": 174,
+            "occurrences": 2
+          },
+          {
+            "section": 175,
+            "occurrences": 2
+          },
+          {
+            "section": 176,
+            "occurrences": 2
+          },
+          {
+            "section": 177,
+            "occurrences": 2
+          },
+          {
+            "section": 178,
+            "occurrences": 2
+          },
+          {
+            "section": 179,
+            "occurrences": 2
+          },
+          {
+            "section": 180,
+            "occurrences": 2
+          },
+          {
+            "section": 181,
+            "occurrences": 2
+          },
+          {
+            "section": 182,
+            "occurrences": 2
+          },
+          {
+            "section": 183,
+            "occurrences": 2
+          },
+          {
+            "section": 184,
+            "occurrences": 2
+          },
+          {
+            "section": 185,
+            "occurrences": 2
+          },
+          {
+            "section": 186,
+            "occurrences": 2
+          },
+          {
+            "section": 187,
+            "occurrences": 2
+          },
+          {
+            "section": 188,
+            "occurrences": 2
+          },
+          {
+            "section": 189,
+            "occurrences": 2
+          },
+          {
+            "section": 190,
+            "occurrences": 2
+          },
+          {
+            "section": 191,
+            "occurrences": 2
+          },
+          {
+            "section": 192,
+            "occurrences": 2
+          },
+          {
+            "section": 193,
+            "occurrences": 2
+          },
+          {
+            "section": 194,
+            "occurrences": 2
+          },
+          {
+            "section": 195,
+            "occurrences": 2
+          },
+          {
+            "section": 196,
+            "occurrences": 2
+          },
+          {
+            "section": 197,
+            "occurrences": 2
+          },
+          {
+            "section": 198,
+            "occurrences": 2
+          },
+          {
+            "section": 199,
+            "occurrences": 2
+          },
+          {
+            "section": 200,
+            "occurrences": 2
+          },
+          {
+            "section": 201,
+            "occurrences": 2
+          },
+          {
+            "section": 202,
+            "occurrences": 2
+          },
+          {
+            "section": 203,
+            "occurrences": 2
+          },
+          {
+            "section": 204,
+            "occurrences": 2
+          },
+          {
+            "section": 205,
+            "occurrences": 2
+          },
+          {
+            "section": 206,
+            "occurrences": 2
+          },
+          {
+            "section": 207,
+            "occurrences": 2
+          },
+          {
+            "section": 208,
+            "occurrences": 2
+          },
+          {
+            "section": 209,
+            "occurrences": 2
+          },
+          {
+            "section": 210,
+            "occurrences": 2
+          },
+          {
+            "section": 211,
+            "occurrences": 2
+          },
+          {
+            "section": 212,
+            "occurrences": 2
+          },
+          {
+            "section": 213,
+            "occurrences": 2
+          },
+          {
+            "section": 214,
+            "occurrences": 2
+          },
+          {
+            "section": 215,
+            "occurrences": 2
+          },
+          {
+            "section": 216,
+            "occurrences": 2
+          },
+          {
+            "section": 217,
+            "occurrences": 2
+          },
+          {
+            "section": 218,
+            "occurrences": 2
+          },
+          {
+            "section": 219,
+            "occurrences": 2
+          },
+          {
+            "section": 220,
+            "occurrences": 2
+          },
+          {
+            "section": 221,
+            "occurrences": 2
+          },
+          {
+            "section": 222,
+            "occurrences": 2
+          },
+          {
+            "section": 223,
+            "occurrences": 2
+          },
+          {
+            "section": 224,
+            "occurrences": 2
+          },
+          {
+            "section": 225,
+            "occurrences": 2
+          },
+          {
+            "section": 226,
+            "occurrences": 2
+          },
+          {
+            "section": 227,
+            "occurrences": 2
+          },
+          {
+            "section": 228,
+            "occurrences": 2
+          },
+          {
+            "section": 229,
+            "occurrences": 2
+          },
+          {
+            "section": 230,
+            "occurrences": 2
+          },
+          {
+            "section": 231,
+            "occurrences": 2
+          },
+          {
+            "section": 232,
+            "occurrences": 2
+          },
+          {
+            "section": 233,
+            "occurrences": 2
+          },
+          {
+            "section": 234,
+            "occurrences": 2
+          },
+          {
+            "section": 235,
+            "occurrences": 2
+          },
+          {
+            "section": 236,
+            "occurrences": 2
+          },
+          {
+            "section": 237,
+            "occurrences": 2
+          },
+          {
+            "section": 238,
+            "occurrences": 2
+          },
+          {
+            "section": 239,
+            "occurrences": 2
+          },
+          {
+            "section": 240,
+            "occurrences": 2
+          },
+          {
+            "section": 241,
+            "occurrences": 2
+          },
+          {
+            "section": 242,
+            "occurrences": 2
+          },
+          {
+            "section": 243,
+            "occurrences": 2
+          },
+          {
+            "section": 244,
+            "occurrences": 2
+          },
+          {
+            "section": 245,
+            "occurrences": 2
+          },
+          {
+            "section": 246,
+            "occurrences": 2
+          },
+          {
+            "section": 247,
+            "occurrences": 2
+          },
+          {
+            "section": 248,
+            "occurrences": 2
+          },
+          {
+            "section": 249,
+            "occurrences": 2
+          },
+          {
+            "section": 250,
+            "occurrences": 2
+          },
+          {
+            "section": 251,
+            "occurrences": 2
+          },
+          {
+            "section": 252,
+            "occurrences": 2
+          },
+          {
+            "section": 253,
+            "occurrences": 2
+          },
+          {
+            "section": 254,
+            "occurrences": 2
+          },
+          {
+            "section": 255,
+            "occurrences": 2
+          },
+          {
+            "section": 256,
+            "occurrences": 2
+          },
+          {
+            "section": 257,
+            "occurrences": 2
+          },
+          {
+            "section": 258,
+            "occurrences": 2
+          },
+          {
+            "section": 259,
+            "occurrences": 2
+          },
+          {
+            "section": 260,
+            "occurrences": 2
+          },
+          {
+            "section": 261,
+            "occurrences": 2
+          },
+          {
+            "section": 262,
+            "occurrences": 2
+          },
+          {
+            "section": 263,
+            "occurrences": 2
+          },
+          {
+            "section": 264,
+            "occurrences": 2
+          },
+          {
+            "section": 265,
+            "occurrences": 2
+          },
+          {
+            "section": 266,
+            "occurrences": 2
+          },
+          {
+            "section": 267,
+            "occurrences": 2
+          },
+          {
+            "section": 268,
+            "occurrences": 2
+          },
+          {
+            "section": 269,
+            "occurrences": 2
+          },
+          {
+            "section": 270,
+            "occurrences": 2
+          },
+          {
+            "section": 271,
+            "occurrences": 2
+          },
+          {
+            "section": 272,
+            "occurrences": 2
+          },
+          {
+            "section": 273,
+            "occurrences": 2
+          },
+          {
+            "section": 274,
+            "occurrences": 2
+          },
+          {
+            "section": 275,
+            "occurrences": 2
+          },
+          {
+            "section": 276,
+            "occurrences": 2
+          },
+          {
+            "section": 277,
+            "occurrences": 2
+          },
+          {
+            "section": 278,
+            "occurrences": 2
+          },
+          {
+            "section": 279,
+            "occurrences": 2
+          },
+          {
+            "section": 280,
+            "occurrences": 2
+          },
+          {
+            "section": 281,
+            "occurrences": 2
+          },
+          {
+            "section": 282,
+            "occurrences": 2
+          },
+          {
+            "section": 283,
+            "occurrences": 2
+          },
+          {
+            "section": 284,
+            "occurrences": 2
+          },
+          {
+            "section": 285,
+            "occurrences": 2
+          },
+          {
+            "section": 286,
+            "occurrences": 2
+          },
+          {
+            "section": 287,
+            "occurrences": 2
+          },
+          {
+            "section": 288,
+            "occurrences": 2
+          },
+          {
+            "section": 289,
+            "occurrences": 2
+          },
+          {
+            "section": 290,
+            "occurrences": 2
+          },
+          {
+            "section": 291,
+            "occurrences": 2
+          },
+          {
+            "section": 292,
+            "occurrences": 2
+          },
+          {
+            "section": 293,
+            "occurrences": 2
+          },
+          {
+            "section": 294,
+            "occurrences": 2
+          },
+          {
+            "section": 295,
+            "occurrences": 2
+          },
+          {
+            "section": 296,
+            "occurrences": 2
+          },
+          {
+            "section": 297,
+            "occurrences": 2
+          },
+          {
+            "section": 298,
+            "occurrences": 2
+          },
+          {
+            "section": 299,
+            "occurrences": 2
+          },
+          {
+            "section": 300,
+            "occurrences": 2
+          },
+          {
+            "section": 301,
+            "occurrences": 2
+          },
+          {
+            "section": 302,
+            "occurrences": 2
+          },
+          {
+            "section": 303,
+            "occurrences": 2
+          },
+          {
+            "section": 304,
+            "occurrences": 2
+          },
+          {
+            "section": 305,
+            "occurrences": 2
+          },
+          {
+            "section": 306,
+            "occurrences": 2
+          },
+          {
+            "section": 307,
+            "occurrences": 2
+          },
+          {
+            "section": 308,
+            "occurrences": 2
+          },
+          {
+            "section": 309,
+            "occurrences": 2
+          },
+          {
+            "section": 310,
+            "occurrences": 2
+          },
+          {
+            "section": 311,
+            "occurrences": 2
+          },
+          {
+            "section": 312,
+            "occurrences": 2
+          },
+          {
+            "section": 313,
+            "occurrences": 2
+          },
+          {
+            "section": 314,
+            "occurrences": 2
+          },
+          {
+            "section": 315,
+            "occurrences": 2
+          },
+          {
+            "section": 316,
+            "occurrences": 2
+          },
+          {
+            "section": 317,
+            "occurrences": 2
+          },
+          {
+            "section": 318,
+            "occurrences": 2
+          },
+          {
+            "section": 319,
+            "occurrences": 2
+          },
+          {
+            "section": 320,
+            "occurrences": 2
+          }
+        ]
+      },
+      "parts": [
+        "PART I",
+        "PART II",
+        "PART I",
+        "PART II",
+        "PART I",
+        "PART II",
+        "PART III",
+        "PART I",
+        "PART II",
+        "PART III",
+        "PART IV",
+        "PART I",
+        "PART II",
+        "PART III",
+        "PART IV",
+        "PART I",
+        "PART II",
+        "PART I",
+        "PART II",
+        "PART III",
+        "PART I",
+        "PART II",
+        "PART III",
+        "PART I",
+        "PART II",
+        "PART I",
+        "part thereof, except in accordance with the provisions",
+        "Part I of the",
+        "Part I First Schedule]",
+        "Part I of the First Schedule opposite the State named in",
+        "Part I First Schedule]",
+        "Part II",
+        "Part II First Schedule]",
+        "Part I of Chapter VIII hereof",
+        "Part I of the First",
+        "Part \nII of that Schedule.",
+        "Part I and II First Schedule]",
+        "PART II",
+        "part thereof with respect to any matter included in the Exclusive",
+        "Part I of the Second Schedule to this",
+        "Part I First Schedule]",
+        "Part II of the Second Schedule to this Constitution to",
+        "Part II Second Schedule]",
+        "part \nthereof with respect to the following matters, that is to say-",
+        "Part I of the Second Schedule to this Constitution;",
+        "Part I Second Schedule]",
+        "Part II of the Second Schedule to this",
+        "Part II Second Schedule]",
+        "Part I and II First Schedule]",
+        "part thereof with respect to the maintenance and securing of public",
+        "part thereof with respect to",
+        "part thereof with respect to matters not included in the Exclusive",
+        "part of the Federation;",
+        "part of -",
+        "part of",
+        "part in or attend any",
+        "part in the activity or be a member of a secret society.",
+        "part thereof, and no citizen of Nigeria",
+        "part of Nigeria except in the manner and for the purposes",
+        "part of Nigeria.",
+        "PART I",
+        "part in the election of a President and a Deputy President of the",
+        "part of Nigeria, he is adjudged",
+        "part \nof Nigeria;",
+        "part thereof shall be ascertained by",
+        "Part of this",
+        "Part of this Chapter shall return one member",
+        "PART II",
+        "part \nin the election of the Speaker and Deputy Speaker of the House of",
+        "part of Nigeria, he is adjudged",
+        "part \nof Nigeria;",
+        "part of this Chapter shall return one member who shall be",
+        "PART I",
+        "part of Nigeria, he is adjudged to be a",
+        "Part of this",
+        "Part of this Chapter relating to qualification",
+        "Part 1 of the Third",
+        "Part I Third Schedule]",
+        "part of the Federation;",
+        "part in any decision notwithstanding any vacancy in its membership",
+        "Part of this Chapter, unless the context otherwise requires –",
+        "Part \nII of the Second Schedule to this Constitution, the net proceeds of",
+        "Part II Second Schedule]",
+        "part of the Consolidated Revenue Fund of that State;",
+        "part of the expenditure",
+        "Part of this Chapter or of",
+        "Part of this Chapter to be",
+        "Part of this Chapter to be",
+        "Part of this",
+        "Part of this Chapter",
+        "part of any punishment imposed on",
+        "PART II",
+        "part of Nigeria, he is adjudged to be a",
+        "Part \nof this Chapter relate, a candidate for the office of Governor of a",
+        "Part of this Chapter relating to qualification",
+        "Part II of the Third",
+        "Part II Third Schedule]",
+        "Part of this Chapter, unless the context otherwise requires –",
+        "part of any punishment imposed on",
+        "PART III",
+        "part thereof.",
+        "part of the armed forces of the",
+        "part only of the",
+        "Part of",
+        "Part of this chapter, unless the context otherwise requires -",
+        "PART I",
+        "Part CC (Sections",
+        "part in any strike, lock-out or",
+        "part thereof",
+        "part \nthereof;",
+        "part of the Federation and matters",
+        "part of the Federation.",
+        "PART II",
+        "PART III",
+        "PART IV",
+        "part \nof the Federation by all authorities and persons, and by courts with",
+        "part of the Federation by all authorities and persons, and by courts",
+        "part of the Federation by all",
+        "part of Nigeria (other than in the Supreme Court, the Court",
+        "part of Nigeria and the Federal",
+        "PART I",
+        "Part II of the First Schedule to this",
+        "Part III",
+        "Part III Third Schedule]",
+        "PART II",
+        "part thereof.",
+        "part thereof to such extent as to",
+        "part \nthereof requiring extraordinary measures to avert such danger;",
+        "part thereof and within two",
+        "PART III",
+        "part of this Constitution and shall",
+        "Part I of the",
+        "Part I Second Schedule]",
+        "PART IV",
+        "Part II of the Second Schedule to this Constitution",
+        "Part II Second Schedule]",
+        "Part I of the Second",
+        "Part I Second Schedule]",
+        "part of the purpose",
+        "PART I",
+        "Part \nI is altered by the",
+        "Part \nI is altered by the",
+        "Part I",
+        "Part \nI is altered by the",
+        "Part \nI is altered by the",
+        "PART II",
+        "Part II is altered by",
+        "PART I",
+        "part thereof;",
+        "part thereof -",
+        "PART II",
+        "part thereof with respect to such antiquities and monuments",
+        "part thereof with respect to antiquities and",
+        "part thereof with respect to the archives and public records of the",
+        "part thereof with respect to archives and",
+        "part of the Federation.",
+        "part thereof with respect to -",
+        "part of the",
+        "part of",
+        "part of that State.",
+        "part thereof with respect to-",
+        "part \nof the Federation and from one State to another State;",
+        "part of the Federation;",
+        "Part II, Item 14(b)",
+        "part thereof with respect to -",
+        "part thereof with respect to -",
+        "part thereof with respect to statistics so far as the subject",
+        "part thereof on any matter whether or not it",
+        "part thereof with respect to trigonometrical, cadastral and",
+        "part thereof with respect to",
+        "part thereof with respect to university education,",
+        "PART III",
+        "PART I",
+        "Part I of the Fifth Schedule to this Constitution;",
+        "part \nthereof and on such other matters as the President may direct.",
+        "Part I,",
+        "PART II",
+        "Part II, Heading is",
+        "PART III",
+        "PART I",
+        "part \nin any society the membership of which is incompatible with the",
+        "Part II of this Schedule; and",
+        "PART II"
+      ],
+      "chapters": [
+        "CHAPTER I",
+        "CHAPTER II",
+        "CHAPTER III",
+        "CHAPTER IV",
+        "CHAPTER V",
+        "CHAPTER VI",
+        "CHAPTER VII",
+        "CHAPTER VIII",
+        "CHAPTER I",
+        "Chapter VIII hereof",
+        "Chapter II of this",
+        "Chapter IV of this",
+        "CHAPTER II",
+        "Chapter of this Constitution.",
+        "Chapter and uphold the responsibility and",
+        "CHAPTER III",
+        "CHAPTER IV",
+        "Chapter \nhas been, is being or likely to be contravened in any State in relation",
+        "Chapter has been",
+        "CHAPTER V",
+        "Chapter of this Constitution.",
+        "Chapter shall return one member",
+        "Chapter shall return one member who shall be",
+        "CHAPTER VI",
+        "Chapter relate, a candidate for an election to the office of President",
+        "Chapter relating to qualification",
+        "Chapter or of",
+        "Chapter to be",
+        "Chapter to be",
+        "Chapter \nshall be effected and provide for the making of adjustments and",
+        "Chapter relate, a candidate for the office of Governor of a",
+        "Chapter relating to qualification",
+        "Chapter II of this Constitution.",
+        "CHAPTER VII",
+        "Chapter IV of this Constitution",
+        "Chapter IV of this Constitution",
+        "Chapter IV of this Constitution as it relates to",
+        "Chapter IV",
+        "Chapter in respect of appointments to the offices of Justices of the",
+        "CHAPTER VIII",
+        "Chapter V of this Constitution, the Federal",
+        "Chapter IV and subject",
+        "Chapter III of this Constitution,"
+      ],
+      "arrangementCount": 1,
+      "schedulesCount": 112,
+      "repeatedLines": [
+        {
+          "line": "The Constitution of the Federal Republic of Nigeria Updated with the First, Second, Third, Fourth and Fifth Alterations",
+          "count": 271
+        },
+        {
+          "line": "Constitution of the",
+          "count": 44
+        },
+        {
+          "line": "Federal Republic of",
+          "count": 43
+        },
+        {
+          "line": "Alteration Act) 2010]",
+          "count": 39
+        },
+        {
+          "line": "Federal Republic",
+          "count": 26
+        },
+        {
+          "line": "of Nigeria (Third",
+          "count": 18
+        },
+        {
+          "line": "Nigeria, 1999 (Fifth",
+          "count": 18
+        },
+        {
+          "line": "Constitution of",
+          "count": 17
+        },
+        {
+          "line": "Act, 2023]",
+          "count": 13
+        },
+        {
+          "line": "[Seventh Schedule]",
+          "count": 12
+        },
+        {
+          "line": "Nigeria, 1999 (First",
+          "count": 11
+        },
+        {
+          "line": "is altered by the",
+          "count": 11
+        },
+        {
+          "line": "PART III",
+          "count": 10
+        },
+        {
+          "line": "Constitution.",
+          "count": 10
+        },
+        {
+          "line": "Federal Capital Territory, Abuja",
+          "count": 9
+        },
+        {
+          "line": "Assembly.",
+          "count": 9
+        },
+        {
+          "line": "of the Federal Republic",
+          "count": 9
+        },
+        {
+          "line": "(5) Except on the recommendation of the National Judicial Council,",
+          "count": 9
+        },
+        {
+          "line": "Federation.",
+          "count": 8
+        },
+        {
+          "line": "inserted by the",
+          "count": 8
+        }
+      ],
+      "suspicious": [
+        {
+          "name": "replacement-character",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "broken-spaced-word",
+          "count": 74,
+          "examples": [
+            "O\nF THE",
+            "PART I\nFederal",
+            "PART I\nNational",
+            "PART I \nFederal",
+            "PART I\nFederal"
+          ]
+        },
+        {
+          "name": "OCR-extroordinary",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "OCR-gotentntent",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-OF",
+          "count": 1,
+          "examples": [
+            "O\nF"
+          ]
+        },
+        {
+          "name": "split-word-REPUBLIC",
+          "count": 1,
+          "examples": [
+            "R\nEPUBLIC"
+          ]
+        },
+        {
+          "name": "private-use-area",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "excessive-symbol-run",
+          "count": 10,
+          "examples": [
+            "..........",
+            "..............",
+            ".........",
+            ".........",
+            "........."
+          ]
+        }
+      ],
+      "status": "REVIEW",
+      "failures": [],
+      "warnings": [
+        "86 suspicious extraction pattern(s) detected.",
+        "Potential duplicate section headings detected: 1 (13x), 2 (13x), 3 (8x), 4 (8x), 5 (8x), 6 (8x), 7 (7x), 8 (7x), 9 (7x), 10 (7x)"
+      ],
+      "firstExcerpt": "THE CONSTITUTION \nO\nF THE FEDERAL \nR\nEPUBLIC OF NIGERIA \n1999\nWith the 1st, 2nd, 3rd Alterations (2010), 4th \nAlteration (2017) and 5th Alteration (2023)\nUPDATED\n\nThe Constitution of the \nFederal Republic of Nigeria \n1999\nUpdated with the 1st, 2nd, 3rd Alterations (2010), \n4th Alteration (2017) and 5th Alteration (2023)\n\nPrinted by\nPolicy and Legal Advocacy Centre (PLAC)\nPlot 451 Gambo Jimeta Crescent \nGuzape District, Abuja.\nWebsite: www.placng.org\nEmail: info@placng.org\nPhone: +2348091899999\n@placng\n@placng\nwww.facebook.com/placng\nOriginal print: 2019\nFirst Revision: November 2022\nSecond Revision: April 2023 \nThird Revision: October 2023 \nThird Revision Reprint: September 2024\nPrinted with Support from the Foreign, Commonwealth and Development \nOffice (FCDO)\n\nFOREWORD\nThis publication provides an updated version of the 1999 Constitution of \nthe Federal Republic of Nigeria with the first, second and third alterations \nof 2010, the fourth alteration of 2017 as well as the recent fifth alteration \nof 2023. It was inspired by the absence of a single document that \nincorporates all the alterations to the Constitution, considering that the \ncountry is replete with different versions, m",
+      "lastExcerpt": "uct or my official decisions; that \nI will preserve, protect and defend the Constitution of the Federal \nRepublic of Nigeria. \nSo help me God \n[Judicial Oath in \nSeventh Schedule \naltered by the \nConstitution of \nFederal Republic \nof Nigeria (Third \nAlteration Act) 2010]\n\nAbout PLAC\nThe compilation of this updated Constitution of the Federal \nRepublic of Nigeria,1999 including the alterations made in 2010 \nand 2017 is issued by Policy and Legal Advocacy Centre (PLAC).\nPLAC is a non-governmental organization committed to \nstrengthening democratic governance and citizens’ participation \nin Nigeria. PLAC works to enhance citizens’ engagement with \nstate institutions, and to promote transparency and accountability \nin policy and decision-making process. \nThe main focus of PLAC’s intervention in the democratic \ngovernance process is on building the capacity of the legislature \nand reforming the electoral process. Since its establishment, \nPLAC has grown into a leading institution with capacity to deliver \ncutting-edge research, policy analysis and advocacy. PLAC \nreceives funding support from donors and other philanthropic \nsources.\n@placng\n@placng\nwww.facebook.com/placng\nWWW.PLACNG.ORG"
+    },
+    {
+      "file": "DCRMA-COMPENDIUM_2022.pdf",
+      "rule": {
+        "type": "compendium",
+        "requireArrangement": false,
+        "requireParts": false,
+        "requireSchedules": false
+      },
+      "pages": 24,
+      "characters": 29429,
+      "words": 4823,
+      "sectionValidation": {
+        "totalDetected": 10,
+        "uniqueDetected": 10,
+        "firstDetected": 1,
+        "lastDetected": 10,
+        "missing": [],
+        "duplicates": []
+      },
+      "parts": [
+        "part of the carriageway where traffic passes in",
+        "part of carriageway where traffic"
+      ],
+      "chapters": [],
+      "arrangementCount": 0,
+      "schedulesCount": 1,
+      "repeatedLines": [
+        {
+          "line": "Features",
+          "count": 7
+        }
+      ],
+      "suspicious": [
+        {
+          "name": "replacement-character",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "broken-spaced-word",
+          "count": 1,
+          "examples": [
+            "ROAD \nA road"
+          ]
+        },
+        {
+          "name": "OCR-extroordinary",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "OCR-gotentntent",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-OF",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-REPUBLIC",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "private-use-area",
+          "count": 123,
+          "examples": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "excessive-symbol-run",
+          "count": 1,
+          "examples": [
+            ".............)"
+          ]
+        }
+      ],
+      "status": "REVIEW",
+      "failures": [],
+      "warnings": [
+        "125 suspicious extraction pattern(s) detected."
+      ],
+      "firstExcerpt": "1 \n \n \n \n \n \nCOMPENDIUM \nFOR \nDCRMA \n \n \n \n \n \n \n \n \n \n\n2 \n \n1. THE FRSC ESTABLISHMENT ACT (2007) \nThe Federal Road Safety Commission was established by Decree No. 45 of \nFebruary 1988 and amended by Decree No. 35 of 1992. \nThe 1992 amendment was to expand the operations of the Corps to all public \nhighways and other additional functions. The two decrees were subsequently \ncodified as the FRSC, Act Cap 141 Laws of the Federation of Nigeria (LFN) 1990. \nIn 2007 the Act was repealed and re-enacted as the FRSC (Establishment) Act, \n2007. \nThe FRSC “Establishment Bill, 2007” was passed by the Senate on the 6\nth\n day of \nFebruary, 2007 and the House of Representatives passed on May 8, 2007. The \n“Bill” received Presidential Assent on the 25\nth\n day of May, 2007. \nThe FRSC (Establishment) Act, 2007 is made up of three (3) parts, thirty one (31) \nSections and two (2) Schedules. \n1.1 Functions of Federal Road Safety Corps \nWhile the Commission is a policy making body, the Corps is an operational body \nthat implements the policies of the Commission. \nSection 10 (2)-(11) specifies the functions of the Corps as: \na. Making the highway safe for motorists and other road users. \nb. Recommending ",
+      "lastExcerpt": "y (including motor vehicle, road infrastructure e.t.c.). \niii. Minor crash: A road traffic crash which did not involve loss of life or \ninjury to people or serious damage to property. \n10.3 Causes of RTC \nAfter several researches, causes of road traffic crashes have been grouped into \nthree according to the causative factors. These factors are: \n Human factor \n Mechanical factor \n Environmental factor \na. Human Factor – Human factor contributes to about 90% of the road \ncrashes. Drivers alone contribute about 80% to the crashes. Some of the specific \ncauses are, overconfidence, speed, lack of concentration, tiredness, driving under \nthe influence of drugs or alcohol, poor vehicle care, indiscriminate parking, wrong \nor dangerous overtaking, passengers distraction, and pedestrian behavior. \nb. Mechanical Factor – Mechanical factor has been known to contribute in \nabout 10% of the crashes on our roads. Crashes due to this factor have the \nfollowing as some of the causes: \n Malfunctioning of engine \n Poor steering mechanism \n Tyre burst \n Brake failure \n\n24 \n \nc. Environmental Factors – Environmental factor refers to road elements \nincluding weather that contributes to crashes."
+    },
+    {
+      "file": "FCCPA-2018.pdf",
+      "rule": {
+        "type": "act",
+        "expectedSectionMax": 168,
+        "requireArrangement": true,
+        "requireParts": true,
+        "requireSchedules": true
+      },
+      "pages": 99,
+      "characters": 234524,
+      "words": 35814,
+      "sectionValidation": {
+        "totalDetected": 88,
+        "uniqueDetected": 76,
+        "firstDetected": 2,
+        "lastDetected": 168,
+        "missing": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          9,
+          11,
+          15,
+          16,
+          19,
+          20,
+          21,
+          37,
+          59,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          72,
+          73,
+          74,
+          80,
+          83,
+          84,
+          85,
+          86,
+          89,
+          91,
+          92,
+          94,
+          95,
+          96,
+          97,
+          98,
+          100,
+          101,
+          102,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          128,
+          129,
+          130,
+          131,
+          132,
+          133,
+          135,
+          136,
+          138,
+          139,
+          141,
+          142,
+          144,
+          146,
+          148,
+          149,
+          150,
+          151,
+          154,
+          156,
+          157,
+          158,
+          159,
+          160,
+          161,
+          163,
+          164,
+          165,
+          167
+        ],
+        "duplicates": [
+          {
+            "section": 22,
+            "occurrences": 2
+          },
+          {
+            "section": 23,
+            "occurrences": 2
+          },
+          {
+            "section": 25,
+            "occurrences": 2
+          },
+          {
+            "section": 34,
+            "occurrences": 3
+          },
+          {
+            "section": 36,
+            "occurrences": 2
+          },
+          {
+            "section": 44,
+            "occurrences": 2
+          },
+          {
+            "section": 45,
+            "occurrences": 2
+          },
+          {
+            "section": 54,
+            "occurrences": 2
+          },
+          {
+            "section": 57,
+            "occurrences": 2
+          },
+          {
+            "section": 145,
+            "occurrences": 2
+          },
+          {
+            "section": 152,
+            "occurrences": 2
+          }
+        ]
+      },
+      "parts": [
+        "PART\n146.",
+        "part \nof a",
+        "part \nof Nigeria, as the",
+        "part \nof",
+        "part \nin",
+        "part \nof the",
+        "Part if",
+        "Part cornnrits an offence",
+        "part \nof the",
+        "PART X-MONOPOLY",
+        "part \nofNigeria in respect",
+        "part \nof the undertaking or Lrndertakings",
+        "part \nofany investigation",
+        "part \nolits",
+        "part \nofany silares",
+        "Part \ncomnrits an",
+        "Part\nconrmits an offeuce",
+        "part \nofthe",
+        "part \nofthat undertaking",
+        "part \nofthe",
+        "Part may have",
+        "Part\nmay file an application",
+        "part \nthereof or to repeat or continue the service until it",
+        "part \nofa consurner",
+        "part \nof a contract may",
+        "Part VIII",
+        "Part lX of this Act",
+        "Part Xll",
+        "part \nofthe",
+        "part \nofthe business ofan",
+        "part \nofwhose business",
+        "part\nof,",
+        "part \nofa"
+      ],
+      "chapters": [],
+      "arrangementCount": 0,
+      "schedulesCount": 15,
+      "repeatedLines": [
+        {
+          "line": "provisions",
+          "count": 60
+        },
+        {
+          "line": "Commission",
+          "count": 49
+        },
+        {
+          "line": "or services",
+          "count": 45
+        },
+        {
+          "line": "subsection",
+          "count": 42
+        },
+        {
+          "line": "Protection",
+          "count": 37
+        },
+        {
+          "line": "provision",
+          "count": 36
+        },
+        {
+          "line": "purposes",
+          "count": 29
+        },
+        {
+          "line": "protection",
+          "count": 22
+        },
+        {
+          "line": "2019 No. I",
+          "count": 22
+        },
+        {
+          "line": "provided",
+          "count": 22
+        },
+        {
+          "line": "particular",
+          "count": 21
+        },
+        {
+          "line": "Commission.",
+          "count": 19
+        },
+        {
+          "line": "business",
+          "count": 19
+        },
+        {
+          "line": "services",
+          "count": 19
+        },
+        {
+          "line": "undertaking",
+          "count": 18
+        },
+        {
+          "line": "Consumer",
+          "count": 17
+        },
+        {
+          "line": "Tribunal",
+          "count": 17
+        },
+        {
+          "line": "proposed",
+          "count": 16
+        },
+        {
+          "line": "proceedings",
+          "count": 16
+        },
+        {
+          "line": "consumer",
+          "count": 16
+        }
+      ],
+      "suspicious": [
+        {
+          "name": "replacement-character",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "broken-spaced-word",
+          "count": 19,
+          "examples": [
+            "fiom \nI st",
+            "al I fees",
+            "the \nI \nribunal",
+            "irr \nN \nigeria",
+            "i I\nGeneral"
+          ]
+        },
+        {
+          "name": "OCR-extroordinary",
+          "count": 1,
+          "examples": [
+            "Extroordinary"
+          ]
+        },
+        {
+          "name": "OCR-gotentntent",
+          "count": 1,
+          "examples": [
+            "Got'entntent"
+          ]
+        },
+        {
+          "name": "split-word-OF",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-REPUBLIC",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "private-use-area",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "excessive-symbol-run",
+          "count": 4,
+          "examples": [
+            ",,,.(+],",
+            "\",,,.,^^-\"",
+            ";;;,[:,:",
+            "^\".-.._^.-"
+          ]
+        }
+      ],
+      "status": "REVIEW",
+      "failures": [],
+      "warnings": [
+        "ARRANGEMENT OF SECTIONS not detected.",
+        "25 suspicious extraction pattern(s) detected.",
+        "Possible missing sections: 1, 3, 4, 5, 6, 9, 11, 15, 16, 19, 20, 21, 37, 59, 62, 63, 64, 65, 66, 67, 68, 69, 70, 72, 73 ...",
+        "Potential duplicate section headings detected: 22 (2x), 23 (2x), 25 (2x), 34 (3x), 36 (2x), 44 (2x), 45 (2x), 54 (2x), 57 (2x), 145 (2x)"
+      ],
+      "firstExcerpt": "Extroordinary\nFederal \nRepublic of \nNigeria\nOfficial \nGazette\nNo. l8\nLagos \nlst \nFebruary,2019\nVol. 106\nGot'entntent \nNotice \nNo. 5\nThe follorving is \npublished \nas \nsupplement to this \nGazette \ni\nAct \nNo. \nShort \nTitle\nI Federal Competition \nand \nConsumer \nProtection'Act, \n2018\nPage\nAl-96\nPrinted and Published \nbl.The \nFederal \nCor.ernmenl \nprinler. \nLagos. Nigeria\nFCP \n5{/052019/250\nAnnual \nSubscription fiom \nI st \nJauuan: \n2019 \nis Locol \n: N.15.000.00 \nOlerseas \n: N60.500.00 \n[Surthce \nMail]\nN75.000.00 \n[Second \nClass Air Maill. \nPresent \nissLre \nN I .500 \nper \ncopr. Subscribers \nu \nho \nu \nish \nro ibtain \nGa:ette\naller lst \nJanuan should \napph to lhe \nFecleral \nCor \nernment Printer. Lilgos \nlbr \nanren4e4 \nSubscriptions.\n\nAI\nAnnarcEnrnr \nor Srcrtolts\nSection:\nPanr \nl--OslrcrlvEs AND \nScopr or Appltcenol\nl. Objectives.\n2. Scopeofapplication.\nPlnr I l-EstesLrsHMEN'r or \nTtte \nFrorur CovpEttrtox eto\nCoNsunrn Pnotrcrton \nCouttltsstoN\n4.\n5.\n6.\n7.\n8.\n9.\n10.\nIl.\n12.\n13.\nt4.\n15.\nr6.\nEstablishment of the Federal \nCompetition and \nConsumer Protection\nCommission.\nComposition \nof the Commission.\nTenure of office.\nResignation from the Commission.\nRemoval frorn office.\nVacancies.\nEmoluments o",
+      "lastExcerpt": "ted rnatters.\nThis Bill establishes \nthe \nFederal\nCornpetition \nand \nColr \nsu \nrne r\nProtection \nCorn nr iss ion and the\nCornpetition and Consurner\nProtection Tribunal for the\nprornotiou \nof cornpetition in the\nN igeriarr \nInarkets at all levels by\nelirninating rronopol \nies, \nprohibiting\nabuse \nof a dornirrant rnarket \npositiorr\nand \npenalising \nother restrictive \ntrade\nand business \npractices.\n5th Decernber. \n2018\nSCHEDULE TO THE FEDERAL COMPETITION \nAND CONSUMER PROTECTION \nBILL, 20I8\n(l)\nShort \nTitle\nd \nthe Bill\nFederal\nCornpetition\nand\nConsumer\nProtection\nBilt. 20 r \n8.\n(s)\nDute Pu:;scd \nby\nIhe Housa \no/\nRcprescntut \nives\n29th \nMarch,\n20t8.\nI certify \nthat \nthis Bill has been carefully compared by rne rvith \nthe \ndecisiou \nreached by \nthe National Assenrbly \nand found \nby \nnre \nto be\ntrue \nand correct \ndecisiou of the Houses \nand is in accordauce with \nthe \nprovisions \nof the Acts Autlrentication \nAct \nCap. 42, Laws \nof\nthe Federation \nof \nNigeria,2004.\nI Assr.N r\nMor \nr,rvvro \nA'r'nut \nS,lNt-Ovor.orrt\n(.)lcrk \nlo the Nutknul Assemhly\n20th Duy ti'Decembcr \n2018.\nM \nttt trrMM,ttru \nBut t,lttt. <;t \nt,tt\nPrcsident ol the Fcderul \nRepublic \no/'Nigeriu\n30th Day \nd'.lunuury, \n2019."
+    },
+    {
+      "file": "Labour Act.pdf",
+      "rule": {
+        "type": "act",
+        "expectedSectionMax": 92,
+        "requireArrangement": true,
+        "requireParts": false,
+        "requireSchedules": true
+      },
+      "pages": 80,
+      "characters": 200204,
+      "words": 32674,
+      "sectionValidation": {
+        "totalDetected": 276,
+        "uniqueDetected": 92,
+        "firstDetected": 1,
+        "lastDetected": 92,
+        "missing": [],
+        "duplicates": [
+          {
+            "section": 1,
+            "occurrences": 12
+          },
+          {
+            "section": 2,
+            "occurrences": 13
+          },
+          {
+            "section": 3,
+            "occurrences": 7
+          },
+          {
+            "section": 4,
+            "occurrences": 6
+          },
+          {
+            "section": 5,
+            "occurrences": 6
+          },
+          {
+            "section": 6,
+            "occurrences": 7
+          },
+          {
+            "section": 7,
+            "occurrences": 5
+          },
+          {
+            "section": 8,
+            "occurrences": 4
+          },
+          {
+            "section": 9,
+            "occurrences": 5
+          },
+          {
+            "section": 10,
+            "occurrences": 5
+          },
+          {
+            "section": 11,
+            "occurrences": 5
+          },
+          {
+            "section": 12,
+            "occurrences": 5
+          },
+          {
+            "section": 13,
+            "occurrences": 5
+          },
+          {
+            "section": 14,
+            "occurrences": 5
+          },
+          {
+            "section": 15,
+            "occurrences": 5
+          },
+          {
+            "section": 17,
+            "occurrences": 5
+          },
+          {
+            "section": 18,
+            "occurrences": 5
+          },
+          {
+            "section": 19,
+            "occurrences": 5
+          },
+          {
+            "section": 20,
+            "occurrences": 3
+          },
+          {
+            "section": 21,
+            "occurrences": 3
+          },
+          {
+            "section": 22,
+            "occurrences": 3
+          },
+          {
+            "section": 23,
+            "occurrences": 3
+          },
+          {
+            "section": 24,
+            "occurrences": 3
+          },
+          {
+            "section": 25,
+            "occurrences": 3
+          },
+          {
+            "section": 26,
+            "occurrences": 3
+          },
+          {
+            "section": 27,
+            "occurrences": 3
+          },
+          {
+            "section": 28,
+            "occurrences": 3
+          },
+          {
+            "section": 29,
+            "occurrences": 3
+          },
+          {
+            "section": 30,
+            "occurrences": 3
+          },
+          {
+            "section": 31,
+            "occurrences": 3
+          },
+          {
+            "section": 32,
+            "occurrences": 3
+          },
+          {
+            "section": 33,
+            "occurrences": 3
+          },
+          {
+            "section": 34,
+            "occurrences": 2
+          },
+          {
+            "section": 35,
+            "occurrences": 2
+          },
+          {
+            "section": 36,
+            "occurrences": 2
+          },
+          {
+            "section": 37,
+            "occurrences": 2
+          },
+          {
+            "section": 38,
+            "occurrences": 2
+          },
+          {
+            "section": 39,
+            "occurrences": 2
+          },
+          {
+            "section": 40,
+            "occurrences": 2
+          },
+          {
+            "section": 41,
+            "occurrences": 2
+          },
+          {
+            "section": 42,
+            "occurrences": 2
+          },
+          {
+            "section": 43,
+            "occurrences": 2
+          },
+          {
+            "section": 44,
+            "occurrences": 3
+          },
+          {
+            "section": 45,
+            "occurrences": 3
+          },
+          {
+            "section": 46,
+            "occurrences": 3
+          },
+          {
+            "section": 48,
+            "occurrences": 3
+          },
+          {
+            "section": 49,
+            "occurrences": 2
+          },
+          {
+            "section": 50,
+            "occurrences": 2
+          },
+          {
+            "section": 51,
+            "occurrences": 2
+          },
+          {
+            "section": 52,
+            "occurrences": 2
+          },
+          {
+            "section": 53,
+            "occurrences": 2
+          },
+          {
+            "section": 54,
+            "occurrences": 2
+          },
+          {
+            "section": 55,
+            "occurrences": 2
+          },
+          {
+            "section": 56,
+            "occurrences": 2
+          },
+          {
+            "section": 57,
+            "occurrences": 2
+          },
+          {
+            "section": 58,
+            "occurrences": 2
+          },
+          {
+            "section": 59,
+            "occurrences": 2
+          },
+          {
+            "section": 60,
+            "occurrences": 2
+          },
+          {
+            "section": 61,
+            "occurrences": 2
+          },
+          {
+            "section": 62,
+            "occurrences": 2
+          },
+          {
+            "section": 63,
+            "occurrences": 2
+          },
+          {
+            "section": 64,
+            "occurrences": 2
+          },
+          {
+            "section": 65,
+            "occurrences": 2
+          },
+          {
+            "section": 66,
+            "occurrences": 2
+          },
+          {
+            "section": 67,
+            "occurrences": 2
+          },
+          {
+            "section": 68,
+            "occurrences": 2
+          },
+          {
+            "section": 69,
+            "occurrences": 2
+          },
+          {
+            "section": 70,
+            "occurrences": 2
+          },
+          {
+            "section": 71,
+            "occurrences": 2
+          },
+          {
+            "section": 72,
+            "occurrences": 2
+          },
+          {
+            "section": 73,
+            "occurrences": 2
+          },
+          {
+            "section": 75,
+            "occurrences": 2
+          },
+          {
+            "section": 76,
+            "occurrences": 2
+          },
+          {
+            "section": 77,
+            "occurrences": 2
+          },
+          {
+            "section": 78,
+            "occurrences": 2
+          },
+          {
+            "section": 79,
+            "occurrences": 2
+          },
+          {
+            "section": 80,
+            "occurrences": 2
+          },
+          {
+            "section": 81,
+            "occurrences": 2
+          },
+          {
+            "section": 82,
+            "occurrences": 2
+          },
+          {
+            "section": 83,
+            "occurrences": 2
+          },
+          {
+            "section": 84,
+            "occurrences": 2
+          },
+          {
+            "section": 85,
+            "occurrences": 2
+          },
+          {
+            "section": 86,
+            "occurrences": 2
+          },
+          {
+            "section": 88,
+            "occurrences": 2
+          },
+          {
+            "section": 89,
+            "occurrences": 2
+          },
+          {
+            "section": 90,
+            "occurrences": 2
+          },
+          {
+            "section": 91,
+            "occurrences": 2
+          },
+          {
+            "section": 92,
+            "occurrences": 2
+          },
+          {
+            "section": 16,
+            "occurrences": 4
+          },
+          {
+            "section": 47,
+            "occurrences": 2
+          }
+        ]
+      },
+      "parts": [
+        "PART I",
+        "PART II",
+        "PART ill",
+        "PART IV",
+        "PART I",
+        "part of the wages of a worker is made pay-",
+        "part of a worker's _remuneration if the food, dwelling place, allowance or",
+        "part \nof such an advance paid to him previously, except in cases of necessity as so",
+        "Part \nA of Schedule 3 to the Trade Unions Act, the employer shall-",
+        "Part B of Schedule 3 of the Trade",
+        "part of the wages which",
+        "part \nof the contract save for the incapacity",
+        "part of his wages which",
+        "Part or declared by this Part to be illegal or unlawful; or",
+        "Part \nand that the other person has committed the offence without the employer's",
+        "Part shall apply to a worker who is the father, mother, husband,",
+        "Part of this Act shall apply to any body of persons working on any",
+        "PART II",
+        "Part of this Act; and",
+        "Part of this Act, both the assistant and the recruiter shall be deemed to",
+        "part of the journey.",
+        "Part of this Act.",
+        "Part I of this",
+        "Part of this Act;",
+        "Part \nof this Act.",
+        "Part of this Act;",
+        "Part of this Act; and",
+        "Part of this Act shall be guilty of an offence, and on con-",
+        "Part of this Act.",
+        "Part is additional to and not in derogation of Part I of this Act but shall not",
+        "Part of this Act (with such",
+        "PART Ill",
+        "Part I of this Act:",
+        "part of an industrial undertaking from",
+        "part of",
+        "PART IV",
+        "part or parts thereof; and",
+        "part thereof) if he has",
+        "part of the State.",
+        "part of the",
+        "part \nof the damages which would otherwise have been awarded direct the party",
+        "part thereof as it",
+        "Part \nor section is a reference to the Part or section so numbered in this Act.",
+        "PART I",
+        "PART IT",
+        "part \nof any payment which the employer has made or has agreed to make in connec-",
+        "PART II",
+        "Part of these Regulations shall apply only to labourers' contracts for",
+        "PART ill",
+        "PART IV",
+        "part and each of the parties whose names are set out in the first column of the Schedule",
+        "part and each of the parties whose names are set out in the Schedule below (hereinafter",
+        "part and .............. .................................................... of ...................................... of the other part:",
+        "part and ... .......................................................... ...."
+      ],
+      "chapters": [],
+      "arrangementCount": 1,
+      "schedulesCount": 22,
+      "repeatedLines": [
+        {
+          "line": "Labour Act",
+          "count": 79
+        },
+        {
+          "line": "[Issue 1]",
+          "count": 53
+        },
+        {
+          "line": "Authorised Labour Officer",
+          "count": 7
+        },
+        {
+          "line": "[Regulation 48.]",
+          "count": 5
+        }
+      ],
+      "suspicious": [
+        {
+          "name": "replacement-character",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "broken-spaced-word",
+          "count": 11,
+          "examples": [
+            "PART I \nGeneral",
+            "PART I \nGeneral",
+            "Part \nA of",
+            "Part B of",
+            "Part I of"
+          ]
+        },
+        {
+          "name": "OCR-extroordinary",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "OCR-gotentntent",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-OF",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-REPUBLIC",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "private-use-area",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "excessive-symbol-run",
+          "count": 196,
+          "examples": [
+            "------------------------",
+            "--~··--··---..",
+            "-~.------·-·-~-~--",
+            "~~--~-----------~------",
+            "---------~------·---~"
+          ]
+        }
+      ],
+      "status": "REVIEW",
+      "failures": [],
+      "warnings": [
+        "207 suspicious extraction pattern(s) detected.",
+        "Potential duplicate section headings detected: 1 (12x), 2 (13x), 3 (7x), 4 (6x), 5 (6x), 6 (7x), 7 (5x), 8 (4x), 9 (5x), 10 (5x)"
+      ],
+      "firstExcerpt": "CAP.Ll \nLabour Act \nCHAPTERLl \nLABOUR ACT \nARRANGEMENT OF SECTIONS \nPART I \nGeneral provisions as to protection of wages, contracts of employment and \nterms and conditions \nof employment \nProtection \nof wages \nSECTION \n1. Manner of payment. \n2. Agreement as to place and manner of spending wages illegal. \n3. Wages not to be paid on certain premises. \n4. Advances. \n5. Deductions (including deductions for overpayment of wages). \n6. Authority of employer to open shop. \nContracts of employment \n7. Written particulars of tenns of employment. \n8. Medical examination. \n9. Contracts: general. \n10. Transfer to other employment. \n11. Termination of contracts by notice. \n12. Common employment not a defence. \nTerms and conditions of employment \n13. Hours of work and overtime. \n14. \nProvision of transport. \n15. Periodicity of payment of wages. \n1 6. \nSick leave. \n17. Duty \nof employer to provide work. \n18. Annual holidays with pay. \n19. Calculation of leave pay and sickness benefits. \n20. Redundancy. \nGeneral \n21. Offences. \n22. Exemptions. \nLl-1 \n[Issue 1] \n\nCAP.Ll \nLabour Act \nPART II \nRecruiting \nRecruiters and recruiting generally \nSECTION \n23. Prohibition of recruiting except under permit o",
+      "lastExcerpt": "red \nemployer \nor principal shall withdraw the registration document of the dock worker and \nforward it to the \nport labour officer. \n(6) A dock worker \non permanent establishment shall forthwith after leaving his reg-\nistered employer or principal return his registration document to the port labour officer. \n(7) Any \ndock worker on permanent establishment who fails to carry out the provi-\nsions of this rule shall be deemed to have committed an offence against the Act. \nDOCK LABOUR (REGISTRATION AND CONTROL OF EMPLOYMENT) \nRULES (APPLICATION) DECLARATION \nARRANGEMENT OF RULES \nRULE \n1. Ports to which the Rules apply. \n2. Short title. \nLl-79 \n[Issue 1] \n\"\" \"\"•\"····~· --\n\nCAP.Ll \nLabour Act \nDOCK LABOUR (REGISTRATION AND CONTROL OF EMPLOYMENT) \nRULES (APPLICATION) DECLARATION \n[S.I. 15 of 1971.] \nunder rule 1 (3) ofL.N. 39 of 1967 \n[1st April, 1971] \n[Commencement.] \n1. Ports to which the Rules apply \nThe Dock Labour (Registration and Control of Employment) Rules shall apply to the \nports of W ani, Port Harcourt and Calabar. \n2. \nShort title \nThis declaration may be cited as the Dock Labour (Registration and Control of Em-\nployment) Rules (Application) Declaration. \n[Issue 1] \nL1 ~80"
+    },
+    {
+      "file": "Lagos-State-Road-Traffic-Law.pdf",
+      "rule": {
+        "type": "state-law",
+        "requireArrangement": true,
+        "requireParts": false,
+        "requireSchedules": false
+      },
+      "pages": 51,
+      "characters": 133270,
+      "words": 22147,
+      "sectionValidation": {
+        "totalDetected": 669,
+        "uniqueDetected": 70,
+        "firstDetected": 1,
+        "lastDetected": 70,
+        "missing": [],
+        "duplicates": [
+          {
+            "section": 1,
+            "occurrences": 28
+          },
+          {
+            "section": 8,
+            "occurrences": 24
+          },
+          {
+            "section": 20,
+            "occurrences": 13
+          },
+          {
+            "section": 26,
+            "occurrences": 11
+          },
+          {
+            "section": 2,
+            "occurrences": 26
+          },
+          {
+            "section": 3,
+            "occurrences": 25
+          },
+          {
+            "section": 4,
+            "occurrences": 23
+          },
+          {
+            "section": 5,
+            "occurrences": 24
+          },
+          {
+            "section": 6,
+            "occurrences": 24
+          },
+          {
+            "section": 7,
+            "occurrences": 24
+          },
+          {
+            "section": 9,
+            "occurrences": 23
+          },
+          {
+            "section": 10,
+            "occurrences": 23
+          },
+          {
+            "section": 11,
+            "occurrences": 23
+          },
+          {
+            "section": 12,
+            "occurrences": 20
+          },
+          {
+            "section": 13,
+            "occurrences": 19
+          },
+          {
+            "section": 14,
+            "occurrences": 17
+          },
+          {
+            "section": 15,
+            "occurrences": 18
+          },
+          {
+            "section": 16,
+            "occurrences": 17
+          },
+          {
+            "section": 17,
+            "occurrences": 17
+          },
+          {
+            "section": 18,
+            "occurrences": 16
+          },
+          {
+            "section": 19,
+            "occurrences": 16
+          },
+          {
+            "section": 21,
+            "occurrences": 12
+          },
+          {
+            "section": 22,
+            "occurrences": 10
+          },
+          {
+            "section": 23,
+            "occurrences": 11
+          },
+          {
+            "section": 24,
+            "occurrences": 11
+          },
+          {
+            "section": 25,
+            "occurrences": 10
+          },
+          {
+            "section": 27,
+            "occurrences": 10
+          },
+          {
+            "section": 28,
+            "occurrences": 9
+          },
+          {
+            "section": 29,
+            "occurrences": 8
+          },
+          {
+            "section": 30,
+            "occurrences": 7
+          },
+          {
+            "section": 31,
+            "occurrences": 7
+          },
+          {
+            "section": 32,
+            "occurrences": 7
+          },
+          {
+            "section": 33,
+            "occurrences": 7
+          },
+          {
+            "section": 34,
+            "occurrences": 7
+          },
+          {
+            "section": 35,
+            "occurrences": 7
+          },
+          {
+            "section": 36,
+            "occurrences": 7
+          },
+          {
+            "section": 37,
+            "occurrences": 7
+          },
+          {
+            "section": 38,
+            "occurrences": 7
+          },
+          {
+            "section": 39,
+            "occurrences": 7
+          },
+          {
+            "section": 40,
+            "occurrences": 7
+          },
+          {
+            "section": 41,
+            "occurrences": 7
+          },
+          {
+            "section": 42,
+            "occurrences": 6
+          },
+          {
+            "section": 43,
+            "occurrences": 5
+          },
+          {
+            "section": 44,
+            "occurrences": 5
+          },
+          {
+            "section": 45,
+            "occurrences": 4
+          },
+          {
+            "section": 46,
+            "occurrences": 4
+          },
+          {
+            "section": 47,
+            "occurrences": 4
+          },
+          {
+            "section": 48,
+            "occurrences": 4
+          },
+          {
+            "section": 49,
+            "occurrences": 4
+          },
+          {
+            "section": 50,
+            "occurrences": 4
+          },
+          {
+            "section": 51,
+            "occurrences": 4
+          },
+          {
+            "section": 52,
+            "occurrences": 3
+          },
+          {
+            "section": 53,
+            "occurrences": 3
+          },
+          {
+            "section": 54,
+            "occurrences": 2
+          },
+          {
+            "section": 55,
+            "occurrences": 2
+          },
+          {
+            "section": 56,
+            "occurrences": 2
+          },
+          {
+            "section": 57,
+            "occurrences": 2
+          },
+          {
+            "section": 58,
+            "occurrences": 2
+          },
+          {
+            "section": 59,
+            "occurrences": 2
+          }
+        ]
+      },
+      "parts": [
+        "part of the under listed routes as bus lanes for priority services",
+        "part was contributory to the commission of the offence.",
+        "part of a highway or empowering any specified officer or other authority to",
+        "part of the weight of the",
+        "part thereof to fall or be jolted off the motor vehicle or",
+        "part of the off side of the vehicle in letters and figures not less than one inch in height, and of",
+        "part of",
+        "part of, the vehicle so far as may be necessary for vehicle the",
+        "part thereof to be fitted with a",
+        "part of a vehicle on any of the roads and bridges",
+        "part of one seat and the",
+        "part of the seat in front and in the case of seats arranged facing each other a clear space of at least",
+        "part of the stage carriage; or",
+        "part thereof or any part of its equipment; or",
+        "part of the stage carriage or of its equipment anything",
+        "part of the stage carriage in which a notice prohibiting",
+        "part of the stage carriage; or",
+        "Part of these regulations;",
+        "Part of these regulations;",
+        "Part shall bear a distinct number which shall be painted conspicuously on the",
+        "part of the vehicle or in any other manner as may be prescribed by the Ministry.",
+        "Part shall be valid for one year from the date of issuance.",
+        "part of the rear mudguard is not painted white on the"
+      ],
+      "chapters": [],
+      "arrangementCount": 1,
+      "schedulesCount": 9,
+      "repeatedLines": [
+        {
+          "line": "offender - N20,000.00.",
+          "count": 55
+        },
+        {
+          "line": "Subsequent offender - N30,000.00",
+          "count": 32
+        },
+        {
+          "line": "Subsequent offender -",
+          "count": 24
+        },
+        {
+          "line": "N30,000.00",
+          "count": 24
+        },
+        {
+          "line": "imprisonment",
+          "count": 9
+        },
+        {
+          "line": "and Storage and",
+          "count": 7
+        },
+        {
+          "line": "evidence of payment for",
+          "count": 7
+        },
+        {
+          "line": "motorcycle",
+          "count": 5
+        },
+        {
+          "line": "and imprisonment",
+          "count": 5
+        },
+        {
+          "line": "2 Impound Vehicle Payment for Removal",
+          "count": 5
+        },
+        {
+          "line": "Or both fine and",
+          "count": 5
+        }
+      ],
+      "suspicious": [
+        {
+          "name": "replacement-character",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "broken-spaced-word",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "OCR-extroordinary",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "OCR-gotentntent",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-OF",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-REPUBLIC",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "private-use-area",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "excessive-symbol-run",
+          "count": 1,
+          "examples": [
+            "-------------------------------------------------------------"
+          ]
+        }
+      ],
+      "status": "REVIEW",
+      "failures": [],
+      "warnings": [
+        "1 suspicious extraction pattern(s) detected.",
+        "Potential duplicate section headings detected: 1 (28x), 8 (24x), 20 (13x), 26 (11x), 2 (26x), 3 (25x), 4 (23x), 5 (24x), 6 (24x), 7 (24x)"
+      ],
+      "firstExcerpt": "Lagos State of Nigeria \n \nOfficial Gazette \n \n \n \nNo 27 Ikeja – 3\nrd\n August 2012 Vol. 45 \n \n \nLagos State Government Notice No 28 \n \nThe following is published as supplement to this Gazette \n \n \n page \n \nLaw No 4 \n \nA law to provide for Road Traffic Administration and make \nprovisions for Road Traffic and Vehicle Inspection in Lagos State \nand other connected purposes. \n \n \nA75 – 153 \n \n \n\nSupplement to Lagos State of Nigeria Official Gazette No 27, Vol 45 0f 3\nrd\n August 2012 \n \nAssented to at Ikeja this 2\nnd\n day of August 2012 \n \nMr Babatunde Raji Fashola (SAN) \nGovernor of Lagos State \n \n \nLagos State of Nigeria \n \nLagos State Road Traffic Law 2012 \nNo 4 of 2012 \n \n \nArrangement of Sections \n \n \n \nA law to provide for Road Traffic Administration and make provisions for Road Traffic and Vehicle Inspection in Lagos \nState and other connected purposes. \n \n2\nnd\n day of August 2012 \n \nThe Lagos State House of Assembly enacts as follows: \n \n1. (1) Without prejudice to the provisions of Section 11 of the Lagos State Traffic Management Authority Law, the \nAuthority’s control and management of vehicular traffic in the State, shall include the; \n \n(a) Prohibition or restriction of the u",
+      "lastExcerpt": " miles an hour any vehicle \ncarrying a load which projects three feet or more beyond either end of such vehicle; \n \n(g) wilfully by negligence prevents, hinder or interrupt the free passage of any person or vehicle or animal; \n \n(h) draw up any vehicle so as to obstruct free passage along a street; \n \n(i) Drive, ride, propel or park any vehicle or animal on any footway or pavement provided for the use of \npedestrian provided for the use of pedestrian; \n \n(j) whilst riding a bicycle hold on to any motor vehicle or other vehicle while it is on the move. \n \n50. Any person who fails to comply with acts in contravention of any conditions attached to any licence or permit issued \nunder these Regulations shall be guilty of an offence. \n \n51. The penalties for offences under these Regulations, where no other penalties are provided, shall be as prescribed \nunder Section 36 of the Law \n \n------------------------------------------------------------- \n \nThe printed impression has been compared by me with the Bill which has been passed by the Lagos state House of Assembly and found by me to be a true \nand correct printed copy of the said Bill \n \nG.O. Abiru \nActing Clerk of the House of Assembly"
+    },
+    {
+      "file": "Police-Act-2020.pdf",
+      "rule": {
+        "type": "act",
+        "expectedSectionMax": 142,
+        "requireArrangement": true,
+        "requireParts": true,
+        "requireSchedules": true
+      },
+      "pages": 57,
+      "characters": 163457,
+      "words": 24711,
+      "sectionValidation": {
+        "totalDetected": 116,
+        "uniqueDetected": 97,
+        "firstDetected": 1,
+        "lastDetected": 142,
+        "missing": [
+          23,
+          33,
+          38,
+          42,
+          43,
+          44,
+          49,
+          55,
+          62,
+          65,
+          68,
+          92,
+          97,
+          98,
+          99,
+          101,
+          102,
+          103,
+          105,
+          107,
+          109,
+          110,
+          111,
+          113,
+          114,
+          115,
+          118,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          128,
+          129,
+          132,
+          133,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141
+        ],
+        "duplicates": [
+          {
+            "section": 3,
+            "occurrences": 2
+          },
+          {
+            "section": 5,
+            "occurrences": 2
+          },
+          {
+            "section": 16,
+            "occurrences": 2
+          },
+          {
+            "section": 18,
+            "occurrences": 2
+          },
+          {
+            "section": 19,
+            "occurrences": 2
+          },
+          {
+            "section": 20,
+            "occurrences": 2
+          },
+          {
+            "section": 21,
+            "occurrences": 2
+          },
+          {
+            "section": 29,
+            "occurrences": 2
+          },
+          {
+            "section": 40,
+            "occurrences": 2
+          },
+          {
+            "section": 41,
+            "occurrences": 2
+          },
+          {
+            "section": 50,
+            "occurrences": 2
+          },
+          {
+            "section": 51,
+            "occurrences": 2
+          },
+          {
+            "section": 60,
+            "occurrences": 2
+          },
+          {
+            "section": 63,
+            "occurrences": 2
+          },
+          {
+            "section": 71,
+            "occurrences": 2
+          },
+          {
+            "section": 78,
+            "occurrences": 2
+          },
+          {
+            "section": 79,
+            "occurrences": 2
+          },
+          {
+            "section": 106,
+            "occurrences": 2
+          },
+          {
+            "section": 119,
+            "occurrences": 2
+          }
+        ]
+      },
+      "parts": [
+        "PART I - PRELIMINARY",
+        "PART II - ESTABLISHMENT, COMPOSITION AND DUTIES OF THE NIGERIA POLICE FORCE",
+        "PART \nIV-",
+        "PART VI- FINANCIAL PROVISIONS",
+        "PART VI[ - POWERS OF POLICE OFFICERS",
+        "PART VIII - WARRANTS",
+        "PART IX - PREVENTION OF OFFENCES AND SECURITY FOR GOOD BEHAVIOUR",
+        "PART X- PROPERTY FOUND AND UNCLAIMED, ETC.",
+        "PART X{ - ESTABLISHMENT OF THE POLICE REWARD FUND, ETC. AND OTHER PROVISIONS RELATING TO",
+        "PART XI[-OFFENCES",
+        "PART XIII - SPECIAL CONSTABLES",
+        "PART \nXIV",
+        "PART XV - TRAFFIC WARDEN SERVICE",
+        "PART XVI - POLICE PUBLIC COMPLAINTS AND DISCIPLINE",
+        "PART XVII - MISCELLANEOUS PROVISIONS",
+        "PART I - PRELIMINARY",
+        "PART \nIl",
+        "PART \nIII-",
+        "PART IV- APPOINTMENT AND FUNCTIONS ETC. OF THE DEPUTY INSPECTOR-",
+        "Part are entitled to such ensions, gratuities and",
+        "PART V - GENERAL ADMINISTRATION",
+        "part \nof",
+        "PART VI- FINANCIAL PROVISIONS",
+        "Part \nXIV",
+        "PART \nVII-POWERS",
+        "Part \nifitis:",
+        "PART VII[- WARRANTS",
+        "part \nof",
+        "PART \nIX",
+        "PART X- PROPERTY FOUND AND UNCLAIMED, ETC.",
+        "PART \nXI-ESTABLISHMENT",
+        "PART XII-OFFENCES",
+        "part \nof",
+        "part of such duty, commits an offence and is liable on conviction",
+        "PART XIII- SPECIAL CONSTABLES",
+        "part \nof",
+        "part \nof",
+        "PART XV - TRAFFIC WARDEN SERVICE",
+        "part of the Police Force and agcordingly, references to",
+        "PART XV - POLICE PUBLIC COMPLAINTS AND DISCIPLINE",
+        "PART XVII - MISCELLANEOUS PROVISIONS"
+      ],
+      "chapters": [
+        "Chapter IV of the Constitution."
+      ],
+      "arrangementCount": 1,
+      "schedulesCount": 4,
+      "repeatedLines": [
+        {
+          "line": "Inspector-General",
+          "count": 36
+        },
+        {
+          "line": "subsection",
+          "count": 33
+        },
+        {
+          "line": "arrested",
+          "count": 29
+        },
+        {
+          "line": "appointed",
+          "count": 27
+        },
+        {
+          "line": "provisions",
+          "count": 25
+        },
+        {
+          "line": "immediately",
+          "count": 22
+        },
+        {
+          "line": "property",
+          "count": 22
+        },
+        {
+          "line": "reasonable",
+          "count": 21
+        },
+        {
+          "line": "established",
+          "count": 16
+        },
+        {
+          "line": "necessary",
+          "count": 15
+        },
+        {
+          "line": "appointment",
+          "count": 15
+        },
+        {
+          "line": "searched",
+          "count": 15
+        },
+        {
+          "line": "officers",
+          "count": 14
+        },
+        {
+          "line": "prescribed",
+          "count": 14
+        },
+        {
+          "line": "authority",
+          "count": 14
+        },
+        {
+          "line": "constables",
+          "count": 13
+        },
+        {
+          "line": "supernumerary",
+          "count": 13
+        },
+        {
+          "line": "information",
+          "count": 13
+        },
+        {
+          "line": "accordance",
+          "count": 12
+        },
+        {
+          "line": "emergency",
+          "count": 12
+        }
+      ],
+      "suspicious": [
+        {
+          "name": "replacement-character",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "broken-spaced-word",
+          "count": 3,
+          "examples": [
+            "IS \nA \nTRUE",
+            "m \nP \nSOWY",
+            "o \nL \noy"
+          ]
+        },
+        {
+          "name": "OCR-extroordinary",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "OCR-gotentntent",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-OF",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-REPUBLIC",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "private-use-area",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "excessive-symbol-run",
+          "count": 0,
+          "examples": []
+        }
+      ],
+      "status": "REVIEW",
+      "failures": [],
+      "warnings": [
+        "3 suspicious extraction pattern(s) detected.",
+        "Possible missing sections: 23, 33, 38, 42, 43, 44, 49, 55, 62, 65, 68, 92, 97, 98, 99, 101, 102, 103, 105, 107, 109, 110, 111, 113, 114 ...",
+        "Potential duplicate section headings detected: 3 (2x), 5 (2x), 16 (2x), 18 (2x), 19 (2x), 20 (2x), 21 (2x), 29 (2x), 40 (2x), 41 (2x)"
+      ],
+      "firstExcerpt": "NIGERIA POLICE ACT, 2020 \nEXPLANATORY MEMORANDUM \nThis Act repeals the Police Act Cafg. P19, Laws of the Federation, 2004 and enacts the Nigeria Police \nAct, 2020 to provide for a more effective and well organised Police Force driven by the principles of \ntransparency and accountability in its operations and management of its resources. \nThis Act also establishes an appropriate funding framework for the Police Force in line with what is \nobtainable in other Federal Government key institutions in the bid to ensure that all police formations \nnationwide are appropriately funded for effective policing. \nThis Act further: \n(a) , enhances professionalism in the Police Force through the provision of \nincreased training opportunities for police officers and other persons \nemployed by the Police Force; and \n(b) creates an enduring cooperation and partnership Dbetween the Police Force \nand communities in maintaining peace and combating crimes nationwide. \n\n- . NIGERIA POLICE ACT, 2020 \nArrangement of Sections \nSection: \nPART I - PRELIMINARY \n1. General objective. \n2. Specific objectives. \nPART II - ESTABLISHMENT, COMPOSITION AND DUTIES OF THE NIGERIA POLICE FORCE \n3. Establishment, composit",
+      "lastExcerpt": " \n‘ouno \nFunequos \n ‘soved \n Bumrejurem \nut \nSMIUUIWIOD \n1807 \npue \nsorod \no \nueamyeq \n disiomred \npue \n wonerdooo \n omsus \n pue \n90T0, \n9010 \nS} \n0] \nHiomourel \no9y \n9praoid \n01 \n(707 \nPV \n20H0g \nBLIBFIN \nJOPUD \nPUR \n(7 \n“B1BIN \nJO \nTOHRISPR,| \noY1 \nJO \nsmeT \n‘614 \ndeny \n020z \n00T \n‘AR \n1 \n020 \n\"AIy \nyuze \n| \n“de) \n19 \n29110d \n9y \nsjeeda1 \n10y \nST, \n| \nv \nvoyj0d \no \n[seder \n01 \n30y \nUV \n| \ng \neofod \nTuRSIN \n\\LLVINISIRIITT \n40 \nASHOH \nTHL \n| \nHLVNES \nHILL \nAD \nT1IE \nFHL \nA0 \nSINTINGD \nTE \nHHL \n(I \nQASSVAALYA \n| \nQASSYd \nALV \nAHL \n10 \nAAVAINGS \n| \nTHE \nTHL \n40 \nTILLL \nONOT \n| \n40 \nWIILL \nLNOHS \n0207 \nTIig \n231[0d \nBHI931N \n93 \n0) \no[npapy \n\ner1eBiN \nJo \nsrqudoy \njeaeped \no) \nJo \nJuBPISALY \nHADD \n‘TAVHAY \nNAVIWINVENIA \ne \nel \nm \nP \nSOWY \nAANNALY'IO \nQ \n<o \no \nL \noy \no \nsmer] \n7y \nde)) \n10V \nUOQedRUSYINY \n$10y \no \nJo \nsuoisiaoid \noty \nyum \n90UBPIODIL \nI \nSI \nPUB \nSISNOE] \nINASSV \n1 \n\"P00T \n\"eHRBIN \nJO \nuoneIspag \n91 \nJO \nUOISIOIP \n1991100 \npue \no1y \n9 \n0} \nAU \n£q \nPUNOJ \nPUE \nA[GUIASSY \n[RUOTIEN \noY) \nAq \nPayaes) \nUOISTOSp \n1) \nYiim \now \n£q \nparedmos \nAjnjeres \nusaq \nsey \njrig \nSIY} \nYeT) \nA7131700 \n| \n“OPIMUOLBY \nSIWILID \nSunequiod \npue \nooead \nSururEUTRNr \nUl \nSOQIUOW0d \n PUB \n09104"
+    },
+    {
+      "file": "RC-COMPENDIUM-2024.pdf",
+      "rule": {
+        "type": "compendium",
+        "requireArrangement": false,
+        "requireParts": false,
+        "requireSchedules": false
+      },
+      "pages": 82,
+      "characters": 137724,
+      "words": 21472,
+      "sectionValidation": {
+        "totalDetected": 90,
+        "uniqueDetected": 58,
+        "firstDetected": 1,
+        "lastDetected": 58,
+        "missing": [],
+        "duplicates": [
+          {
+            "section": 1,
+            "occurrences": 5
+          },
+          {
+            "section": 2,
+            "occurrences": 6
+          },
+          {
+            "section": 3,
+            "occurrences": 5
+          },
+          {
+            "section": 4,
+            "occurrences": 5
+          },
+          {
+            "section": 5,
+            "occurrences": 4
+          },
+          {
+            "section": 6,
+            "occurrences": 3
+          },
+          {
+            "section": 7,
+            "occurrences": 3
+          },
+          {
+            "section": 8,
+            "occurrences": 3
+          },
+          {
+            "section": 9,
+            "occurrences": 2
+          },
+          {
+            "section": 10,
+            "occurrences": 2
+          },
+          {
+            "section": 11,
+            "occurrences": 2
+          },
+          {
+            "section": 12,
+            "occurrences": 2
+          },
+          {
+            "section": 13,
+            "occurrences": 2
+          },
+          {
+            "section": 14,
+            "occurrences": 2
+          }
+        ]
+      },
+      "parts": [
+        "PART 1",
+        "PART II",
+        "part of their jobs, anyone can be involved in an",
+        "Part I and II order, signal,",
+        "part of the vehicle was when maximum engagement occurred.",
+        "part of a motor vehicle by direct contact",
+        "part of the vehicle. Contact damage area is",
+        "PART ONE ORDER, they are deemed to have",
+        "part of its research activities from 1988 to",
+        "part of quality",
+        "part of the patrol team members is all that is required to",
+        "part one order or operational",
+        "Part I: Installation requirement and,",
+        "Part II: Specification for system and component requirement."
+      ],
+      "chapters": [],
+      "arrangementCount": 0,
+      "schedulesCount": 4,
+      "repeatedLines": [
+        {
+          "line": "Features",
+          "count": 7
+        }
+      ],
+      "suspicious": [
+        {
+          "name": "replacement-character",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "broken-spaced-word",
+          "count": 7,
+          "examples": [
+            "Part I and",
+            "or Q system",
+            "uses A to",
+            "OF A CRASH",
+            "OF A CRASH"
+          ]
+        },
+        {
+          "name": "OCR-extroordinary",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "OCR-gotentntent",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-OF",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-REPUBLIC",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "private-use-area",
+          "count": 197,
+          "examples": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "excessive-symbol-run",
+          "count": 0,
+          "examples": []
+        }
+      ],
+      "status": "REVIEW",
+      "failures": [],
+      "warnings": [
+        "204 suspicious extraction pattern(s) detected.",
+        "Potential duplicate section headings detected: 1 (5x), 2 (6x), 3 (5x), 4 (5x), 5 (4x), 6 (3x), 7 (3x), 8 (3x), 9 (2x), 10 (2x)"
+      ],
+      "firstExcerpt": "1 \n \n \n \n \n \n2024 \nCOMPENDIUM \nFOR \nRCs \n \n \n \n \n \n \n \n \n \n\n2 \n \n1. HIGHWAY CODE LITERACY \n1.1 SPEED LIMITS \nSpeed limit is a maximum speed a category of vehicle can travel on a road under \nideal condition. All categories of vehicles have specific speed limits as shown in \nthe table below: \n \n \n1.2 DRIVING UNDER SPECIAL CONDITIONS \nDriving under special conditions involves driving under unusual or emergency \nsituations. This requires extra care, concentration, discipline and consideration. \nSpecial driving conditions include the following: \ni. Night Time Driving \nNight driving is two to three times more dangerous than day time driving due to \npoor visibility hence, extra care is required.The following measures are \nrecommended: \na. Lower the beams of headlamps for both oncoming vehicles and the ones in \nfront. \nb. Reduce speed and lower beam in foggy weather. \nc. Use high-beam when it is safe to do so, especially when there is no \napproaching vehicle. \nd. Avoid looking directly into the lights of oncoming vehicles, watch the right-\nhand edge of the road. \ne. Keep headlamps properly adjusted/focused. \nf. f Keep wind screen clean. Slow down when facing glare fromoncoming \nheadlights.",
+      "lastExcerpt": "ces chances of electrical problem related to installation of speed \nLimiting Device. \niv. Vehicles with pre-fitted Speed limiting devices save the owners cost of \ninstallation and maintenance. \nv. pre-fitted speed limiting devices can help reduce maintenance costs and \nprolong the lifespan of the vehicle. \n \nPRE-FITTED SPEED LIMITER IMPLEMENTATION AGENCIES \n\n82 \n \nFederal Road Safety Corps \nNational Automotive Design and Development Council (NADDC) \nStandard Organization of Nigeria (SON) \nNigeria Society of Engineers \nNational Orientation Agency (NOA) \nNigeria Customs Service (NCS) \n \nRECOMMENDATIONS \ni. The need to improve monitoring measure for discovering tampered speed \nlimiting device in vehicles. \nii. Provision of incentives to vehicle manufacturers to encourage the \ninstallation of pre-fitted speed limiting devices. like, low tax. \niii. Government to make policy on mandatory installation of pre-fitted speed \nlimiting devices in imported or locally manufactured commercial vehicles. \niv. To ensure the effective installation and maintenance of pre-fitted speed \nlimiting devices, there is a need for training and capacity building for both FRSC \npersonnel and vendors technicians."
+    },
+    {
+      "file": "Roles-Rights-Responsibilities-Under-New-Police-Act.pdf",
+      "rule": {
+        "type": "secondary",
+        "requireArrangement": false,
+        "requireParts": false,
+        "requireSchedules": false
+      },
+      "pages": 8,
+      "characters": 18026,
+      "words": 2714,
+      "sectionValidation": {
+        "totalDetected": 0,
+        "uniqueDetected": 0,
+        "firstDetected": null,
+        "lastDetected": null,
+        "missing": [],
+        "duplicates": []
+      },
+      "parts": [
+        "part of police, to aid community policing"
+      ],
+      "chapters": [],
+      "arrangementCount": 0,
+      "schedulesCount": 0,
+      "repeatedLines": [
+        {
+          "line": "Policy and Legal Advocacy Centre (PLAC) is a Non-Governmental Organisation Promoting Good Governance and Citizen’s Access in Nigeria",
+          "count": 6
+        }
+      ],
+      "suspicious": [
+        {
+          "name": "replacement-character",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "broken-spaced-word",
+          "count": 1,
+          "examples": [
+            "R\nE\nNational"
+          ]
+        },
+        {
+          "name": "OCR-extroordinary",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "OCR-gotentntent",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-OF",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "split-word-REPUBLIC",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "private-use-area",
+          "count": 0,
+          "examples": []
+        },
+        {
+          "name": "excessive-symbol-run",
+          "count": 0,
+          "examples": []
+        }
+      ],
+      "status": "REVIEW",
+      "failures": [],
+      "warnings": [
+        "1 suspicious extraction pattern(s) detected."
+      ],
+      "firstExcerpt": "OCTOBER 2020 VOL. 1\nROLES, RIGHTS, & RESPONSIBILITIES \nUNDER NEW POLICE ACT\nFACTSHEET\nREVIEW OF RELEVANT INFORMATION ON NIGERIA’S DEMOCRACY\nINTRODUCTION\nThe passage of the new Police Act 2020 has seen the introduction of new actors in the police accountability \nstructure and a clear delineation of roles and responsibilities. This factsheet highlights who these key actors are \nand states the responsibilities which have been assigned to them. The purpose is to identify and situate these roles \nfor the purpose of advocacy for implementation.\nPRESIDENT \n »Appoint and Remove IGP in consultation with the Nigeria Police Council (per the 1999 Constitution) \n »Give lawful directions to the IGP with respect to the maintenance and securing of public safety and \npublic order as he may consider necessary (per the 1999 Constitution) \n »Convene Police Council meetings at least twice a year (Police Act, 2020)\nPresident and \nGovernors\nP\nO\nL\nI\nC\nE\n \n \n \nA\nC\nC\nO\nU\nN\nT\nA\nB\nI\nL\nI\nT\nY\n \nS\nT\nR\nU\nC\nT\nU\nR\nE\nNational \nAssembly\nInspector\nGeneral of\nPolice\nPolice Council\nJudiciary\nMinister of Police \nA\u001fairs\nPolice Service \nCommission\nAttorney General\nOther entities with responsibilities are:\n* National Human ",
+      "lastExcerpt": "y the Nigerian Police Council\n »Rules on application and disbursement of funds subject to criteria made by the Police Service \nCommission and rules made by Minister of Finance\n »Police Act recommends national honours, presentation of certificates for deserving officers and a \nday or week set aside to honour officers.\n\nPlot 451 Gambo Jimeta Crescent off Nasir El-Rufai Crescent, \nGuzape District, Abuja, Nigeria\nWebsite: www.placng.org * Email: info@placng.org * Phone: 08091899999\nAbout PLAC\nPolicy and Legal Advocacy Centre (PLAC) is a non-governmental organization \ncommitted to strengthening democratic governance and citizens’ participation in \nNigeria. PLAC works to enhance citizens’ engagement with state institutions, and to \npromote transparency and accountability in policy and decision-making processes. \nThe main focus of PLAC’s intervention in the democratic governance process is on \nbuilding the capacity of the legislature and reforming the electoral process. Since its \nestablishment, PLAC has grown into a leading institution with capacity to deliver \ncutting-edge research, policy analysis and advocacy. PLAC receives funding support \nfrom donors and other philanthropic sources."
+    }
+  ]
+}

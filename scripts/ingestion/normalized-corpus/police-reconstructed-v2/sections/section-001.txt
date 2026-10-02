@@ -1,0 +1,15 @@
+Nigeria Police Act 2020
+Section: 1
+Status: FOUND
+Confidence: 55
+Page start: 8
+Page end: 9
+OCR line start: 438
+OCR line end: 444
+Reason: 
+
+----- RECONSTRUCTED TEXT -----
+1
+===== PAGE 9 =====
+(2) The Inspector-General of Police shall, in addition to his functions under this section,
+; ensure the discharge by the Police Force of the responsibilities referred to under section

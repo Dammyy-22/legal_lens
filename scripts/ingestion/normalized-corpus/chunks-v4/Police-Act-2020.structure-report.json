@@ -1,0 +1,737 @@
+{
+  "source": "Police-Act-2020.json",
+  "sourceTitle": "Nigeria Police Act, 2020",
+  "actStart": 8687,
+  "scheduleStart": 145771,
+  "bodyLength": 137084,
+  "expectedSections": 142,
+  "foundSections": 6,
+  "missing": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    142
+  ],
+  "duplicates": [],
+  "orderingProblems": [],
+  "sections": [
+    {
+      "number": 1,
+      "index": 3433,
+      "raw": "\n1",
+      "score": 0,
+      "status": "FOUND"
+    },
+    {
+      "number": 2,
+      "index": 44190,
+      "raw": "\n2\n",
+      "score": 0,
+      "status": "FOUND"
+    },
+    {
+      "number": 3,
+      "index": 124193,
+      "raw": "\n3.\n",
+      "score": 0,
+      "status": "FOUND"
+    },
+    {
+      "number": 4,
+      "status": "MISSING"
+    },
+    {
+      "number": 5,
+      "status": "MISSING"
+    },
+    {
+      "number": 6,
+      "status": "MISSING"
+    },
+    {
+      "number": 7,
+      "status": "MISSING"
+    },
+    {
+      "number": 8,
+      "status": "MISSING"
+    },
+    {
+      "number": 9,
+      "status": "MISSING"
+    },
+    {
+      "number": 10,
+      "status": "MISSING"
+    },
+    {
+      "number": 11,
+      "status": "MISSING"
+    },
+    {
+      "number": 12,
+      "index": 126577,
+      "raw": "\n12\n",
+      "score": 0,
+      "status": "FOUND"
+    },
+    {
+      "number": 13,
+      "status": "MISSING"
+    },
+    {
+      "number": 14,
+      "status": "MISSING"
+    },
+    {
+      "number": 15,
+      "status": "MISSING"
+    },
+    {
+      "number": 16,
+      "status": "MISSING"
+    },
+    {
+      "number": 17,
+      "status": "MISSING"
+    },
+    {
+      "number": 18,
+      "status": "MISSING"
+    },
+    {
+      "number": 19,
+      "status": "MISSING"
+    },
+    {
+      "number": 20,
+      "status": "MISSING"
+    },
+    {
+      "number": 21,
+      "status": "MISSING"
+    },
+    {
+      "number": 22,
+      "status": "MISSING"
+    },
+    {
+      "number": 23,
+      "status": "MISSING"
+    },
+    {
+      "number": 24,
+      "status": "MISSING"
+    },
+    {
+      "number": 25,
+      "status": "MISSING"
+    },
+    {
+      "number": 26,
+      "status": "MISSING"
+    },
+    {
+      "number": 27,
+      "status": "MISSING"
+    },
+    {
+      "number": 28,
+      "status": "MISSING"
+    },
+    {
+      "number": 29,
+      "status": "MISSING"
+    },
+    {
+      "number": 30,
+      "status": "MISSING"
+    },
+    {
+      "number": 31,
+      "status": "MISSING"
+    },
+    {
+      "number": 32,
+      "status": "MISSING"
+    },
+    {
+      "number": 33,
+      "status": "MISSING"
+    },
+    {
+      "number": 34,
+      "status": "MISSING"
+    },
+    {
+      "number": 35,
+      "status": "MISSING"
+    },
+    {
+      "number": 36,
+      "status": "MISSING"
+    },
+    {
+      "number": 37,
+      "status": "MISSING"
+    },
+    {
+      "number": 38,
+      "status": "MISSING"
+    },
+    {
+      "number": 39,
+      "status": "MISSING"
+    },
+    {
+      "number": 40,
+      "status": "MISSING"
+    },
+    {
+      "number": 41,
+      "status": "MISSING"
+    },
+    {
+      "number": 42,
+      "index": 130339,
+      "raw": "\n42\n",
+      "score": -4,
+      "status": "FOUND"
+    },
+    {
+      "number": 43,
+      "status": "MISSING"
+    },
+    {
+      "number": 44,
+      "status": "MISSING"
+    },
+    {
+      "number": 45,
+      "status": "MISSING"
+    },
+    {
+      "number": 46,
+      "status": "MISSING"
+    },
+    {
+      "number": 47,
+      "status": "MISSING"
+    },
+    {
+      "number": 48,
+      "status": "MISSING"
+    },
+    {
+      "number": 49,
+      "status": "MISSING"
+    },
+    {
+      "number": 50,
+      "status": "MISSING"
+    },
+    {
+      "number": 51,
+      "status": "MISSING"
+    },
+    {
+      "number": 52,
+      "status": "MISSING"
+    },
+    {
+      "number": 53,
+      "status": "MISSING"
+    },
+    {
+      "number": 54,
+      "status": "MISSING"
+    },
+    {
+      "number": 55,
+      "status": "MISSING"
+    },
+    {
+      "number": 56,
+      "status": "MISSING"
+    },
+    {
+      "number": 57,
+      "status": "MISSING"
+    },
+    {
+      "number": 58,
+      "status": "MISSING"
+    },
+    {
+      "number": 59,
+      "status": "MISSING"
+    },
+    {
+      "number": 60,
+      "status": "MISSING"
+    },
+    {
+      "number": 61,
+      "status": "MISSING"
+    },
+    {
+      "number": 62,
+      "status": "MISSING"
+    },
+    {
+      "number": 63,
+      "status": "MISSING"
+    },
+    {
+      "number": 64,
+      "status": "MISSING"
+    },
+    {
+      "number": 65,
+      "status": "MISSING"
+    },
+    {
+      "number": 66,
+      "status": "MISSING"
+    },
+    {
+      "number": 67,
+      "status": "MISSING"
+    },
+    {
+      "number": 68,
+      "status": "MISSING"
+    },
+    {
+      "number": 69,
+      "status": "MISSING"
+    },
+    {
+      "number": 70,
+      "status": "MISSING"
+    },
+    {
+      "number": 71,
+      "status": "MISSING"
+    },
+    {
+      "number": 72,
+      "status": "MISSING"
+    },
+    {
+      "number": 73,
+      "status": "MISSING"
+    },
+    {
+      "number": 74,
+      "status": "MISSING"
+    },
+    {
+      "number": 75,
+      "status": "MISSING"
+    },
+    {
+      "number": 76,
+      "status": "MISSING"
+    },
+    {
+      "number": 77,
+      "status": "MISSING"
+    },
+    {
+      "number": 78,
+      "status": "MISSING"
+    },
+    {
+      "number": 79,
+      "status": "MISSING"
+    },
+    {
+      "number": 80,
+      "status": "MISSING"
+    },
+    {
+      "number": 81,
+      "status": "MISSING"
+    },
+    {
+      "number": 82,
+      "status": "MISSING"
+    },
+    {
+      "number": 83,
+      "status": "MISSING"
+    },
+    {
+      "number": 84,
+      "status": "MISSING"
+    },
+    {
+      "number": 85,
+      "status": "MISSING"
+    },
+    {
+      "number": 86,
+      "status": "MISSING"
+    },
+    {
+      "number": 87,
+      "status": "MISSING"
+    },
+    {
+      "number": 88,
+      "status": "MISSING"
+    },
+    {
+      "number": 89,
+      "status": "MISSING"
+    },
+    {
+      "number": 90,
+      "status": "MISSING"
+    },
+    {
+      "number": 91,
+      "status": "MISSING"
+    },
+    {
+      "number": 92,
+      "status": "MISSING"
+    },
+    {
+      "number": 93,
+      "status": "MISSING"
+    },
+    {
+      "number": 94,
+      "status": "MISSING"
+    },
+    {
+      "number": 95,
+      "status": "MISSING"
+    },
+    {
+      "number": 96,
+      "status": "MISSING"
+    },
+    {
+      "number": 97,
+      "status": "MISSING"
+    },
+    {
+      "number": 98,
+      "status": "MISSING"
+    },
+    {
+      "number": 99,
+      "status": "MISSING"
+    },
+    {
+      "number": 100,
+      "status": "MISSING"
+    },
+    {
+      "number": 101,
+      "status": "MISSING"
+    },
+    {
+      "number": 102,
+      "status": "MISSING"
+    },
+    {
+      "number": 103,
+      "status": "MISSING"
+    },
+    {
+      "number": 104,
+      "status": "MISSING"
+    },
+    {
+      "number": 105,
+      "status": "MISSING"
+    },
+    {
+      "number": 106,
+      "status": "MISSING"
+    },
+    {
+      "number": 107,
+      "status": "MISSING"
+    },
+    {
+      "number": 108,
+      "status": "MISSING"
+    },
+    {
+      "number": 109,
+      "status": "MISSING"
+    },
+    {
+      "number": 110,
+      "status": "MISSING"
+    },
+    {
+      "number": 111,
+      "status": "MISSING"
+    },
+    {
+      "number": 112,
+      "status": "MISSING"
+    },
+    {
+      "number": 113,
+      "status": "MISSING"
+    },
+    {
+      "number": 114,
+      "status": "MISSING"
+    },
+    {
+      "number": 115,
+      "status": "MISSING"
+    },
+    {
+      "number": 116,
+      "status": "MISSING"
+    },
+    {
+      "number": 117,
+      "status": "MISSING"
+    },
+    {
+      "number": 118,
+      "status": "MISSING"
+    },
+    {
+      "number": 119,
+      "status": "MISSING"
+    },
+    {
+      "number": 120,
+      "status": "MISSING"
+    },
+    {
+      "number": 121,
+      "status": "MISSING"
+    },
+    {
+      "number": 122,
+      "status": "MISSING"
+    },
+    {
+      "number": 123,
+      "status": "MISSING"
+    },
+    {
+      "number": 124,
+      "status": "MISSING"
+    },
+    {
+      "number": 125,
+      "status": "MISSING"
+    },
+    {
+      "number": 126,
+      "status": "MISSING"
+    },
+    {
+      "number": 127,
+      "status": "MISSING"
+    },
+    {
+      "number": 128,
+      "status": "MISSING"
+    },
+    {
+      "number": 129,
+      "status": "MISSING"
+    },
+    {
+      "number": 130,
+      "status": "MISSING"
+    },
+    {
+      "number": 131,
+      "status": "MISSING"
+    },
+    {
+      "number": 132,
+      "status": "MISSING"
+    },
+    {
+      "number": 133,
+      "status": "MISSING"
+    },
+    {
+      "number": 134,
+      "status": "MISSING"
+    },
+    {
+      "number": 135,
+      "status": "MISSING"
+    },
+    {
+      "number": 136,
+      "status": "MISSING"
+    },
+    {
+      "number": 137,
+      "status": "MISSING"
+    },
+    {
+      "number": 138,
+      "status": "MISSING"
+    },
+    {
+      "number": 139,
+      "status": "MISSING"
+    },
+    {
+      "number": 140,
+      "status": "MISSING"
+    },
+    {
+      "number": 141,
+      "index": 132932,
+      "raw": "\n141\n",
+      "score": 0,
+      "status": "FOUND"
+    },
+    {
+      "number": 142,
+      "status": "MISSING"
+    }
+  ]
+}

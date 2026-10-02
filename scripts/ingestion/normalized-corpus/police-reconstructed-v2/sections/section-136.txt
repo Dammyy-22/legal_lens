@@ -1,0 +1,14 @@
+Nigeria Police Act 2020
+Section: 136
+Status: FOUND
+Confidence: 100
+Page start: 51
+Page end: 51
+OCR line start: 2717
+OCR line end: 2719
+Reason: 
+
+----- RECONSTRUCTED TEXT -----
+136. All the provisions of this Act shall extend to all persons who, at the commencement of this Application of
+Act are serving in the Nigeria Police Force established by the Constitution of the Federal of the Act.
+Nigeria as if such persons had been appointed under this Act.

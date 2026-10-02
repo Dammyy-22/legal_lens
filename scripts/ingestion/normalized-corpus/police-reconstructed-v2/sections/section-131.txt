@@ -1,0 +1,16 @@
+Nigeria Police Act 2020
+Section: 131
+Status: FOUND
+Confidence: 100
+Page start: 50
+Page end: 50
+OCR line start: 2658
+OCR line end: 2662
+Reason: 
+
+----- RECONSTRUCTED TEXT -----
+131. (1) The Inspector-General of Police shall establish a Police Complaints Response Unit (in Establishment
+this Act referred to as ‘’the Grit” in the Force Headquarters, and each of the Police of Police
+Commands in all the States of the Federation and the Federal Capital Territory. ier ,
+: esponse Unit,
+(2) The Unit established under subsection (1) shall be under the Public Relations Section.

@@ -1,0 +1,16 @@
+Nigeria Police Act 2020
+Section: 7
+Status: FOUND
+Confidence: 100
+Page start: 50
+Page end: 50
+OCR line start: 2653
+OCR line end: 2657
+Reason: 
+
+----- RECONSTRUCTED TEXT -----
+7 appear on the register kept for that purpose by the Inspector-General of Police.
+(3) A traffic warden to whom a service number has been allocated under subsection (2)
+shall wear his service number on the shoulder flaps of his uniform whenever he is on
+duty.
+PART XV - POLICE PUBLIC COMPLAINTS AND DISCIPLINE
