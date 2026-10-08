@@ -21,6 +21,9 @@ const EMBEDDING_MODEL = 'text-embedding-3-small' // must match database/schema.s
 const GENERATION_MODEL = 'claude-sonnet-5'
 const SIMILARITY_THRESHOLD = 0.72 // cosine similarity floor; below this, treat as "no relevant source found"
 const MAX_CHUNKS = 6
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX_REQUESTS = 20
+const RATE_LIMIT_BUCKETS = new Map<string, { count: number; windowStart: number }>()
 
 // Keyword triage for situations where legal analysis should take a back seat to
 // safety — matches build plan §7/§37 (emergency guidance) and this deployment's own
@@ -88,12 +91,27 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: 'Invalid JSON body' }, 400)
   }
 
-  const question = body.question?.trim()
-  if (!question || question.length < 3) {
+  const question = normalizeQuestion(body.question)
+  if (!question) {
     return jsonResponse({ error: 'question is required' }, 400)
+  }
+  if (question.length < 3) {
+    return jsonResponse({ error: 'question is too short' }, 400)
   }
   if (question.length > 2000) {
     return jsonResponse({ error: 'question is too long (max 2000 characters)' }, 400)
+  }
+
+  const rateLimit = checkRateLimit(user.id)
+  if (!rateLimit.allowed) {
+    return jsonResponse(
+      {
+        error: 'Too many requests. Please wait a moment before asking another question.',
+        retry_after_ms: rateLimit.retryAfterMs,
+      },
+      429,
+      { 'Retry-After': String(Math.ceil((rateLimit.retryAfterMs ?? 0) / 1000)) }
+    )
   }
 
   // --- Safety triage: high-risk situations get a fixed, calm response, not a
@@ -144,6 +162,10 @@ Deno.serve(async (req: Request) => {
 
   const retrieved: RetrievedChunk[] = chunks ?? []
 
+  if (retrieved.length === 0 && question.toLowerCase().includes('who is my lawyer')) {
+    console.warn('Empty retrieval for a lawyer lookup: question may be outside the verified corpus')
+  }
+
   // --- No sufficient evidence: refuse rather than guess. This is the core
   // anti-hallucination behavior the whole product is built around. ---
   if (retrieved.length === 0) {
@@ -188,13 +210,19 @@ Deno.serve(async (req: Request) => {
 
   const citedChunks = retrieved.filter((c) => validCitedIds.includes(c.id))
   const isUncertain = citedChunks.length === 0
+  const answerText = generation.answer.trim()
+
+  if (!answerText) {
+    console.error('Generation returned an empty answer despite valid retrieval')
+    return jsonResponse({ error: 'The assistant could not produce a safe answer from the retrieved sources.' }, 502)
+  }
 
   const conversationId = await ensureConversation(supabase, user.id, body.conversation_id)
   await persistExchange(
     supabase,
     conversationId,
     question,
-    generation.answer,
+    answerText,
     citedChunks.map((c) => c.id),
     isUncertain,
     'standard'
@@ -202,7 +230,7 @@ Deno.serve(async (req: Request) => {
 
   return jsonResponse({
     conversation_id: conversationId,
-    answer: generation.answer,
+    answer: answerText,
     citations: citedChunks.map((c) => ({
       chunk_id: c.id,
       source_title: c.source_title,
@@ -370,11 +398,35 @@ async function persistExchange(
   }
 }
 
-function jsonResponse(body: unknown, status = 200): Response {
+function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...corsHeaders, ...extraHeaders, 'Content-Type': 'application/json' },
   })
+}
+
+function normalizeQuestion(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim().replace(/\s+/g, ' ')
+  return trimmed || null
+}
+
+function checkRateLimit(userId: string): { allowed: boolean; retryAfterMs?: number } {
+  const now = Date.now()
+  const bucket = RATE_LIMIT_BUCKETS.get(userId)
+
+  if (!bucket || now - bucket.windowStart >= RATE_LIMIT_WINDOW_MS) {
+    RATE_LIMIT_BUCKETS.set(userId, { count: 1, windowStart: now })
+    return { allowed: true }
+  }
+
+  if (bucket.count >= RATE_LIMIT_MAX_REQUESTS) {
+    const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - bucket.windowStart)
+    return { allowed: false, retryAfterMs: Math.max(retryAfterMs, 1000) }
+  }
+
+  bucket.count += 1
+  return { allowed: true }
 }
 
 const corsHeaders = {

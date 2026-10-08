@@ -87,3 +87,9 @@ scripts/ingestion/   One-off scripts to fetch/chunk/embed legal source documents
 - `SECURITY.md` — security posture and known gaps
 - `DECISIONS.md` — the real history: what was verified, what was assumed, what
   changed and why, including architectural detours and how they were resolved
+- `docs/architecture/system-map.md` — runtime architecture and request flow
+- `docs/operations/backend-hardening.md` — request validation and guardrails
+- `docs/operations/ai-assistant-reliability.md` — grounded-answer workflow and eval
+  plan
+- `docs/operations/admin-review-workflow.md` — admin verification/rejection process
+- `docs/operations/deployment-checklist.md` — production deployment gate

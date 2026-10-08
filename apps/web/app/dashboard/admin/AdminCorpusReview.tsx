@@ -28,7 +28,9 @@ export default function AdminCorpusReview() {
   const [error, setError] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [sections, setSections] = useState<Record<string, SectionPreview[]>>({})
+  const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({})
   const [verifying, setVerifying] = useState<string | null>(null)
+  const [rejecting, setRejecting] = useState<string | null>(null)
   const [verifiedCount, setVerifiedCount] = useState(0)
 
   useEffect(() => {
@@ -94,15 +96,23 @@ export default function AdminCorpusReview() {
     }
   }
 
-  async function handleVerify(versionId: string) {
-    if (
-      !confirm(
-        'Confirm you have actually read this content and believe it is an accurate, correctly-attributed extract before verifying. Verified content becomes visible to the AI assistant and all users immediately.'
-      )
-    ) {
+  async function handleReview(versionId: string, decision: 'verify' | 'reject') {
+    const confirmationText =
+      decision === 'verify'
+        ? 'Confirm you have actually read this content and believe it is an accurate, correctly-attributed extract before verifying. Verified content becomes visible to the AI assistant and all users immediately.'
+        : 'Reject this version? It will remain hidden from the app and the reviewer notes will be stored for traceability.'
+
+    if (!confirm(confirmationText)) {
       return
     }
-    setVerifying(versionId)
+
+    const reviewer = reviewNotes[versionId]?.trim() ?? ''
+    if (decision === 'verify') {
+      setVerifying(versionId)
+    } else {
+      setRejecting(versionId)
+    }
+
     const supabase = createClient()
     const {
       data: { user },
@@ -111,19 +121,30 @@ export default function AdminCorpusReview() {
     const { error: updateError } = await supabase
       .from('legal_source_versions')
       .update({
-        verified: true,
-        status: 'current',
-        verified_by: user?.email ?? user?.id,
-        verified_at: new Date().toISOString(),
+        verified: decision === 'verify',
+        status: decision === 'verify' ? 'current' : 'rejected',
+        review_notes: reviewer || null,
+        reviewed_by: user?.email ?? user?.id,
+        reviewed_at: new Date().toISOString(),
+        verified_by: decision === 'verify' ? (user?.email ?? user?.id) : null,
+        verified_at: decision === 'verify' ? new Date().toISOString() : null,
       })
       .eq('id', versionId)
 
-    setVerifying(null)
+    if (decision === 'verify') {
+      setVerifying(null)
+    } else {
+      setRejecting(null)
+    }
+
     if (updateError) {
       setError(updateError.message)
       return
     }
-    setVerifiedCount((n) => n + 1)
+
+    if (decision === 'verify') {
+      setVerifiedCount((n) => n + 1)
+    }
     setVersions((prev) => prev.filter((v) => v.id !== versionId))
   }
 
@@ -196,14 +217,40 @@ export default function AdminCorpusReview() {
                   </div>
                 ))}
 
-                <button
-                  onClick={() => handleVerify(v.id)}
-                  disabled={verifying === v.id}
-                  className="flex items-center gap-2 px-4 py-2 bg-ink text-paper rounded-lg text-sm font-medium hover:bg-ink-600 disabled:opacity-50 transition-colors"
-                >
-                  <CheckCircle2 size={16} />
-                  {verifying === v.id ? 'Verifying…' : 'Verify and publish'}
-                </button>
+                <div className="space-y-3">
+                  <label className="block text-xs uppercase tracking-wide font-mono text-ink-400">
+                    Reviewer notes
+                  </label>
+                  <textarea
+                    value={reviewNotes[v.id] ?? ''}
+                    onChange={(event) =>
+                      setReviewNotes((prev) => ({
+                        ...prev,
+                        [v.id]: event.target.value,
+                      }))
+                    }
+                    rows={3}
+                    placeholder="Add a short note about what you checked and any issue found."
+                    className="w-full rounded-lg border border-ink-100 bg-paper px-3 py-2 text-sm text-ink placeholder:text-ink-300 focus:outline-none focus:ring-2 focus:ring-brass-200"
+                  />
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => handleReview(v.id, 'verify')}
+                      disabled={verifying === v.id}
+                      className="flex items-center gap-2 px-4 py-2 bg-ink text-paper rounded-lg text-sm font-medium hover:bg-ink-600 disabled:opacity-50 transition-colors"
+                    >
+                      <CheckCircle2 size={16} />
+                      {verifying === v.id ? 'Verifying…' : 'Verify and publish'}
+                    </button>
+                    <button
+                      onClick={() => handleReview(v.id, 'reject')}
+                      disabled={rejecting === v.id}
+                      className="px-4 py-2 border border-seal/30 text-seal rounded-lg text-sm font-medium hover:bg-seal/5 disabled:opacity-50 transition-colors"
+                    >
+                      {rejecting === v.id ? 'Rejecting…' : 'Reject and note'}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

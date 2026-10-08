@@ -44,7 +44,7 @@ create table if not exists public.legal_source_versions (
     effective_date date,
     amendment_date date,
     status text not null default 'unverified' check (status in (
-        'current', 'amended', 'repealed', 'superseded', 'unverified'
+        'current', 'amended', 'repealed', 'superseded', 'unverified', 'rejected'
     )),
     superseded_by_version_id uuid references public.legal_source_versions(id),
     processing_status text not null default 'pending' check (processing_status in (
@@ -56,6 +56,9 @@ create table if not exists public.legal_source_versions (
     verified boolean not null default false,
     verified_by text,
     verified_at timestamptz,
+    review_notes text,
+    reviewed_by text,
+    reviewed_at timestamptz,
     created_at timestamptz not null default now(),
     unique (source_id, version_label)
 );
