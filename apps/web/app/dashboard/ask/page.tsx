@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { AlertTriangle, LoaderCircle, Send } from 'lucide-react'
 import { askLegalQuestion, type AskResponse } from '@/lib/api-client'
 
@@ -38,6 +39,22 @@ export default function AskPage() {
         Describe what you need to know. Review the explanation and its cited
         sources; available coverage may be limited.
       </p>
+
+      <div className="image-card group relative mb-6 h-36 overflow-hidden rounded-xl border border-ink-100 bg-ink shadow-sm">
+        <Image
+          src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=2400&q=90"
+          alt="Courthouse columns"
+          fill
+          priority
+          quality={90}
+          sizes="(max-width: 768px) 100vw, 900px"
+          className="motion-image object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/55 to-transparent" />
+        <p className="absolute inset-y-0 left-5 flex items-center font-display text-2xl text-white">
+          Start with the question that matters.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="mb-8 rounded-xl border border-ink-100 bg-white p-4 shadow-sm sm:p-5">
         <label htmlFor="legal-question" className="sr-only">Your legal question</label>

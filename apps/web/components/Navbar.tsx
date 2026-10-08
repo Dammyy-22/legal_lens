@@ -16,7 +16,7 @@ export function Navbar() {
   return (
     <nav aria-label="Main navigation" className="sticky top-0 z-50 border-b border-ink-100 bg-white/90 backdrop-blur">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex min-h-16 items-center justify-between py-1">
           <BrandLogo />
 
           <div className="hidden items-center gap-7 md:flex">

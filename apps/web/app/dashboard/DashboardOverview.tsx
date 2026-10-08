@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ArrowRight,
   ArrowUpRight,
@@ -81,6 +82,23 @@ export default function DashboardOverview({ fullName }: { fullName: string | nul
           the source trail close as you decide what to do next.
         </p>
       </header>
+
+      <section aria-label="Legal research" className="image-card group relative mb-8 h-44 overflow-hidden rounded-2xl border border-ink-100 bg-ink shadow-sm sm:h-52">
+        <Image
+          src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=2400&q=90"
+          alt="Law books in a legal library"
+          fill
+          priority
+          quality={90}
+          sizes="(max-width: 768px) 100vw, 1100px"
+          className="motion-image object-cover opacity-80"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/50 to-transparent" />
+        <div className="absolute inset-y-0 left-6 flex max-w-lg flex-col justify-center sm:left-8">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-brass-400">Research with context</p>
+          <p className="mt-2 font-display text-2xl font-medium leading-tight text-white sm:text-3xl">Keep the law and its sources in view.</p>
+        </div>
+      </section>
 
       <section className="relative mb-10 overflow-hidden rounded-2xl bg-ink text-paper shadow-[0_16px_44px_rgba(20,38,30,0.13)]">
         <div className="absolute -right-24 -top-36 h-80 w-80 rounded-full border border-brass/20" />

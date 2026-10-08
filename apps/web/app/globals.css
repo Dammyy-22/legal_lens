@@ -56,6 +56,71 @@ img {
     box-shadow: 0 18px 50px rgba(20, 38, 30, 0.08), 0 2px 5px rgba(20, 38, 30, 0.05);
 }
 
+.motion-enter {
+    animation: rise-in 700ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.motion-enter-delayed {
+    animation: rise-in 850ms cubic-bezier(0.2, 0.75, 0.25, 1) 120ms both;
+}
+
+.image-card {
+    transform: translateZ(0);
+    transition: box-shadow 450ms ease, transform 450ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.image-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 60px rgba(20, 38, 30, 0.2);
+}
+
+.motion-image {
+    transform: scale(1.025);
+    animation: image-tone 12s ease-in-out infinite alternate;
+    transition: transform 900ms cubic-bezier(0.2, 0.75, 0.25, 1), filter 600ms ease;
+    will-change: transform;
+}
+
+.image-card:hover .motion-image {
+    transform: scale(1.085);
+    filter: saturate(1.08);
+}
+
+.ambient-orbit {
+    animation: orbit-glow 8s ease-in-out infinite alternate;
+}
+
+@keyframes rise-in {
+    from {
+        opacity: 0;
+        transform: translateY(22px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes image-tone {
+    from {
+        filter: saturate(0.92);
+    }
+    to {
+        filter: saturate(1.08);
+    }
+}
+
+@keyframes orbit-glow {
+    from {
+        opacity: 0.55;
+        transform: scale(0.88);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1.12);
+    }
+}
+
 :focus-visible {
     outline: 2px solid #B08D3E;
     outline-offset: 2px;
@@ -73,6 +138,16 @@ img {
         animation-iteration-count: 1 !important;
         transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
+    }
+
+    .motion-image {
+        animation: none !important;
+        transform: none;
+        will-change: auto;
+    }
+
+    .image-card:hover {
+        transform: none;
     }
 }
 

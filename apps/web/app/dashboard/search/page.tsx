@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Search } from 'lucide-react'
+import Image from 'next/image'
 import { searchLegalSources, type LegalSearchResult } from '@/lib/api-client'
 
 export default function SearchPage() {
@@ -50,6 +51,22 @@ export default function SearchPage() {
         Search available Nigerian legal text. Each result identifies its source
         and section so you can check the original context.
       </p>
+
+      <div className="image-card group relative mb-7 h-32 overflow-hidden rounded-xl border border-ink-100 bg-ink shadow-sm">
+        <Image
+          src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=2400&q=90"
+          alt="Law books in a legal library"
+          fill
+          priority
+          quality={90}
+          sizes="(max-width: 768px) 100vw, 1000px"
+          className="motion-image object-cover opacity-70"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/45 to-transparent" />
+        <p className="absolute inset-y-0 left-5 flex items-center font-display text-2xl text-white">
+          Find the passage that matters.
+        </p>
+      </div>
 
       <form onSubmit={handleSearch} className="mb-9 flex flex-col gap-3 sm:flex-row">
         <label className="relative flex-1">

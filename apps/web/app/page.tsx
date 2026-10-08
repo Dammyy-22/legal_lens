@@ -56,7 +56,7 @@ export default function Home() {
       </header>
 
       <section className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-16 sm:px-8 sm:pb-20 sm:pt-24 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16 lg:pt-28">
-        <div className="relative z-10">
+        <div className="motion-enter relative z-10">
           <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-brass/30 bg-white/80 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">
             <Landmark size={14} /> Nigerian legal information
           </p>
@@ -88,17 +88,20 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[34rem] lg:ml-auto">
-          <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-brass/10 blur-3xl" />
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-ink/10 bg-ink p-3 shadow-[0_28px_80px_rgba(20,38,30,0.18)]">
+        <div className="motion-enter-delayed relative mx-auto w-full max-w-[34rem] lg:ml-auto">
+          <div className="ambient-orbit absolute -right-12 -top-12 h-48 w-48 rounded-full bg-brass/15 blur-3xl" />
+          <div className="image-card group relative overflow-hidden rounded-[1.75rem] border border-ink/10 bg-ink p-3 shadow-[0_28px_80px_rgba(20,38,30,0.18)]">
             <div className="relative aspect-[1.26] overflow-hidden rounded-[1.25rem] bg-ink">
               <Image
-                src="/brand/legal-source-archive.svg"
-                alt="Illustration of legal text and a balance scale"
+                src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=2400&q=90"
+                alt="Courthouse columns in warm afternoon light"
                 fill
+                priority
+                quality={90}
                 sizes="(max-width: 1024px) 90vw, 42vw"
-                className="object-cover"
+                className="motion-image object-cover"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-transparent" />
             </div>
             <div className="flex items-center justify-between gap-4 px-4 py-4 text-paper">
               <div>
@@ -116,7 +119,7 @@ export default function Home() {
       <section id="features" className="border-y border-ink-100 bg-white">
         <div className="mx-auto grid max-w-7xl gap-2 px-5 py-7 sm:grid-cols-3 sm:gap-8 sm:px-8 sm:py-10">
           {FEATURES.map(({ Icon, title, body }) => (
-            <article key={title} className="flex gap-4 rounded-xl p-4 sm:p-3">
+            <article key={title} className="motion-enter flex gap-4 rounded-xl p-4 sm:p-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-paper text-brass-600">
                 <Icon size={20} strokeWidth={1.8} />
               </span>
@@ -142,10 +145,21 @@ export default function Home() {
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brass/10 text-brass-600"><BookOpenText size={20} /></span>
-            <h3 className="mt-4 font-display text-xl font-medium text-ink">Source-led research</h3>
-            <p className="mt-2 text-sm leading-6 text-ink-400">Read the cited passage and follow links to the underlying source.</p>
+          <div className="image-card group relative min-h-56 overflow-hidden rounded-2xl border border-ink-100 bg-ink p-5 text-white shadow-sm sm:p-6">
+            <Image
+              src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=2000&q=90"
+              alt="Law books in a legal library"
+              fill
+              quality={90}
+              sizes="(max-width: 640px) 90vw, 420px"
+              className="motion-image object-cover opacity-50"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/10" />
+            <div className="relative z-10 flex h-full min-h-48 flex-col justify-end">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-ink/40 text-brass-400"><BookOpenText size={20} /></span>
+              <h3 className="mt-4 font-display text-xl font-medium text-white">Source-led research</h3>
+              <p className="mt-2 text-sm leading-6 text-white/75">Read the cited passage and follow links to the underlying source.</p>
+            </div>
           </div>
           <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brass/10 text-brass-600"><ShieldCheck size={20} /></span>

@@ -14,6 +14,7 @@ import {
   Stethoscope,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { searchLegalSources, type LegalSearchResult } from '@/lib/api-client'
 
@@ -267,6 +268,22 @@ export default function RightsPage() {
         link to their publishers or official institutions and are not represented as
         indexed in LegalLens. Tenancy and court procedure vary by state.
       </p>
+
+      <div className="image-card group relative mb-10 h-44 overflow-hidden rounded-2xl border border-ink-100 bg-ink shadow-sm md:h-52">
+        <Image
+          src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=2400&q=90"
+          alt="Courthouse columns in warm light"
+          fill
+          priority
+          quality={90}
+          sizes="(max-width: 768px) 100vw, 1100px"
+          className="motion-image object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/75 via-ink/25 to-transparent" />
+        <p className="absolute bottom-5 left-6 max-w-xs font-display text-xl text-white">
+          A field guide for the moments when procedure matters.
+        </p>
+      </div>
 
       <div className="space-y-4">
         {SITUATIONS.map((situation) => {
