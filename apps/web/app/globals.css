@@ -1,10 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 html {
@@ -12,10 +13,38 @@ html {
 }
 
 body {
+    min-height: 100vh;
+    background: #F7F7F4;
+    color: #14261E;
+    font-size: 15px;
+    line-height: 1.6;
+    font-feature-settings: "kern" 1, "liga" 1;
+    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: radial-gradient(circle at 85% -10%, rgba(176, 141, 62, 0.14), transparent 34rem), linear-gradient(135deg, rgba(255, 255, 255, 0.65), transparent 42%), #F5F1E7;
-    color: #1C1C1A;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    text-wrap: balance;
+}
+
+h1 {
+    font-weight: 500;
+    letter-spacing: -0.035em;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+img {
+    display: block;
 }
 
 ::selection {
@@ -23,132 +52,20 @@ body {
     color: #FFFFFF;
 }
 
-.legal-grid {
-    background-image: linear-gradient(rgba(20, 38, 30, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 38, 30, 0.035) 1px, transparent 1px);
-    background-size: 32px 32px;
-}
-
-.legal-grain {
-    background-image: radial-gradient(circle at 1px 1px, rgba(20, 38, 30, 0.055) 1px, transparent 0);
-    background-size: 18px 18px;
-}
-
-.ink-rule {
-    position: relative;
-}
-
-.ink-rule::after {
-    content: '';
-    display: block;
-    width: 3.5rem;
-    height: 2px;
-    margin-top: 1rem;
-    background: #B08D3E;
-}
-
 .surface-lift {
     box-shadow: 0 18px 50px rgba(20, 38, 30, 0.08), 0 2px 5px rgba(20, 38, 30, 0.05);
 }
 
-.hover-lift {
-    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+:focus-visible {
+    outline: 2px solid #B08D3E;
+    outline-offset: 2px;
 }
-
-.hover-lift:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 45px rgba(20, 38, 30, 0.12);
-}
-
-.float-slow {
-    animation: float-slow 7s ease-in-out infinite;
-}
-
-.shimmer-line {
-    position: relative;
-    overflow: hidden;
-}
-
-.shimmer-line::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-    animation: shimmer 3.8s ease-in-out infinite;
-}
-
-.image-reveal {
-    isolation: isolate;
-    animation: image-reveal 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-.image-drift {
-    transform: scale(1.04);
-    transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 400ms ease;
-    filter: saturate(0.82) contrast(1.04);
-}
-
-.image-reveal:hover .image-drift {
-    transform: scale(1.1);
-    filter: saturate(1) contrast(1.06);
-}
-
-.animate-float-note {
-    animation: float-note 5s ease-in-out infinite;
-}
-
-@keyframes float-slow {
-    0%,
-    100% {
-        transform: translateY(0) rotate(0deg);
-    }
-    50% {
-        transform: translateY(-9px) rotate(1deg);
-    }
-}
-
-@keyframes shimmer {
-    0%,
-    45% {
-        transform: translateX(-100%);
-    }
-    75%,
-    100% {
-        transform: translateX(100%);
-    }
-}
-
-@keyframes image-reveal {
-    from {
-        opacity: 0;
-        clip-path: inset(12% 0 12% 0 round 1rem);
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        clip-path: inset(0 0 0 0 round 1rem);
-        transform: translateY(0);
-    }
-}
-
-@keyframes float-note {
-    0%,
-    100% {
-        transform: translateY(0) rotate(1deg);
-    }
-    50% {
-        transform: translateY(-7px) rotate(-1deg);
-    }
-}
-
-
-/* Reduced motion: disable all custom animation/scroll behavior per user preference.
-   This is a quality-floor requirement, not optional polish. */
 
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
     }
+
     *,
     *::before,
     *::after {
@@ -157,17 +74,13 @@ body {
         transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
     }
-    .hover-lift:hover {
-        transform: none;
-    }
-    .image-drift,
-    .image-reveal:hover .image-drift {
-        transform: none;
-    }
 }
 
-
-/* Scrollbar styling — kept subtle, matching the paper/ink palette instead of default grey */
+@media (max-width: 640px) {
+    body {
+        font-size: 14px;
+    }
+}
 
 ::-webkit-scrollbar {
     width: 8px;
@@ -179,18 +92,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #B08D3E;
     border-radius: 4px;
+    background: #B08D3E;
 }
 
 ::-webkit-scrollbar-thumb:hover {
     background: #8F701F;
-}
-
-
-/* Visible keyboard focus — accessibility quality floor, not decorative */
-
-:focus-visible {
-    outline: 2px solid #B08D3E;
-    outline-offset: 2px;
 }

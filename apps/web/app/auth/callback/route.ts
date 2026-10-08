@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { safeLocalRedirectPath } from '@/lib/safe-redirect'
 
 // Supabase's OAuth flow (Google, etc.) redirects the browser here with a `code` query
 // param after the provider confirms the user's identity. This route exchanges that
@@ -9,13 +10,13 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  const next = safeLocalRedirectPath(searchParams.get('next'))
 
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(new URL(next, origin))
     }
   }
 

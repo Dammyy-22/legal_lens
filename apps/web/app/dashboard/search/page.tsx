@@ -1,20 +1,21 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Search } from 'lucide-react'
-import Image from 'next/image'
 import { searchLegalSources, type LegalSearchResult } from '@/lib/api-client'
 
 export default function SearchPage() {
+  const searchParams = useSearchParams()
+  const linkedQuery = searchParams.get('q')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<LegalSearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searched, setSearched] = useState(false)
 
-  async function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const trimmedQuery = query.trim()
+  const runSearch = useCallback(async (value: string) => {
+    const trimmedQuery = value.trim()
     if (trimmedQuery.length < 2) return
 
     setLoading(true)
@@ -28,23 +29,29 @@ export default function SearchPage() {
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  useEffect(() => {
+    if (!linkedQuery || linkedQuery.trim().length < 2) return
+    setQuery(linkedQuery)
+    void runSearch(linkedQuery)
+  }, [linkedQuery, runSearch])
+
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    void runSearch(query)
   }
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 md:py-14">
-      <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-2">Legal search</p>
-      <h1 className="font-display text-4xl text-ink mb-3">Search the law</h1>
-      <p className="text-ink-400 leading-relaxed mb-8 max-w-2xl">
-        Search verified Nigerian legal sources. Every result keeps its source and section provenance.
+      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">Research</p>
+      <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-ink">Search legal sources</h1>
+      <p className="mb-8 mt-3 max-w-2xl leading-7 text-ink-400">
+        Search available Nigerian legal text. Each result identifies its source
+        and section so you can check the original context.
       </p>
 
-      <div className="relative h-32 mb-7 overflow-hidden rounded-2xl border border-ink-100 bg-white surface-lift image-reveal">
-        <Image src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1400&q=85" alt="Rows of law books in a library" fill className="object-cover image-drift opacity-80" sizes="(max-width: 768px) 100vw, 1000px" />
-        <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/70 to-transparent" />
-        <div className="absolute inset-y-0 left-5 flex flex-col justify-center"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-600">Verified corpus</p><p className="font-display text-2xl text-ink mt-1">Find the passage that matters.</p></div>
-      </div>
-
-      <form onSubmit={handleSearch} className="flex gap-3 mb-10">
+      <form onSubmit={handleSearch} className="mb-9 flex flex-col gap-3 sm:flex-row">
         <label className="relative flex-1">
           <span className="sr-only">Search legal sources</span>
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-100" />
@@ -52,13 +59,13 @@ export default function SearchPage() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Try fundamental rights or tenancy"
-            className="w-full pl-11 pr-4 py-3 border border-ink-100 rounded-lg bg-white text-ink placeholder:text-ink-400 focus:border-brass focus:outline-none"
+            className="min-h-12 w-full rounded-lg border border-ink-100 bg-white py-3 pl-11 pr-4 text-ink placeholder:text-ink-400 focus:border-brass focus:outline-none focus:ring-2 focus:ring-brass/20"
           />
         </label>
         <button
           type="submit"
           disabled={loading || query.trim().length < 2}
-          className="px-5 py-3 rounded-lg bg-ink text-paper font-medium disabled:opacity-40"
+          className="min-h-12 rounded-lg bg-ink px-5 py-3 font-medium text-white transition-colors hover:bg-ink-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {loading ? 'Searching' : 'Search'}
         </button>
@@ -71,7 +78,7 @@ export default function SearchPage() {
 
       <div className="space-y-4">
         {results.map((result) => (
-          <article key={result.chunk_id} className="p-6 bg-white border border-ink-100 rounded-lg">
+          <article key={result.chunk_id} className="rounded-xl border border-ink-100 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex flex-wrap items-center gap-2 mb-3 text-xs font-mono uppercase tracking-wide text-brass-600">
               <span>{result.source_title}</span>
               <span className="text-ink-100">/</span>

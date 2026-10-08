@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown, Landmark, Search } from 'lucide-react'
 import { getConstitution, type LegalSearchResult } from '@/lib/api-client'
+import { formatLegalText } from '@/lib/legal-text-formatting'
 
 export default function ConstitutionPage() {
   const [passages, setPassages] = useState<LegalSearchResult[]>([])
@@ -68,8 +69,8 @@ export default function ConstitutionPage() {
         Constitution of the Federal Republic of Nigeria
       </h1>
       <p className="text-ink-400 leading-relaxed mb-8 max-w-2xl">
-        Browse passages from the verified, checksummed Constitution source. Each passage
-        retains its chapter and source provenance.
+        Browse readable, structured passages from the verified Constitution source.
+        Formatting improves the extracted text&apos;s layout without changing its wording.
       </p>
 
       <div className="relative mb-8">
@@ -112,8 +113,28 @@ export default function ConstitutionPage() {
               {isOpen && (
                 <div className="border-t border-ink-100 px-5 py-5 space-y-5">
                   {chapterPassages.map((passage) => (
-                    <article key={passage.chunk_id}>
-                      <p className="text-ink leading-relaxed whitespace-pre-line">{passage.text}</p>
+                    <article key={passage.chunk_id} className="space-y-4">
+                      <p className="font-mono text-[11px] uppercase tracking-wider text-ink-400">
+                        Readable transcription · source wording preserved
+                      </p>
+                      <div className="space-y-3">
+                        {formatLegalText(passage.text).map((block, index) => {
+                          if (block.kind === 'chapter') {
+                            return <h3 key={index} className="font-display text-xl text-ink">{block.text}</h3>
+                          }
+                          if (block.kind === 'part') {
+                            return <h4 key={index} className="pt-2 font-semibold text-ink">{block.text}</h4>
+                          }
+                          if (block.kind === 'provision') {
+                            return (
+                              <p key={index} className="border-l-2 border-brass/40 pl-4 text-ink leading-relaxed">
+                                {block.text}
+                              </p>
+                            )
+                          }
+                          return <p key={index} className="text-ink leading-relaxed">{block.text}</p>
+                        })}
+                      </div>
                     </article>
                   ))}
                 </div>

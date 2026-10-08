@@ -446,6 +446,16 @@ AI assistant may cite it. This is enforced by the schema, not just a convention.
 - Whether OpenAI's `text-embedding-3-small` is the right/available choice — picked as
   a well-known default; swappable, but confirm you have API access before running.
 
+### Constitution chapter-boundary correction (2026-10)
+Reviewing the complete checked-in Constitution PDF showed that the chapter heading
+matches at the start of the document were from the table of contents, not the
+substantive text. The splitter now locates the constitutional preamble, validates all
+eight actual chapter headings and their titles in order, stores schedules separately,
+and refuses to ingest if the expected body structure is missing. The normalized
+Constitution extraction and section chunks were regenerated from the full 280-page
+PDF. Regression tests cover both the repeated contents headings and the complete
+extracted text.
+
 ## Live repo audit and reconciliation (this session)
 
 The person shared the actual live GitHub repository

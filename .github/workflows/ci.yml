@@ -33,6 +33,24 @@ jobs:
       - name: Type-check legal function
         working-directory: supabase/functions/legal
         run: deno check index.ts
+      - name: Type-check private document functions
+        run: |
+          deno check supabase/functions/create-user-document-upload/index.ts
+          deno check supabase/functions/process-user-document/index.ts
+          deno check supabase/functions/ask-user-document/index.ts
+
+  document-pipeline-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test document processing and Q&A logic
+        run: |
+          node --test supabase/functions/process-user-document/logic.test.mjs
+          node --test supabase/functions/ask-user-document/logic.test.mjs
+          node --test scripts/ingestion/constitution-structure.test.mjs
 
   schema:
     runs-on: ubuntu-latest
@@ -60,8 +78,38 @@ jobs:
           create or replace function auth.uid() returns uuid as $$
               select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
           $$ language sql stable;
+          create or replace function auth.jwt() returns jsonb as $$
+              select coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb, '{}'::jsonb)
+          $$ language sql stable;
+          create schema if not exists storage;
+          create role anon;
+          create table storage.buckets (
+              id text primary key,
+              name text not null,
+              public boolean not null default false,
+              file_size_limit bigint,
+              allowed_mime_types text[]
+          );
+          create table storage.objects (
+              id uuid primary key default gen_random_uuid(),
+              bucket_id text not null references storage.buckets(id),
+              name text not null
+          );
+          create or replace function storage.foldername(object_name text) returns text[] as $$
+              select (string_to_array(object_name, '/'))[1:greatest(array_length(string_to_array(object_name, '/'), 1) - 1, 0)]
+          $$ language sql immutable;
           create role authenticated;
+          create role service_role bypassrls;
           grant usage on schema public to authenticated;
+          grant usage on schema auth to authenticated, service_role;
+          grant usage on schema storage to authenticated, service_role;
+          grant execute on function auth.uid() to authenticated, service_role;
+          grant select, insert, update, delete on storage.objects to authenticated, service_role;
+          alter table storage.objects enable row level security;
           SQL
       - name: Apply schema.sql
         run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/schema.sql
+      - name: Apply user document migration
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_documents_migration.sql
+      - name: Verify user document migration is rerunnable
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_documents_migration.sql

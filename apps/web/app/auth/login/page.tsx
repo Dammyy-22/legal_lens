@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BrandLogo } from '@/components/BrandLogo'
+import { safeLocalRedirectPath } from '@/lib/safe-redirect'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -18,6 +19,9 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    const next = safeLocalRedirectPath(
+      new URLSearchParams(window.location.search).get('next')
+    )
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -27,18 +31,23 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
+    router.push(next)
     router.refresh() // ensures server components re-read the new session cookie
   }
 
   async function handleGoogleLogin() {
     setError('')
     const supabase = createClient()
+    const next = safeLocalRedirectPath(
+      new URLSearchParams(window.location.search).get('next')
+    )
     // signInWithOAuth redirects the whole page to Google — there is no further code
     // to run after this call on success; the callback route handles the return trip.
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
     })
     if (error) setError(error.message)
   }

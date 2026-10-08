@@ -1,12 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    images: {
-        remotePatterns: [{
-            protocol: 'https',
-            hostname: 'images.unsplash.com',
-        }],
-    },
     env: {
         NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -22,6 +16,18 @@ const nextConfig = {
                 key: 'X-Frame-Options',
                 value: 'DENY',
             },
+            {
+                key: 'Referrer-Policy',
+                value: 'strict-origin-when-cross-origin',
+            },
+            {
+                key: 'Permissions-Policy',
+                value: 'camera=(), microphone=(), geolocation=()',
+            },
+            ...(process.env.NODE_ENV === 'production' ? [{
+                key: 'Strict-Transport-Security',
+                value: 'max-age=31536000',
+            }] : []),
         ],
     }, ],
 }

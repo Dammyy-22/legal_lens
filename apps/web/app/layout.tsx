@@ -20,9 +20,12 @@ import '@fontsource/ibm-plex-mono/500.css'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'LegalLens — Understand Nigerian Law, Grounded in Real Sources',
+  title: {
+    default: 'LegalLens | Nigerian Legal Information',
+    template: '%s | LegalLens',
+  },
   description:
-    'AI-powered legal information for Nigeria. Every answer traced to a verified, citable source — never invented.',
+    'Understand Nigerian law through clear explanations, searchable primary sources, and practical guides.',
 }
 
 export default function RootLayout({
@@ -31,8 +34,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className="antialiased font-body bg-paper text-charcoal">
+    <html lang="en" data-scroll-behavior="smooth">
+      <body className="font-body bg-paper text-charcoal">
         {children}
       </body>
     </html>

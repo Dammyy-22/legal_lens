@@ -16,37 +16,20 @@
  * admin tool) before the AI assistant may cite any of it. This is enforced by RLS in
  * database/schema.sql, not just a convention here.
  *
- * IMPORTANT — chunking granularity (see DECISIONS.md for the full story):
- * The source PDF's text extraction is inconsistent across chapters. Chapter V
- * retains clean section numbering; Chapter IV (Fundamental Rights — likely the
- * single most-queried chapter) does not. Rather than ship section-level regex
- * parsing that would silently mis-chunk exactly that chapter, this script chunks at
- * CHAPTER granularity, which is reliably extractable from the document's own table
- * of contents. Section-level parsing is a documented follow-up requiring
- * layout-aware PDF extraction, not naive text splitting.
+ * Chapter headings appear first in the table of contents and again in the legal
+ * text. The structure helper starts after the constitutional preamble, validates
+ * the eight substantive chapter headings in order, and stores schedules separately.
+ * The local corpus pipeline may split reliable numbered provisions further.
  */
 import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { createHash } from 'node:crypto'
 import pdfParse from 'pdf-parse'
+import { splitConstitutionSections } from './constitution-structure.mjs'
 const SOURCE_URL = 'https://nigeriarights.gov.ng/files/constitution.pdf'
 const EMBEDDING_MODEL = 'text-embedding-3-small' // 1536 dimensions — must match database/schema.sql
 const MAX_CHUNK_CHARS = 6000 // keeps each embedding call comfortably under the model's token limit
-
-// Chapter headings as they appear in the Constitution's own table of contents —
-// used as split markers. This is structural metadata (a table of contents), not a
-// reproduction of substantive legal text.
-const CHAPTER_MARKERS = [
-  { label: 'Chapter I', heading: 'General Provisions', pattern: /CHAPTER\s+I\b[^\n]*/i },
-  { label: 'Chapter II', heading: 'Fundamental Objectives and Directive Principles of State Policy', pattern: /CHAPTER\s+II\b[^\n]*/i },
-  { label: 'Chapter III', heading: 'Citizenship', pattern: /CHAPTER\s+III\b[^\n]*/i },
-  { label: 'Chapter IV', heading: 'Fundamental Rights', pattern: /CHAPTER\s+IV\b[^\n]*/i },
-  { label: 'Chapter V', heading: 'The Legislature', pattern: /CHAPTER\s+V\b[^\n]*/i },
-  { label: 'Chapter VI', heading: 'The Executive', pattern: /CHAPTER\s+VI\b[^\n]*/i },
-  { label: 'Chapter VII', heading: 'The Judicature', pattern: /CHAPTER\s+VII\b[^\n]*/i },
-  { label: 'Chapter VIII', heading: 'Federal Capital Territory, Abuja and General Supplementary Provisions', pattern: /CHAPTER\s+VIII\b[^\n]*/i },
-]
 
 function requireEnv(name: string): string {
   const v = process.env[name]
@@ -133,21 +116,53 @@ async function main() {
     console.log(`Created legal_sources row ${sourceId}`)
   }
 
-  // --- Check for an existing version with this exact checksum (idempotency) ---
-  const { data: existingVersion } = await supabase
+  const versionLabel = `ingested-${checksum.slice(0, 8)}-chapters-v3`
+  const { data: existingVersion, error: versionLookupError } = await supabase
     .from('legal_source_versions')
     .select('id, checksum_sha256')
     .eq('source_id', sourceId)
-    .eq('checksum_sha256', checksum)
+    .eq('version_label', versionLabel)
     .maybeSingle()
+  if (versionLookupError) throw versionLookupError
 
   if (existingVersion) {
-    const { count } = await supabase
+    const { data: unembeddedChunks, error: unembeddedError } = await supabase
+      .from('document_chunks')
+      .select('id, text')
+      .eq('version_id', existingVersion.id)
+      .is('embedding', null)
+    if (unembeddedError) throw unembeddedError
+
+    if (unembeddedChunks.length > 0 && openai) {
+      console.log(`Generating embeddings for ${unembeddedChunks.length} existing chunks...`)
+      for (const chunk of unembeddedChunks) {
+        const embedding = (await openai.embeddings.create({
+          model: EMBEDDING_MODEL,
+          input: chunk.text,
+        })).data[0].embedding
+        const { error } = await supabase
+          .from('document_chunks')
+          .update({ embedding })
+          .eq('id', chunk.id)
+        if (error) throw error
+      }
+    }
+
+    const { count, error: countError } = await supabase
       .from('document_chunks')
       .select('id', { count: 'exact', head: true })
       .eq('version_id', existingVersion.id)
+    if (countError) throw countError
+
     if ((count ?? 0) > 0) {
-      console.log(`A completed version with this exact checksum already exists (${existingVersion.id}). Nothing to do.`)
+      if (unembeddedChunks.length > 0 && !openai) {
+        console.log(
+          `An indexed version exists (${existingVersion.id}) with ${unembeddedChunks.length} chunks still missing embeddings. ` +
+          'Set SKIP_EMBEDDINGS=false and retry when OpenAI credits are available.',
+        )
+      } else {
+        console.log(`A complete chapters-v3 version already exists (${existingVersion.id}). Nothing to do.`)
+      }
       return
     }
     console.log(`Removing incomplete version ${existingVersion.id} so ingestion can resume.`)
@@ -162,7 +177,7 @@ async function main() {
     .from('legal_source_versions')
     .insert({
       source_id: sourceId,
-      version_label: `ingested-${new Date().toISOString().slice(0, 10)}`,
+      version_label: versionLabel,
       status: 'unverified',
       processing_status: 'pending',
       checksum_sha256: checksum,
@@ -175,29 +190,11 @@ async function main() {
   const versionId = version.id
   console.log(`Created legal_source_versions row ${versionId} (unverified)`)
 
-  // --- Split into chapters using the table-of-contents markers ---
-  const chapters: { label: string; heading: string; text: string }[] = []
-  for (let i = 0; i < CHAPTER_MARKERS.length; i++) {
-    const current = CHAPTER_MARKERS[i]
-    const next = CHAPTER_MARKERS[i + 1]
-    const startMatch = current.pattern.exec(fullText)
-    if (!startMatch) {
-      console.warn(`Could not locate "${current.label}" in the extracted text — skipping.`)
-      continue
-    }
-    const start = startMatch.index
-    const end = next ? next.pattern.exec(fullText)?.index ?? fullText.length : fullText.length
-    const chapterText = fullText.slice(start, end).trim()
-    if (chapterText.length < 50) {
-      console.warn(`"${current.label}" extracted suspiciously short — skipping rather than storing garbage.`)
-      continue
-    }
-    chapters.push({ label: current.label, heading: current.heading, text: chapterText })
-  }
+  const chapters = splitConstitutionSections(fullText)
 
-  console.log(`Located ${chapters.length} of ${CHAPTER_MARKERS.length} expected chapters.`)
-  if (chapters.length === 0) {
-    throw new Error('No chapters could be located — the document structure may have changed. Refusing to ingest.')
+  console.log(`Located ${chapters.length} substantive chapters/schedule sections.`)
+  if (chapters.length < 8 || chapters.some((chapter) => chapter.text.length < 50)) {
+    throw new Error('One or more substantive Constitution chapters are missing or unexpectedly short. Refusing to ingest.')
   }
 
   // --- Store each chapter as a legal_section, sub-chunk if needed, embed, store ---
@@ -207,7 +204,7 @@ async function main() {
       .from('legal_sections')
       .insert({
         version_id: versionId,
-        hierarchy_level: 'chapter',
+        hierarchy_level: ch.hierarchyLevel,
         label: ch.label,
         heading: ch.heading,
         order_index: i,

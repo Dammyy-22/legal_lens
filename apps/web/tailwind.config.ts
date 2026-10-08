@@ -20,7 +20,7 @@ const config: Config = {
           900: '#14261E',
         },
         paper: {
-          DEFAULT: '#F5F1E7', // warm gazette paper — not the AI-cliché #F4F1EA
+          DEFAULT: '#F5F1E7', // warm gazette paper
           50: '#FFFFFF',
           100: '#F5F1E7',
           200: '#EAE3D1',

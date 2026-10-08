@@ -1,5 +1,7 @@
 -- LegalLens Supabase schema — legal corpus + AI assistant tables.
--- Run this in Supabase Dashboard → SQL Editor. Idempotent (safe to re-run).
+-- Apply once to a fresh database in Supabase Dashboard → SQL Editor.
+-- Later feature changes belong in additive migrations; this initial schema
+-- includes CREATE POLICY statements and is not safe to re-run unchanged.
 --
 -- Design principles carried over from the original FastAPI/Alembic schema
 -- (see apps/api/DATABASE.md for the fuller rationale, now retired but still useful
@@ -81,6 +83,16 @@ create table if not exists public.legal_sections (
     text text not null
 );
 
+create table if not exists public.rate_limit_events (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null references auth.users(id) on delete cascade,
+    action text not null default 'ask' check (action in ('ask', 'search', 'review')),
+    window_start timestamptz not null default now(),
+    request_count integer not null default 1 check (request_count > 0),
+    metadata jsonb not null default '{}'::jsonb,
+    created_at timestamptz not null default now()
+);
+
 create table if not exists public.document_chunks (
     id uuid primary key default gen_random_uuid(),
     section_id uuid not null references public.legal_sections(id) on delete cascade,
@@ -137,6 +149,7 @@ alter table public.legal_sources enable row level security;
 alter table public.legal_source_versions enable row level security;
 alter table public.legal_sections enable row level security;
 alter table public.document_chunks enable row level security;
+alter table public.rate_limit_events enable row level security;
 alter table public.conversations enable row level security;
 alter table public.messages enable row level security;
 alter table public.citations enable row level security;
@@ -174,6 +187,13 @@ create policy "Chunks of verified versions are readable"
 -- the service_role key (used server-side by the ingestion script and future admin
 -- tools) bypasses RLS and can write. This is intentional: the corpus is
 -- admin-curated, never user-editable.
+
+-- Shared infra audit trail: rate limiting events are service-role only. This lets
+-- the platform enforce a shared cap across multiple edge instances without exposing
+-- the raw burst data to end users.
+create policy "Service role manages rate-limit audit events"
+    on public.rate_limit_events for all to service_role
+    using (true) with check (true);
 
 -- Conversations/messages/citations: users can only access their own.
 create policy "Users manage their own conversations"

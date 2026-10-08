@@ -1,11 +1,6 @@
 {
   "documents": [
     {
-      "file": "Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.json",
-      "chunks": 814,
-      "strategy": "section-aware"
-    },
-    {
       "file": "DCRMA-COMPENDIUM_2022.json",
       "chunks": 1,
       "strategy": "paragraph-group"
@@ -39,6 +34,11 @@
       "file": "Roles-Rights-Responsibilities-Under-New-Police-Act.json",
       "chunks": 1,
       "strategy": "paragraph-group"
+    },
+    {
+      "file": "Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.json",
+      "chunks": 453,
+      "strategy": "section-aware"
     }
   ]
 }

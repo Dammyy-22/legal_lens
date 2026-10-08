@@ -2,8 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import Image from 'next/image'
-import { AlertTriangle, LoaderCircle, MessageCircleQuestion, Send } from 'lucide-react'
+import { AlertTriangle, LoaderCircle, Send } from 'lucide-react'
 import { askLegalQuestion, type AskResponse } from '@/lib/api-client'
 
 export default function AskPage() {
@@ -33,23 +32,14 @@ export default function AskPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 md:py-14">
-      <div className="flex items-center gap-3 mb-3">
-        <MessageCircleQuestion size={26} className="text-brass-600" />
-        <p className="font-mono text-xs uppercase tracking-widest text-brass-600">Legal assistant</p>
-      </div>
-      <h1 className="font-display text-4xl text-ink mb-3">Ask a question</h1>
-      <p className="text-ink-400 leading-relaxed mb-8">
-        Ask about Nigerian law in plain language. Answers are limited to verified sources
-        and will say when the corpus does not contain enough evidence.
+      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">Legal research</p>
+      <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-ink">Ask a legal question</h1>
+      <p className="mb-8 mt-3 max-w-2xl leading-7 text-ink-400">
+        Describe what you need to know. Review the explanation and its cited
+        sources; available coverage may be limited.
       </p>
 
-      <div className="relative h-36 mb-6 overflow-hidden rounded-2xl border border-ink-100 bg-ink surface-lift image-reveal">
-        <Image src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1400&q=85" alt="Courthouse columns in warm light" fill className="object-cover image-drift opacity-90" sizes="(max-width: 768px) 100vw, 900px" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/50 to-transparent" />
-        <div className="absolute inset-y-0 left-5 flex flex-col justify-center"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-400">Grounded answers</p><p className="font-display text-2xl text-paper mt-1">Ask freely. Verify everything.</p></div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="bg-white border border-ink-100 rounded-lg p-4 mb-8">
+      <form onSubmit={handleSubmit} className="mb-8 rounded-xl border border-ink-100 bg-white p-4 shadow-sm sm:p-5">
         <label htmlFor="legal-question" className="sr-only">Your legal question</label>
         <textarea
           id="legal-question"
@@ -58,14 +48,14 @@ export default function AskPage() {
           placeholder="For example: What does the Constitution say about the right to fair hearing?"
           rows={5}
           maxLength={2000}
-          className="w-full resize-y text-ink leading-relaxed placeholder:text-ink-400 focus:outline-none"
+          className="w-full resize-y bg-transparent text-ink leading-relaxed placeholder:text-ink-400 focus:outline-none"
         />
         <div className="flex items-center justify-between gap-4 pt-3 border-t border-ink-100">
           <span className="text-xs text-ink-400">{question.length}/2000</span>
           <button
             type="submit"
             disabled={loading || question.trim().length < 3}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-ink text-paper font-medium disabled:opacity-40"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-ink px-4 py-2.5 font-medium text-white transition-colors hover:bg-ink-600 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {loading ? <LoaderCircle size={16} className="animate-spin" /> : <Send size={16} />}
             {loading ? 'Checking sources' : 'Ask'}
@@ -76,7 +66,7 @@ export default function AskPage() {
       {error && <p role="alert" className="mb-6 p-4 rounded-lg border border-seal/25 bg-seal/5 text-seal">{error}</p>}
 
       {response && (
-        <article className="bg-white border border-ink-100 rounded-lg p-6">
+        <article className="rounded-xl border border-ink-100 bg-white p-5 shadow-sm sm:p-6">
           {response.risk_level === 'high_risk' && (
             <div className="flex items-start gap-2 mb-5 p-3 rounded-lg bg-seal/5 text-seal text-sm">
               <AlertTriangle size={18} className="shrink-0" />

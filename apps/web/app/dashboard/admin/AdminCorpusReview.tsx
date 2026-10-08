@@ -99,7 +99,7 @@ export default function AdminCorpusReview() {
   async function handleReview(versionId: string, decision: 'verify' | 'reject') {
     const confirmationText =
       decision === 'verify'
-        ? 'Confirm you have actually read this content and believe it is an accurate, correctly-attributed extract before verifying. Verified content becomes visible to the AI assistant and all users immediately.'
+        ? 'Confirm you have read this content and believe it is an accurate, correctly attributed extract before verifying. Verified content becomes available to all users immediately.'
         : 'Reject this version? It will remain hidden from the app and the reviewer notes will be stored for traceability.'
 
     if (!confirm(confirmationText)) {
@@ -156,8 +156,7 @@ export default function AdminCorpusReview() {
       </div>
       <h1 className="font-display text-4xl text-ink mb-3">Corpus review</h1>
       <p className="text-ink-400 leading-relaxed mb-10 max-w-2xl">
-        Ingested content sits here, invisible to every other user and to the AI
-        assistant, until you actually read it and verify it. This is enforced by Row
+        Ingested content stays hidden from users until you read and verify it. This is enforced by Row
         Level Security in the database — not just this page&apos;s UI.
       </p>
 

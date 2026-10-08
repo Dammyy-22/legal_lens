@@ -36,6 +36,20 @@ export type AskResponse = {
   risk_level: 'standard' | 'high_risk'
 }
 
+export type UserDocumentAnswer = {
+  question_id: string
+  document_id: string
+  document_name: string
+  answer: string
+  uncertain: boolean
+  citations: Array<{
+    chunk_id: string
+    label: string
+    page_number: number | null
+    chunk_index: number
+  }>
+}
+
 async function getAccessToken(): Promise<string> {
   const supabase = createClient()
   const {
@@ -107,4 +121,24 @@ export async function askLegalQuestion(question: string, conversationId?: string
     throw new Error(body.error || `Question failed (${response.status})`)
   }
   return body as AskResponse
+}
+
+export async function askAboutUserDocument(
+  documentId: string,
+  question: string,
+): Promise<UserDocumentAnswer> {
+  const supabase = createClient()
+  const { data, error } = await supabase.functions.invoke('ask-user-document', {
+    body: { document_id: documentId, question },
+  })
+
+  if (error) {
+    if (error.context instanceof Response) {
+      const body = await error.context.json().catch(() => ({}))
+      throw new Error(body.error || `Document question failed (${error.context.status})`)
+    }
+    throw new Error(error.message || 'Document question failed')
+  }
+
+  return data as UserDocumentAnswer
 }

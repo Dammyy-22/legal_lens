@@ -1,25 +1,39 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { UserCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SettingsPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [userId, setUserId] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [revokingSessions, setRevokingSessions] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
+    let active = true
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (!active) return
+      if (error) {
+        setMessage({ type: 'error', text: 'Unable to load account details.' })
+        return
+      }
       setEmail(data.user?.email ?? '')
       setUserId(data.user?.id ?? '')
       setFullName((data.user?.user_metadata?.full_name as string) ?? '')
+    }).catch(() => {
+      if (active) setMessage({ type: 'error', text: 'Unable to load account details.' })
     })
+    return () => {
+      active = false
+    }
   }, [])
 
   function passwordError(pw: string): string | null {
@@ -45,17 +59,37 @@ export default function SettingsPage() {
     }
 
     setLoading(true)
-    const supabase = createClient()
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
-    setLoading(false)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      setMessage({ type: 'success', text: 'Password updated.' })
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch {
+      setMessage({ type: 'error', text: 'Unable to update password. Please try again.' })
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    if (error) {
-      setMessage({ type: 'error', text: error.message })
+  async function handleRevokeSessions() {
+    if (!window.confirm('Sign out this account on every device? You will need to sign in again here.')) {
       return
     }
-    setMessage({ type: 'success', text: 'Password updated.' })
-    setNewPassword('')
-    setConfirmPassword('')
+
+    setRevokingSessions(true)
+    setMessage(null)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
+      if (error) throw error
+      router.replace('/auth/login')
+      router.refresh()
+    } catch {
+      setMessage({ type: 'error', text: 'Unable to revoke sessions. Please try again.' })
+      setRevokingSessions(false)
+    }
   }
 
   return (
@@ -63,7 +97,20 @@ export default function SettingsPage() {
       <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-2">
         Settings
       </p>
-      <h1 className="font-display text-5xl text-ink mb-8 ink-rule">Account</h1>
+      <h1 className="font-display text-4xl text-ink mb-8 sm:text-5xl">Account</h1>
+
+      {message && (
+        <div
+          role={message.type === 'error' ? 'alert' : 'status'}
+          className={`mb-6 p-3 rounded-lg text-sm ${
+            message.type === 'success'
+              ? 'bg-ink-50 border border-ink-100 text-ink-600'
+              : 'bg-seal/5 border border-seal/25 text-seal'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
 
       <div className="bg-white/90 border border-ink-100 rounded-2xl p-6 mb-6 surface-lift">
         <div className="flex items-center gap-4 mb-6">
@@ -91,18 +138,6 @@ export default function SettingsPage() {
           Note: if you signed up with Google, you don&apos;t have a password to change
           here — manage your login through your Google account instead.
         </p>
-
-        {message && (
-          <div
-            className={`mb-4 p-3 rounded-lg text-sm ${
-              message.type === 'success'
-                ? 'bg-ink-50 border border-ink-100 text-ink-600'
-                : 'bg-seal/5 border border-seal/25 text-seal'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
 
         <form onSubmit={handlePasswordUpdate} className="space-y-4">
           <div>
@@ -140,6 +175,23 @@ export default function SettingsPage() {
           </button>
         </form>
       </div>
+
+      <section className="bg-white/90 border border-seal/20 rounded-2xl p-6 mt-6">
+        <h2 className="font-display text-lg text-ink mb-1">Active sessions</h2>
+        <p className="text-ink-400 text-sm mb-4">
+          Sign out on this device only from the sidebar, or revoke refreshable
+          sessions across all devices if you think your account may be at risk.
+          Existing access tokens can remain valid until they expire.
+        </p>
+        <button
+          type="button"
+          onClick={handleRevokeSessions}
+          disabled={revokingSessions || loading}
+          className="px-5 py-2.5 border border-seal/30 text-seal font-medium rounded-lg hover:bg-seal/5 disabled:opacity-50 transition-colors text-sm"
+        >
+          {revokingSessions ? 'Revoking sessions…' : 'Sign out all devices'}
+        </button>
+      </section>
     </div>
   )
 }

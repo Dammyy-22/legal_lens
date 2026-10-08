@@ -46,6 +46,25 @@ It writes all versions as `unverified`; review the extracted text and explicitly
 each approved version before it can be searched or cited. The local PDFs are ignored by
 Git and use `local-corpus://...` provenance until official source URLs are supplied.
 
+The Constitution pipeline skips the table-of-contents pages and starts chapter
+segmentation at the constitutional preamble. It stores Chapters I–VIII separately and
+keeps the schedules in their own section, including the standalone "Schedules"
+heading. The corrected splitter uses the `chapters-v3` version label so a previously ingested version with the same PDF
+checksum does not suppress corrected ingestion.
+The new version intentionally remains unverified; after reviewing it in staging,
+publish it and mark the previous current version superseded in the same controlled
+database change. Do not delete or silently overwrite the previously published
+version.
+
+To regenerate only the checked-in Constitution extraction and chunk artifacts after a
+parser change, run from this directory:
+
+```powershell
+npm run test:constitution
+node normalize-legal-corpus.mjs Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.pdf
+node chunk-legal-corpus.mjs Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.json
+```
+
 - `SUPABASE_SERVICE_ROLE_KEY`: from Supabase Dashboard → Project Settings → API. This
   key bypasses Row Level Security — that's required here (ingestion writes to
   admin-only tables) but is exactly why it must never reach client-side code.
@@ -71,24 +90,20 @@ set verified = true, verified_by = '<your name>', verified_at = now(), status = 
 where id = '<version id printed at the end of the ingestion run>';
 ```
 
-## Known limitation
+## Structure and limitations
 
-This first pass chunks the Constitution at **chapter granularity**, not
-section-by-section. The source PDF's text extraction is inconsistent — some chapters
-retain clean section numbering, but Chapter IV (Fundamental Rights) does not. Rather
-than ship section-level parsing that would silently mis-chunk the most-queried
-chapter, this was deliberately deferred. See `DECISIONS.md` for the full reasoning.
-Practical effect: a citation to Chapter IV content will say "Chapter IV — Fundamental
-Rights," not a specific section number, until section-level parsing is built.
+The Constitution pipeline skips the table-of-contents pages and starts chapter
+segmentation at the substantive headings after the preamble. The local normalized
+corpus also produces section-level chunks where extracted boundaries are reliable.
+Chapter-level citations remain the safe fallback where section structure cannot be
+validated. Schedules are kept separate from Chapter VIII.
 
 ## Verification status
 
-This script has been type-checked (`tsc --noEmit`, zero errors) and its
-chapter-splitting logic has been unit-tested against a realistic extraction fixture
-(`test-chapter-split.mjs`) — including a specific regression check that Chapter IV is
-correctly isolated despite lacking clean section-number prefixes.
+The ingestion scripts are type-checked and the Constitution splitter is tested
+against a regression fixture and the checked-in extraction of the complete PDF.
 
-**It has not been run end-to-end against the live source or a real Supabase project**
-in this environment — the sandbox that built this has no network access to
-`nigeriarights.gov.ng` or to Supabase/OpenAI's APIs. Please run it yourself and report
-back what happens; treat the first real run as the actual test, not this description.
+Live validation is environment-specific. Before publishing, check that the version's
+eight chapter records contain substantive text, schedules are separate, and embeddings
+are present when semantic retrieval is required. Keep the prior published version
+available until the replacement passes these checks.

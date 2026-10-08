@@ -4,9 +4,10 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "node node_modules/typescript/bin/tsc --noEmit false --outDir dist --module NodeNext --moduleResolution NodeNext --target ES2022 --esModuleInterop --skipLibCheck --types node",
+        "build": "node node_modules/typescript/bin/tsc --noEmit false --outDir dist --module NodeNext --moduleResolution NodeNext --target ES2022 --esModuleInterop --skipLibCheck --types node && node -e \"require('node:fs').copyFileSync('constitution-structure.mjs', 'dist/constitution-structure.mjs')\"",
         "ingest:constitution": "npm run build && node dist/ingest-constitution.js",
-        "ingest:corpus": "npm run build && node dist/ingest-corpus.js"
+        "ingest:corpus": "npm run build && node dist/ingest-corpus.js",
+        "test:constitution": "node --test constitution-structure.test.mjs"
     },
     "dependencies": {
         "@supabase/supabase-js": "^2.45.4",

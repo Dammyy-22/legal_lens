@@ -10,6 +10,7 @@ import { createHash } from 'node:crypto'
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import pdfParse from 'pdf-parse'
+import { splitConstitutionSections } from './constitution-structure.mjs'
 
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const MAX_CHUNK_CHARS = 6000
@@ -30,6 +31,8 @@ const STRUCTURE_PATTERNS = [
 
 interface StructuralSection {
   label: string
+  heading?: string
+  hierarchyLevel?: string
   text: string
 }
 
@@ -201,12 +204,19 @@ async function main() {
       sourceId = source.id
     }
 
-    const { data: existing } = await supabase
+    const versionLabel = file === 'Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.pdf'
+      ? `local-${checksum.slice(0, 8)}-chapters-v2`
+      : `local-${new Date().toISOString().slice(0, 10)}-${checksum.slice(0, 8)}`
+    const existingQuery = supabase
       .from('legal_source_versions')
       .select('id')
       .eq('source_id', sourceId)
-      .eq('checksum_sha256', checksum)
-      .maybeSingle()
+    const { data: existing, error: versionLookupError } = await (
+      file === 'Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.pdf'
+        ? existingQuery.eq('version_label', versionLabel)
+        : existingQuery.eq('checksum_sha256', checksum)
+    ).maybeSingle()
+    if (versionLookupError) throw versionLookupError
     if (existing) {
       const { count } = await supabase
         .from('document_chunks')
@@ -225,7 +235,7 @@ async function main() {
       .from('legal_source_versions')
       .insert({
         source_id: sourceId,
-        version_label: `local-${new Date().toISOString().slice(0, 10)}-${checksum.slice(0, 8)}`,
+        version_label: versionLabel,
         status: 'unverified',
         processing_status: 'pending',
         checksum_sha256: checksum,
@@ -236,7 +246,10 @@ async function main() {
       .single()
     if (versionError) throw versionError
 
-    const structuralSections = splitByStructure(text, metadata.title)
+    const isConstitution = file === 'Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.pdf'
+    const structuralSections = isConstitution
+      ? splitConstitutionSections(text)
+      : splitByStructure(text, metadata.title)
     console.log(`  ${file}: ${structuralSections.length} structural section(s)`)
 
     let totalChunks = 0
@@ -246,9 +259,10 @@ async function main() {
         .from('legal_sections')
         .insert({
           version_id: version.id,
-          hierarchy_level: structuralSections.length > 1 ? 'part' : 'chapter',
+          hierarchy_level: structSection.hierarchyLevel
+            ?? (structuralSections.length > 1 ? 'part' : 'chapter'),
           label: structSection.label,
-          heading: metadata.title,
+          heading: structSection.heading ?? metadata.title,
           order_index: sectionIndex,
           text: structSection.text,
         })

@@ -16,14 +16,21 @@
 // SUPABASE_URL / SUPABASE_ANON_KEY are provided automatically by the Supabase runtime.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import {
+  buildRateLimitHeaders,
+  computeRateLimitState,
+  DEFAULT_RATE_LIMIT,
+  extractCitationIds,
+  normalizeQuestion,
+  selectValidCitationIds,
+} from './logic.mjs'
 
 const EMBEDDING_MODEL = 'text-embedding-3-small' // must match database/schema.sql's vector(1536)
 const GENERATION_MODEL = 'claude-sonnet-5'
 const SIMILARITY_THRESHOLD = 0.72 // cosine similarity floor; below this, treat as "no relevant source found"
 const MAX_CHUNKS = 6
-const RATE_LIMIT_WINDOW_MS = 60_000
-const RATE_LIMIT_MAX_REQUESTS = 20
 const RATE_LIMIT_BUCKETS = new Map<string, { count: number; windowStart: number }>()
+const RATE_LIMIT_STRATEGY = Deno.env.get('RATE_LIMIT_BACKEND') ?? 'memory'
 
 // Keyword triage for situations where legal analysis should take a back seat to
 // safety — matches build plan §7/§37 (emergency guidance) and this deployment's own
@@ -103,6 +110,8 @@ Deno.serve(async (req: Request) => {
   }
 
   const rateLimit = checkRateLimit(user.id)
+  await maybePersistRateLimitEvent(supabase, user.id, rateLimit)
+
   if (!rateLimit.allowed) {
     return jsonResponse(
       {
@@ -110,7 +119,10 @@ Deno.serve(async (req: Request) => {
         retry_after_ms: rateLimit.retryAfterMs,
       },
       429,
-      { 'Retry-After': String(Math.ceil((rateLimit.retryAfterMs ?? 0) / 1000)) }
+      {
+        'Retry-After': String(Math.ceil((rateLimit.retryAfterMs ?? 0) / 1000)),
+        ...buildRateLimitHeaders(rateLimit),
+      }
     )
   }
 
@@ -202,7 +214,7 @@ Deno.serve(async (req: Request) => {
   // citation — see database/schema.sql's ck_citation_has_source constraint, enforced
   // again here before we even attempt to write one. ---
   const retrievedIds = new Set(retrieved.map((c) => c.id))
-  const validCitedIds = generation.citedChunkIds.filter((id) => retrievedIds.has(id))
+  const validCitedIds = selectValidCitationIds(generation.citedChunkIds, [...retrievedIds])
   const droppedCount = generation.citedChunkIds.length - validCitedIds.length
   if (droppedCount > 0) {
     console.warn(`Dropped ${droppedCount} citation(s) not present in retrieved context`)
@@ -323,8 +335,7 @@ ${contextBlock}`
 
   // Extract [[cite:REF]] tags, then strip them from the visible answer — the
   // frontend renders citations as a separate list (see apps/web), not inline tags.
-  const citeMatches = [...rawAnswer.matchAll(/\[\[cite:([a-zA-Z0-9-]+)\]\]/g)]
-  const citedChunkIds = [...new Set(citeMatches.map((m) => m[1]))]
+  const citedChunkIds = extractCitationIds(rawAnswer)
   const cleanAnswer = rawAnswer.replace(/\[\[cite:[a-zA-Z0-9-]+\]\]/g, '').trim()
 
   return { answer: cleanAnswer, citedChunkIds }
@@ -405,28 +416,46 @@ function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, 
   })
 }
 
-function normalizeQuestion(value: unknown): string | null {
-  if (typeof value !== 'string') return null
-  const trimmed = value.trim().replace(/\s+/g, ' ')
-  return trimmed || null
+function checkRateLimit(userId: string): {
+  allowed: boolean
+  retryAfterMs?: number
+  remaining?: number
+  resetAtMs?: number
+  limit?: number
+} {
+  const state = computeRateLimitState(userId, RATE_LIMIT_BUCKETS, DEFAULT_RATE_LIMIT)
+  return {
+    allowed: state.allowed,
+    retryAfterMs: state.retryAfterMs || undefined,
+    remaining: state.remaining,
+    resetAtMs: state.resetAtMs,
+    limit: state.limit,
+  }
 }
 
-function checkRateLimit(userId: string): { allowed: boolean; retryAfterMs?: number } {
-  const now = Date.now()
-  const bucket = RATE_LIMIT_BUCKETS.get(userId)
+async function maybePersistRateLimitEvent(supabase: any, userId: string, state: { allowed: boolean; retryAfterMs?: number; remaining?: number; resetAtMs?: number; limit?: number }): Promise<void> {
+  const backend = RATE_LIMIT_STRATEGY
+  if (backend !== 'supabase') return
 
-  if (!bucket || now - bucket.windowStart >= RATE_LIMIT_WINDOW_MS) {
-    RATE_LIMIT_BUCKETS.set(userId, { count: 1, windowStart: now })
-    return { allowed: true }
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (!serviceRoleKey) return
+
+  const serviceSupabase = createClient(Deno.env.get('SUPABASE_URL')!, serviceRoleKey)
+  try {
+    await serviceSupabase.from('rate_limit_events').insert({
+      user_id: userId,
+      action: 'ask',
+      window_start: new Date(Date.now() - DEFAULT_RATE_LIMIT.windowMs).toISOString(),
+      request_count: state.remaining !== undefined ? DEFAULT_RATE_LIMIT.maxRequests - state.remaining : 1,
+      metadata: {
+        allowed: state.allowed,
+        retry_after_ms: state.retryAfterMs ?? 0,
+        limit: state.limit ?? DEFAULT_RATE_LIMIT.maxRequests,
+      },
+    })
+  } catch (err) {
+    console.warn('Rate-limit audit persistence failed:', err)
   }
-
-  if (bucket.count >= RATE_LIMIT_MAX_REQUESTS) {
-    const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - bucket.windowStart)
-    return { allowed: false, retryAfterMs: Math.max(retryAfterMs, 1000) }
-  }
-
-  bucket.count += 1
-  return { allowed: true }
 }
 
 const corsHeaders = {

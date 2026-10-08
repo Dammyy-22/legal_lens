@@ -83,16 +83,30 @@ Deno.serve(async (req: Request) => {
       const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 50) : 20
 
       const terms = q.toLowerCase().split(/\s+/).filter(Boolean)
-      const results: LegalSearchResult[] = []
+      const scoredResults: Array<LegalSearchResult & { score: number }> = []
+
       for (const chunk of chunks) {
         const result = toResult(chunk, versionsById, sourcesById, sectionsById)
         if (!result) continue
-        const searchable = `${result.source_title} ${result.text}`.toLowerCase()
-        if (terms.every((term) => searchable.includes(term))) {
-          results.push(result)
-          if (results.length >= limit) break
-        }
+
+        const searchable = `${result.source_title} ${result.section_label} ${result.section_heading ?? ''} ${result.text}`.toLowerCase()
+        const phraseMatch = searchable.includes(q.toLowerCase()) ? 3 : 0
+        const titleMatches = terms.filter((term) => result.source_title.toLowerCase().includes(term)).length
+        const headingMatches = terms.filter((term) => (result.section_heading ?? '').toLowerCase().includes(term)).length
+        const textMatches = terms.filter((term) => result.text.toLowerCase().includes(term)).length
+        const score = phraseMatch + titleMatches * 5 + headingMatches * 3 + textMatches * 2
+
+        if (score === 0) continue
+        if (!terms.every((term) => searchable.includes(term)) && score < 3) continue
+
+        scoredResults.push({ ...result, score })
       }
+
+      const results = scoredResults
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+        .map(({ score, ...result }) => result)
+
       return jsonResponse({ query: q, results })
     }
 

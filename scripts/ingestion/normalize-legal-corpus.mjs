@@ -1,6 +1,7 @@
 import { readdir, readFile, mkdir, writeFile } from "node:fs/promises";
 import { join, basename } from "node:path";
 import pdfParse from "pdf-parse";
+import { extractConstitutionMainText } from "./constitution-structure.mjs";
 
 const corpusDir = join(process.cwd(), "..", "..", "legal corpus");
 const outputDir = join(process.cwd(), "normalized-corpus");
@@ -395,6 +396,16 @@ async function processFile(file) {
     }
   }
 
+  if (file === "Constitution-of-the-Federal-Republic-of-Nigeria-1999-Updated.pdf") {
+    const bodyText = extractConstitutionMainText(workingText);
+    boundaries.contents = {
+      type: "table_of_contents_excluded",
+      marker: "WE the people of the Federal Republic of Nigeria",
+      removedCharacters: workingText.length - bodyText.length,
+    };
+    workingText = bodyText;
+  }
+
   workingText = normalizeLines(workingText);
 
   const metadata = createMetadata(
@@ -460,8 +471,10 @@ async function main() {
   await mkdir(rawDir, { recursive: true });
   await mkdir(normalizedDir, { recursive: true });
 
+  const requestedFile = process.argv[2];
   const files = (await readdir(corpusDir))
     .filter((file) => file.toLowerCase().endsWith(".pdf"))
+    .filter((file) => !requestedFile || file === requestedFile)
     .sort();
 
   console.log(`Found ${files.length} PDFs`);
@@ -494,13 +507,27 @@ async function main() {
     }
   }
 
+  const manifestPath = join(outputDir, "normalization-manifest.json");
+  let manifestDocuments = results;
+  if (requestedFile) {
+    try {
+      const existingManifest = JSON.parse(await readFile(manifestPath, "utf8"));
+      manifestDocuments = [
+        ...(existingManifest.documents ?? []).filter((entry) => entry.file !== requestedFile),
+        ...results,
+      ];
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+
   await writeFile(
-    join(outputDir, "normalization-manifest.json"),
+    manifestPath,
     JSON.stringify(
       {
         generatedAt: new Date().toISOString(),
         parser: "pdf-parse",
-        documents: results,
+        documents: manifestDocuments,
       },
       null,
       2

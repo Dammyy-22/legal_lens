@@ -35,6 +35,7 @@ to avoid maintaining two backend runtimes long-term. If you see references to
 | AI Assistant (Ask) | `supabase/functions/ask` — retrieval + Claude generation + citation validation. Type-checked and unit-tested; **not yet run end-to-end against live Supabase/OpenAI/Anthropic** — needs real credentials, which this build environment doesn't have |
 | Legal corpus | Constitution of Nigeria — ingestion scripts exist (`scripts/ingestion/`); **nothing is verified/published yet** until a human reviews and flips `verified = true` |
 | Lawyers | Sample profiles (clearly labeled, not real) + a real waitlist signup |
+| My documents | Private PDF/DOCX/TXT upload, text extraction, embeddings, and selected-document Q&A with page/section citations; no OCR |
 
 See `DECISIONS.md` for the full history of what's been verified vs. assumed, including
 several real bugs found by actually testing things rather than just reading code.
@@ -59,6 +60,8 @@ npm run dev   # http://localhost:3000
 1. `database/schema.sql` — legal corpus, conversations, messages, citations, RLS,
    and the `match_document_chunks` vector search function
 2. `database/waitlist_migration.sql` — lawyer referral waitlist table
+3. `database/user_documents_migration.sql` — private user uploads, document Q&A,
+   owner-scoped policies, quota trigger, and retrieval RPC
 
 ### Populating the legal corpus
 See `scripts/ingestion/README.md`. **Nothing ingested is visible to the app until you
@@ -68,9 +71,20 @@ manually verify it** — this is enforced by RLS, not just a suggestion.
 ```bash
 supabase functions deploy ask
 supabase functions deploy legal
+supabase functions deploy create-user-document-upload
+supabase functions deploy process-user-document
+supabase functions deploy ask-user-document
 supabase secrets set OPENAI_API_KEY=sk-...
 supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 ```
+
+Apply `database/schema.sql`, `database/waitlist_migration.sql`, and
+`database/user_documents_migration.sql` in that order in the Supabase SQL Editor
+before deploying the document functions. The additive user-document migration
+creates the private bucket, owner-only RLS policies, upload quotas, and
+document-scoped retrieval RPC. See
+`docs/operations/deployment-checklist.md` for the staging checks and provider
+disclosure details. Scanned PDFs are not OCR'd.
 
 ## Repository structure
 
@@ -93,3 +107,6 @@ scripts/ingestion/   One-off scripts to fetch/chunk/embed legal source documents
   plan
 - `docs/operations/admin-review-workflow.md` — admin verification/rejection process
 - `docs/operations/deployment-checklist.md` — production deployment gate
+- `scripts/validation/supabase-e2e-smoke.mjs` — live Supabase smoke test for ask/legal endpoints
+- `scripts/validation/admin-review-flow.mjs` — live admin approval/rejection workflow smoke test
+- `supabase/functions/ask/logic.test.mjs` — automated validation for citation extraction and rate limiting

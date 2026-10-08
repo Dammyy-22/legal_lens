@@ -1,7 +1,5 @@
-'use client'
-
-import Image from 'next/image'
 import Link from 'next/link'
+import { Landmark } from 'lucide-react'
 
 export function BrandLogo({
   href = '/',
@@ -16,17 +14,14 @@ export function BrandLogo({
     <Link
       href={href}
       aria-label="LegalLens home"
-      className={`relative inline-flex shrink-0 items-center justify-center transition-transform hover:-translate-y-0.5 ${compact ? 'h-10 w-28' : 'h-16 w-40'} ${dark ? 'rounded-lg bg-paper px-2 py-1' : ''}`}
+      className={`inline-flex shrink-0 items-center gap-2.5 rounded-md transition-opacity hover:opacity-80 focus-visible:outline-offset-4 ${dark ? 'text-paper' : 'text-ink'}`}
     >
-      <Image
-        src="/brand/legalens-ai.png"
-        alt="LegalLens AI"
-        width={compact ? 224 : 288}
-        height={compact ? 112 : 144}
-        priority
-        sizes={compact ? '112px' : '160px'}
-        className="h-full w-full object-contain scale-[2.05]"
-      />
+      <span className={`flex items-center justify-center rounded-xl bg-ink text-brass-400 ${compact ? 'h-9 w-9' : 'h-11 w-11'}`}>
+        <Landmark size={compact ? 19 : 22} strokeWidth={1.7} aria-hidden="true" />
+      </span>
+      <span className={`font-display font-semibold tracking-tight ${compact ? 'text-lg' : 'text-xl'}`}>
+        LegalLens
+      </span>
     </Link>
   )
 }

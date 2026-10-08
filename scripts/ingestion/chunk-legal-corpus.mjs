@@ -164,8 +164,17 @@ function findSchedules(text) {
   }));
 }
 
-function getPartAtIndex(parts, index) {
-  let current = null;
+function findScheduleStart(text) {
+  const chapterEight = /(?:^|\n)\s*CHAPTER\s+VIII\b/im.exec(text)
+  if (!chapterEight) return null
+  const searchFrom = chapterEight.index + chapterEight[0].search(/CHAPTER/i)
+  const schedule = /(?:^|\n)\s*FIRST\s+SCHEDULE\s*(?:\n|$)/im.exec(text.slice(searchFrom))
+  return schedule ? searchFrom + schedule.index + schedule[0].search(/FIRST\s+SCHEDULE/i) : null
+}
+
+function getPartAtIndex(parts, index, scheduleStart) {
+  if (scheduleStart !== null && index >= scheduleStart) return null
+  let current = null
 
   for (const part of parts) {
     if (part.index <= index) {
@@ -178,8 +187,9 @@ function getPartAtIndex(parts, index) {
   return current;
 }
 
-function getChapterAtIndex(chapters, index) {
-  let current = null;
+function getChapterAtIndex(chapters, index, scheduleStart) {
+  if (scheduleStart !== null && index >= scheduleStart) return null
+  let current = null
 
   for (const chapter of chapters) {
     if (chapter.index <= index) {
@@ -196,6 +206,9 @@ function createSectionChunks(text, metadata) {
   const sections = findSectionHeadings(text);
   const parts = findParts(text);
   const chapters = findChapters(text);
+  const scheduleStart = metadata.sourceType === "constitution"
+    ? findScheduleStart(text)
+    : null
 
   const chunks = [];
 
@@ -237,6 +250,10 @@ function createSectionChunks(text, metadata) {
         .trim();
     }
 
+    if (!body.trim() && metadata.sourceType === 'constitution') continue
+
+    const part = getPartAtIndex(parts, current.index, scheduleStart)
+    const chapter = getChapterAtIndex(chapters, current.index, scheduleStart)
     chunks.push({
       chunkType: "legal_section",
 
@@ -259,12 +276,9 @@ function createSectionChunks(text, metadata) {
 
       heading,
 
-      part: getPartAtIndex(parts, current.index),
+      part,
 
-      chapter: getChapterAtIndex(
-        chapters,
-        current.index
-      ),
+      chapter,
 
       text: body,
 
@@ -272,11 +286,8 @@ function createSectionChunks(text, metadata) {
         sourceTitle: metadata.sourceTitle,
         section: current.section,
         heading,
-        part: getPartAtIndex(parts, current.index),
-        chapter: getChapterAtIndex(
-          chapters,
-          current.index
-        ),
+        part,
+        chapter,
       }),
     });
   }
@@ -489,10 +500,12 @@ async function main() {
     recursive: true,
   });
 
+  const requestedFile = process.argv[2];
   const files = (await readdir(normalizedDir))
     .filter((file) =>
       file.endsWith(".json")
     )
+    .filter((file) => !requestedFile || file === requestedFile)
     .sort();
 
   const manifest = [];
@@ -524,14 +537,25 @@ async function main() {
     }
   }
 
+  const manifestPath = join(chunksDir, "chunking-manifest.json");
+  let manifestDocuments = manifest;
+  if (requestedFile) {
+    try {
+      const existingManifest = JSON.parse(await readFile(manifestPath, "utf8"));
+      manifestDocuments = [
+        ...(existingManifest.documents ?? []).filter((entry) => entry.file !== requestedFile),
+        ...manifest,
+      ];
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+
   await writeFile(
-    join(
-      chunksDir,
-      "chunking-manifest.json"
-    ),
+    manifestPath,
     JSON.stringify(
       {
-        documents: manifest,
+        documents: manifestDocuments,
       },
       null,
       2

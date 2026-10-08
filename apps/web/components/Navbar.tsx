@@ -2,81 +2,73 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid'
+import { Menu, X } from 'lucide-react'
 import { BrandLogo } from '@/components/BrandLogo'
+
+const LINKS = [
+  { href: '/#features', label: 'Features' },
+  { href: '/#about', label: 'About' },
+]
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <BrandLogo compact />
+    <nav aria-label="Main navigation" className="sticky top-0 z-50 border-b border-ink-100 bg-white/90 backdrop-blur">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <BrandLogo />
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/#features" className="text-gray-700 hover:text-blue-600 transition-colors text-sm font-medium">
-              Features
-            </Link>
-            <Link href="/#about" className="text-gray-700 hover:text-blue-600 transition-colors text-sm font-medium">
-              About
-            </Link>
-            <div className="flex gap-4 ml-4">
-              <Link
-                href="/auth/login"
-                className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
-              >
-                Login
+          <div className="hidden items-center gap-7 md:flex">
+            {LINKS.map(({ href, label }) => (
+              <Link key={href} href={href} className="text-sm font-medium text-ink-400 transition-colors hover:text-ink">
+                {label}
               </Link>
-              <Link
-                href="/auth/register"
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all text-sm font-medium"
-              >
-                Get Started
-              </Link>
-            </div>
+            ))}
+            <Link href="/auth/login" className="text-sm font-medium text-ink-400 transition-colors hover:text-ink">
+              Sign in
+            </Link>
+            <Link href="/auth/register" className="rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-600">
+              Create account
+            </Link>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            onClick={() => setIsOpen(!isOpen)}
+            type="button"
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isOpen}
+            onClick={() => setIsOpen((current) => !current)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink-100 text-ink transition-colors hover:bg-paper md:hidden"
           >
-            {isOpen ? (
-              <XMarkIcon className="w-6 h-6" />
-            ) : (
-              <Bars3Icon className="w-6 h-6" />
-            )}
+            {isOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden pb-4 pt-2 space-y-2 animate-slideDown">
-            <Link
-              href="/#features"
-              className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              Features
-            </Link>
-            <Link
-              href="/#about"
-              className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              About
-            </Link>
+          <div className="space-y-1 border-t border-ink-100 py-3 md:hidden">
+            {LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setIsOpen(false)}
+                className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink-400 transition-colors hover:bg-paper hover:text-ink"
+              >
+                {label}
+              </Link>
+            ))}
             <Link
               href="/auth/login"
-              className="block px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              onClick={() => setIsOpen(false)}
+              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink-400 transition-colors hover:bg-paper hover:text-ink"
             >
-              Login
+              Sign in
             </Link>
             <Link
               href="/auth/register"
-              className="block px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg transition-colors text-center"
+              onClick={() => setIsOpen(false)}
+              className="block rounded-lg bg-ink px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-600"
             >
-              Get Started
+              Create account
             </Link>
           </div>
         )}

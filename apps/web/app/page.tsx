@@ -1,186 +1,184 @@
-import Link from 'next/link'
 import Image from 'next/image'
-import { MessageSquareQuote, ShieldCheck, Gavel, type LucideIcon } from 'lucide-react'
-import { MarginaliaRail } from '@/components/MarginaliaRail'
+import Link from 'next/link'
+import {
+  ArrowRight,
+  ArrowUpRight,
+  BookOpenText,
+  Landmark,
+  MessageSquareText,
+  ShieldCheck,
+  UserRoundSearch,
+} from 'lucide-react'
 import { BrandLogo } from '@/components/BrandLogo'
+
+const FEATURES = [
+  {
+    Icon: MessageSquareText,
+    title: 'Start with your question',
+    body: 'Describe a legal issue in everyday language and get a clear, source-led explanation.',
+  },
+  {
+    Icon: BookOpenText,
+    title: 'Read the law itself',
+    body: 'Search published legal text and explore the Constitution by chapter and section.',
+  },
+  {
+    Icon: UserRoundSearch,
+    title: 'Find the right next step',
+    body: 'Use practical guides and official channels when you need help beyond legal research.',
+  },
+]
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-paper legal-grid text-charcoal overflow-x-hidden">
-      <MarginaliaRail side="left" />
-      <MarginaliaRail side="right" />
-
-      <nav className="relative z-10 border-b border-ink-100 bg-paper/80 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
+    <main className="min-h-screen overflow-hidden bg-paper text-ink">
+      <header className="relative z-10 border-b border-ink-100/80 bg-white/85 backdrop-blur">
+        <nav
+          aria-label="Main navigation"
+          className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8"
+        >
           <BrandLogo />
-          <div className="flex items-center gap-6 text-sm font-medium">
-            <Link href="/auth/login" className="text-ink-400 hover:text-ink transition-colors">
+          <div className="flex items-center gap-3 sm:gap-6">
+            <Link
+              href="/auth/login"
+              className="rounded-md px-3 py-2 text-sm font-medium text-ink-400 transition-colors hover:text-ink"
+            >
               Sign in
             </Link>
             <Link
               href="/auth/register"
-              className="px-4 py-2 rounded bg-ink text-paper hover:bg-ink-600 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-ink-600"
             >
-              Create account
+              Create account <ArrowRight size={16} />
             </Link>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </header>
 
-      {/* Hero */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 pt-20 pb-24 grid md:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
-        <div className="animate-ink-in">
-          <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-4">
-            Nigeria · Legal Information
+      <section className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-16 sm:px-8 sm:pb-20 sm:pt-24 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16 lg:pt-28">
+        <div className="relative z-10">
+          <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-brass/30 bg-white/80 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">
+            <Landmark size={14} /> Nigerian legal information
           </p>
-          <h1 className="font-display text-5xl md:text-7xl leading-[0.98] text-ink mb-6">
-            Know your rights,{' '}
-            <span className="text-brass-600">traced to the source.</span>
+          <h1 className="max-w-3xl font-display text-[2.8rem] font-medium leading-[1.04] tracking-[-0.045em] text-ink sm:text-6xl lg:text-[4.35rem]">
+            Understand the law.
+            <span className="block text-brass-600">See the source.</span>
           </h1>
-          <p className="text-lg text-ink-400 leading-relaxed mb-8 max-w-md">
-            LegalLens answers questions about Nigerian law in plain language — and shows
-            you exactly which statute, section, or regulation each answer comes from.
-            No source, no answer.
+          <p className="mt-6 max-w-xl text-base leading-7 text-ink-400 sm:text-lg sm:leading-8">
+            Get clear explanations of Nigerian law, explore primary sources, and
+            know when to seek professional legal help.
           </p>
-          <div className="flex flex-wrap gap-4">
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
               href="/auth/register"
-              className="px-6 py-3 rounded bg-ink text-paper font-medium shadow-[0_12px_24px_rgba(20,38,30,0.16)] hover:bg-ink-600 hover:-translate-y-0.5 transition-all"
+              className="inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(20,38,30,0.14)] transition-all hover:-translate-y-0.5 hover:bg-ink-600"
             >
-              Get started free
+              Get started <ArrowRight size={16} />
             </Link>
             <Link
               href="/auth/login"
-              className="px-6 py-3 rounded border border-ink-100 text-ink font-medium hover:bg-white transition-colors"
+              className="rounded-lg border border-ink-100 bg-white px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-ink-400"
             >
               Sign in
             </Link>
           </div>
+          <div className="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-ink-400">
+            <span className="inline-flex items-center gap-2"><ShieldCheck size={15} className="text-brass-600" /> Sources kept in view</span>
+            <span className="inline-flex items-center gap-2"><BookOpenText size={15} className="text-brass-600" /> Built around Nigerian law</span>
+          </div>
         </div>
 
-        <div className="relative animate-ink-in [animation-delay:150ms] float-slow">
-          <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] border border-ink-100/60 shadow-[0_22px_60px_rgba(20,38,30,0.18)] image-reveal">
-            <Image
-              src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=85"
-              alt="Courthouse columns in warm afternoon light"
-              fill
-              priority
-              className="object-cover image-drift"
-              sizes="(max-width: 768px) 80vw, 38vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-7">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-400">Nigeria / legal clarity</p>
-              <p className="font-display text-3xl text-paper mt-2">Start with what matters.</p>
+        <div className="relative mx-auto w-full max-w-[34rem] lg:ml-auto">
+          <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-brass/10 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[1.75rem] border border-ink/10 bg-ink p-3 shadow-[0_28px_80px_rgba(20,38,30,0.18)]">
+            <div className="relative aspect-[1.26] overflow-hidden rounded-[1.25rem] bg-ink">
+              <Image
+                src="/brand/legal-source-archive.svg"
+                alt="Illustration of legal text and a balance scale"
+                fill
+                sizes="(max-width: 1024px) 90vw, 42vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="flex items-center justify-between gap-4 px-4 py-4 text-paper">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-brass-400">Research with context</p>
+                <p className="mt-1 font-display text-lg">From question to primary text</p>
+              </div>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-paper/20 text-brass-400">
+                <ArrowUpRight size={19} />
+              </span>
             </div>
           </div>
-          <div className="absolute -right-1 top-12 z-20 px-3 py-2 rounded-lg bg-paper/90 border border-brass/40 shadow-lg font-mono text-[10px] uppercase tracking-widest text-brass-600 animate-float-note">Source verified</div>
         </div>
       </section>
 
-      {/* What it does — not a numbered sequence, since these run in parallel, not order */}
-      <section className="relative z-10 bg-white/85 backdrop-blur border-y border-ink-100">
-        <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
-          <FeatureCard
-            Icon={MessageSquareQuote}
-            title="Ask in plain language"
-            body="Ask about a workplace dispute, a landlord issue, or a traffic stop the way you'd ask a knowledgeable friend — not the way you'd search a statute index."
-          />
-          <FeatureCard
-            Icon={ShieldCheck}
-            title="See the source, always"
-            body="Every answer links back to the actual Act, section, or regulation it came from. If we can't find a verified source, we say so — we don't guess."
-          />
-          <FeatureCard
-            Icon={Gavel}
-            title="Know when to escalate"
-            body="LegalLens tells you plainly when a situation needs a real lawyer, rather than pretending an AI can replace one."
-          />
+      <section id="features" className="border-y border-ink-100 bg-white">
+        <div className="mx-auto grid max-w-7xl gap-2 px-5 py-7 sm:grid-cols-3 sm:gap-8 sm:px-8 sm:py-10">
+          {FEATURES.map(({ Icon, title, body }) => (
+            <article key={title} className="flex gap-4 rounded-xl p-4 sm:p-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-paper text-brass-600">
+                <Icon size={20} strokeWidth={1.8} />
+              </span>
+              <div>
+                <h2 className="font-display text-lg font-medium tracking-tight text-ink">{title}</h2>
+                <p className="mt-1.5 text-sm leading-6 text-ink-400">{body}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section id="about" className="relative z-10 max-w-6xl mx-auto px-6 py-20 grid lg:grid-cols-[0.85fr_1.15fr] gap-10 items-center">
-        <div className="relative min-h-[280px] overflow-hidden rounded-2xl border border-ink-100 bg-ink surface-lift">
-          <Image
-            src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1400&q=85"
-            alt="Rows of law books in a library"
-            fill
-            className="object-cover image-drift"
-            sizes="(max-width: 768px) 100vw, 600px"
-          />
-          <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-ink via-ink/75 to-transparent">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-400">The source desk</p>
-            <p className="font-display text-2xl text-paper mt-1">Read the law with the paper trail intact.</p>
-          </div>
-        </div>
+      <section id="about" className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
         <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-3">Built for confidence</p>
-          <h2 className="font-display text-4xl md:text-5xl leading-tight text-ink mb-5">From first question to next action.</h2>
-          <p className="text-ink-400 leading-relaxed max-w-xl mb-7">LegalLens brings research, plain-language explanation, and practical orientation into one calm workspace. Explore a source, ask a follow-up, and keep the citation close.</p>
-          <div className="grid sm:grid-cols-2 gap-3 text-sm text-ink">
-            <div className="p-4 rounded-xl bg-paper border border-ink-100"><span className="block font-display text-lg mb-1">Plain language</span><span className="text-ink-400">No statute-index vocabulary required.</span></div>
-            <div className="p-4 rounded-xl bg-paper border border-ink-100"><span className="block font-display text-lg mb-1">Source first</span><span className="text-ink-400">Verified passages stay visible.</span></div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-brass-600">A considered way to begin</p>
+          <h2 className="mt-3 font-display text-3xl font-medium leading-tight tracking-[-0.035em] text-ink sm:text-4xl">
+            Clear information. Better-informed next steps.
+          </h2>
+          <p className="mt-4 max-w-lg leading-7 text-ink-400">
+            LegalLens is a starting point for understanding, not a substitute
+            for advice from a qualified lawyer. See what a source says, check its
+            context, then decide what support you need.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brass/10 text-brass-600"><BookOpenText size={20} /></span>
+            <h3 className="mt-4 font-display text-xl font-medium text-ink">Source-led research</h3>
+            <p className="mt-2 text-sm leading-6 text-ink-400">Read the cited passage and follow links to the underlying source.</p>
+          </div>
+          <div className="rounded-2xl border border-ink-100 bg-white p-5 sm:p-6">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brass/10 text-brass-600"><ShieldCheck size={20} /></span>
+            <h3 className="mt-4 font-display text-xl font-medium text-ink">Clear limitations</h3>
+            <p className="mt-2 text-sm leading-6 text-ink-400">Know when the available material is incomplete or your issue needs a lawyer.</p>
           </div>
         </div>
       </section>
 
-      <section className="relative z-10 max-w-6xl mx-auto px-6 pb-20">
-        <div className="relative overflow-hidden rounded-2xl min-h-[240px] border border-ink-100 surface-lift image-reveal">
-          <Image
-            src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1800&q=85"
-            alt="Columns of a courthouse in warm afternoon light"
-            fill
-            className="object-cover image-drift"
-            sizes="(max-width: 768px) 100vw, 1200px"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/55 to-ink/10" />
-          <div className="relative z-10 max-w-xl px-6 py-10 md:px-10 md:py-14">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass-400 mb-3">A calmer way to begin</p>
-            <h2 className="font-display text-3xl md:text-4xl text-paper leading-tight mb-3">Legal clarity should feel close, not intimidating.</h2>
-            <p className="text-paper/70 leading-relaxed">Start with the question you actually have. LegalLens helps you understand the terrain before you decide what to do next.</p>
+      <section className="mx-5 mb-16 overflow-hidden rounded-2xl bg-ink text-paper sm:mx-8 lg:mx-auto lg:mb-20 lg:max-w-7xl">
+        <div className="flex flex-col items-start justify-between gap-7 px-6 py-8 sm:px-10 sm:py-10 md:flex-row md:items-center">
+          <div className="max-w-2xl">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-brass-400">Start with what you need to know</p>
+            <h2 className="mt-2 font-display text-2xl font-medium tracking-tight sm:text-3xl">A more approachable way to explore Nigerian law.</h2>
           </div>
+          <Link
+            href="/auth/register"
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-brass px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-brass-400"
+          >
+            Create account <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
 
-      {/* Disclaimer, styled as a stamp — honest tone, not fear-based */}
-      <section className="relative z-10 max-w-3xl mx-auto px-6 py-20 text-center animate-ink-in">
-        <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full border-2 border-seal/40 text-seal font-mono text-xs uppercase tracking-wider mb-6">
-          Not a substitute for a lawyer
-        </div>
-        <p className="text-ink-400 leading-relaxed">
-          LegalLens is a legal information and education tool. It helps you understand
-          Nigerian laws and procedures, but it does not provide legal advice and is not
-          a licensed attorney. For decisions that affect your rights, consult a
-          qualified lawyer.
-        </p>
-      </section>
-
-      <footer className="relative z-10 border-t border-ink-100 py-10">
-        <div className="max-w-6xl mx-auto px-6 text-sm text-ink-400 flex justify-between items-center">
+      <footer className="border-t border-ink-100 bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <BrandLogo compact />
-          <span>Built for Nigeria. Grounded in real sources.</span>
+          <p className="max-w-2xl text-xs leading-5 text-ink-400">
+            LegalLens provides legal information, not legal advice. For advice
+            about your situation, consult a qualified Nigerian lawyer.
+          </p>
         </div>
       </footer>
     </main>
-  )
-}
-
-function FeatureCard({
-  Icon,
-  title,
-  body,
-}: {
-  Icon: LucideIcon
-  title: string
-  body: string
-}) {
-  return (
-    <div className="group hover-lift p-5 rounded-2xl border border-transparent hover:border-ink-100 hover:bg-paper/50">
-      <div className="w-11 h-11 rounded-lg bg-brass/10 flex items-center justify-center mb-4 group-hover:bg-ink transition-colors">
-        <Icon size={22} strokeWidth={1.75} className="text-brass-600 group-hover:text-brass-400 transition-colors" />
-      </div>
-      <h3 className="font-display text-xl text-ink mb-2">{title}</h3>
-      <p className="text-ink-400 leading-relaxed">{body}</p>
-    </div>
   )
 }

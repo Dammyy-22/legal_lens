@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -45,8 +45,14 @@ export function DashboardShell({
   children: React.ReactNode
 }) {
   const [open, setOpen] = useState(false)
+  const [logoutError, setLogoutError] = useState('')
+  const [loggingOut, setLoggingOut] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
 
   // Per product decision: never show the user's raw email in the dashboard chrome —
   // show their name (or a neutral fallback) with an avatar icon instead. Email is
@@ -54,22 +60,30 @@ export function DashboardShell({
   const displayName = user.fullName?.trim() || 'Account'
 
   async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
+    setLoggingOut(true)
+    setLogoutError('')
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut({ scope: 'local' })
+      if (error) throw error
+      router.push('/')
+      router.refresh()
+    } catch {
+      setLogoutError('Unable to sign out. Please try again.')
+      setLoggingOut(false)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-paper legal-grid md:flex">
+    <div className="min-h-screen bg-[#F7F7F4] md:flex">
       {/* Mobile top bar with hamburger */}
-      <div className="md:hidden flex items-center justify-between bg-white border-b border-ink-100 px-4 py-3 sticky top-0 z-30">
-        <BrandLogo compact />
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-ink-100 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
+        <BrandLogo href="/dashboard" compact />
         <button
           aria-label={open ? 'Close menu' : 'Open menu'}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="w-9 h-9 flex items-center justify-center rounded border border-ink-100 text-ink"
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink-100 text-ink transition-colors hover:bg-paper"
         >
           {open ? <X size={18} /> : <Menu size={18} />}
         </button>
@@ -79,35 +93,36 @@ export function DashboardShell({
       <aside
         className={`${
           open ? 'flex' : 'hidden'
-        } md:flex flex-col w-full md:w-64 shrink-0 bg-white/95 backdrop-blur border-b md:border-b-0 md:border-r border-ink-100 md:h-screen md:sticky md:top-0`}
+        } md:flex md:w-[17rem] w-full shrink-0 flex-col border-b border-ink-100 bg-white md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r`}
       >
-        <div className="hidden md:block px-6 py-7">
+        <div className="hidden border-b border-ink-100 px-6 py-6 md:block">
           <BrandLogo href="/dashboard" compact />
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">Nigeria / source desk</p>
         </div>
 
-        <nav className="px-3 py-3 md:py-0 space-y-1 flex-1 overflow-y-auto">
+        <nav aria-label="Workspace" className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
+          <p className="mb-3 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">Workspace</p>
           {NAV_ITEMS.map(({ href, label, Icon }) => {
-            const active = pathname === href
+            const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(`${href}/`))
             return (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                aria-current={active ? 'page' : undefined}
+                className={`group flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   active
-                    ? 'bg-ink text-paper shadow-[0_8px_18px_rgba(20,38,30,0.16)]'
+                    ? 'bg-ink text-white shadow-sm'
                     : 'text-ink-400 hover:bg-paper hover:text-ink'
                 }`}
               >
-                <Icon size={18} strokeWidth={1.75} className={`shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-brass-400' : ''}`} />
+                <Icon size={18} strokeWidth={1.8} className={`shrink-0 ${active ? 'text-brass-400' : ''}`} />
                 {label}
               </Link>
             )
           })}
         </nav>
 
-        <div className="px-3 py-3 border-t border-ink-100">
+        <div className="border-t border-ink-100 px-3 py-4">
           {user.isAdmin && (
             <Link
               href="/dashboard/admin"
@@ -137,22 +152,28 @@ export function DashboardShell({
 
           <div className="flex items-center justify-between px-3 py-3 mt-1 rounded-lg bg-paper/70">
             <div className="flex items-center gap-2 min-w-0">
-              <UserCircle size={28} strokeWidth={1.5} className="text-ink-100 shrink-0" />
+              <UserCircle size={28} strokeWidth={1.5} className="text-ink-400 shrink-0" />
               <span className="text-sm text-ink font-medium truncate">{displayName}</span>
             </div>
             <button
               onClick={handleLogout}
               aria-label="Sign out"
               title="Sign out"
-              className="text-ink-400 hover:text-seal transition-colors shrink-0 ml-2"
+              disabled={loggingOut}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white hover:text-seal disabled:opacity-50 shrink-0 ml-2"
             >
               <LogOut size={16} strokeWidth={1.75} />
             </button>
           </div>
+          {logoutError && (
+            <p role="alert" className="px-3 pt-2 text-xs text-seal">
+              {logoutError}
+            </p>
+          )}
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0">{children}</main>
+      <main id="main-content" className="min-w-0 flex-1">{children}</main>
     </div>
   )
 }
