@@ -14,6 +14,7 @@ import {
   UserRoundSearch,
   type LucideIcon,
 } from 'lucide-react'
+import { LegalFactOfTheDay } from '@/components/LegalFactOfTheDay'
 
 const TOOLS: {
   href: string
@@ -99,6 +100,10 @@ export default function DashboardOverview({ fullName }: { fullName: string | nul
           <p className="mt-2 font-display text-2xl font-medium leading-tight text-white sm:text-3xl">Keep the law and its sources in view.</p>
         </div>
       </section>
+
+      <div className="mb-10">
+        <LegalFactOfTheDay />
+      </div>
 
       <section className="relative mb-10 overflow-hidden rounded-2xl bg-ink text-paper shadow-[0_16px_44px_rgba(20,38,30,0.13)]">
         <div className="absolute -right-24 -top-36 h-80 w-80 rounded-full border border-brass/20" />

@@ -91,7 +91,13 @@ export default function AskPage() {
             </div>
           )}
           <p className="text-ink leading-relaxed whitespace-pre-line">{response.answer}</p>
-          {response.uncertain && <p className="mt-5 text-sm text-ink-400">This answer is marked uncertain because no verified citation was attached.</p>}
+          {response.answer_mode === 'source_extract' ? (
+            <p className="mt-5 rounded-lg border border-brass-600/20 bg-brass-600/5 p-3 text-sm text-ink-400">
+              These are direct source excerpts, not an AI assessment of how the law applies to your situation.
+            </p>
+          ) : response.uncertain ? (
+            <p className="mt-5 text-sm text-ink-400">This answer is uncertain because no verified citation was attached.</p>
+          ) : null}
           {response.citations.length > 0 && (
             <div className="mt-6 pt-5 border-t border-ink-100">
               <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-3">Sources used</p>

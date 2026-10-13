@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  buildSourceExtract,
   computeRateLimitState,
   extractCitationIds,
   normalizeQuestion,
@@ -23,6 +24,40 @@ test('selectValidCitationIds rejects citations to unreturned chunks', () => {
   const cited = ['chunk-1', 'chunk-999', 'chunk-2']
   const retrievedIds = ['chunk-1', 'chunk-2']
   assert.deepEqual(selectValidCitationIds(cited, retrievedIds), ['chunk-1', 'chunk-2'])
+})
+
+test('buildSourceExtract returns matching verified text and its source citation', () => {
+  const chunks = [
+    {
+      id: 'chunk-35',
+      source_title: 'Constitution of Nigeria',
+      section_label: 'Chapter IV',
+      text: 'Every person shall be entitled to his personal liberty. A person arrested or detained shall be informed in writing, within twenty-four hours, of the facts and grounds for his arrest or detention.',
+    },
+    {
+      id: 'chunk-13',
+      source_title: 'Constitution of Nigeria',
+      section_label: 'Chapter II',
+      text: 'The Government shall promote a planned and balanced economic development.',
+    },
+  ]
+
+  const result = buildSourceExtract('I was arrested and was not told why', chunks)
+  assert.match(result.answer, /live legal-analysis provider is unavailable/i)
+  assert.match(result.answer, /person arrested or detained shall be informed in writing/)
+  assert.deepEqual(result.citedChunkIds, ['chunk-35'])
+})
+
+test('buildSourceExtract does not cite chunks when it cannot isolate a relevant passage', () => {
+  const result = buildSourceExtract('How do I register a company?', [{
+    id: 'chunk-1',
+    source_title: 'Constitution of Nigeria',
+    section_label: 'Chapter IV',
+    text: 'Every person shall be entitled to his personal liberty.',
+  }])
+
+  assert.deepEqual(result.citedChunkIds, [])
+  assert.match(result.answer, /couldn't isolate a provision/i)
 })
 
 test('computeRateLimitState increments within window and denies after cap', () => {

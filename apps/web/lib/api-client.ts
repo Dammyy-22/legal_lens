@@ -34,6 +34,7 @@ export type AskResponse = {
   citations: AskCitation[]
   uncertain: boolean
   risk_level: 'standard' | 'high_risk'
+  answer_mode?: 'generated' | 'source_extract'
 }
 
 export type UserDocumentAnswer = {

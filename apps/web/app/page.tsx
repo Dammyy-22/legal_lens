@@ -10,6 +10,7 @@ import {
   UserRoundSearch,
 } from 'lucide-react'
 import { BrandLogo } from '@/components/BrandLogo'
+import { LegalFactOfTheDay } from '@/components/LegalFactOfTheDay'
 
 const FEATURES = [
   {
@@ -115,6 +116,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <div className="mx-auto mb-12 max-w-7xl px-5 sm:px-8">
+        <LegalFactOfTheDay />
+      </div>
 
       <section id="features" className="border-y border-ink-100 bg-white">
         <div className="mx-auto grid max-w-7xl gap-2 px-5 py-7 sm:grid-cols-3 sm:gap-8 sm:px-8 sm:py-10">

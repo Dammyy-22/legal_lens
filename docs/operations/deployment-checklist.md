@@ -15,7 +15,7 @@ admin user's RLS permissions or testing rejection.
 | `SUPABASE_URL` | Supabase CLI smoke test | Set in the shell running the smoke test; Edge Functions receive it from Supabase |
 | `SUPABASE_ANON_KEY` | Supabase CLI smoke test | Set in the shell running the smoke test; Edge Functions receive it from Supabase |
 | `OPENAI_API_KEY` | `ask`, document processing and document Q&A | Supabase Edge Function secret |
-| `ANTHROPIC_API_KEY` | `ask` and document Q&A answer generation | Supabase Edge Function secret |
+| `ANTHROPIC_API_KEY` | Preferred answer generation for `ask` and document Q&A; `ask` falls back to OpenAI if absent | Supabase Edge Function secret |
 | `UNLIMITED_OCR_GATEWAY_URL` | Scanned PDF processing Edge Function | Supabase Edge Function secret; private HTTPS URL of the OCR gateway |
 | `UNLIMITED_OCR_GATEWAY_KEY` | Scanned PDF processing Edge Function | Supabase Edge Function secret; shared bearer key for the OCR gateway |
 | `OCR_GATEWAY_API_KEY` | OCR gateway | Gateway deployment secret; must match `UNLIMITED_OCR_GATEWAY_KEY` |
@@ -46,8 +46,9 @@ supabase link --project-ref $env:SUPABASE_PROJECT_REF
 
 The database setup currently lives in root-level SQL scripts, not in
 `supabase/migrations/`. Apply `database/schema.sql`,
-`database/waitlist_migration.sql`, then `database/user_documents_migration.sql`
-in the linked project's Supabase Dashboard SQL Editor. The document migration
+`database/waitlist_migration.sql`, then `database/user_documents_migration.sql`, and
+`database/lexical_search_migration.sql` in the linked project's Supabase Dashboard
+SQL Editor. The document migration
 is additive and safe to re-run. Apply the initial `schema.sql` only once to a
 fresh database; it contains non-idempotent policy creation statements. Do not
 run `supabase db push` until the project has versioned migrations; it will not
@@ -57,6 +58,8 @@ After schema application, verify in the SQL Editor that:
 
 - `public.rate_limit_events` exists and has RLS enabled.
 - `public.match_document_chunks(vector, float, int)` exists and execute is
+  restricted to `authenticated`.
+- `public.search_verified_document_chunks(text, integer)` exists and execute is
   restricted to `authenticated`.
 - an ordinary test user cannot read unverified versions or their sections.
 - the staged admin account has `app_metadata.role = "admin"` and can read the

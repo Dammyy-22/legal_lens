@@ -8,8 +8,15 @@ The assistant must answer only from retrieved verified legal text and must refus
 
 - Retrieval uses verified-restricted corpus rows.
 - Vector search explicitly filters to `verified = true` rows.
+- If vector embeddings are unavailable or return no matches, full-text search
+  still searches only verified, current versions.
 - The model must cite a real chunk ID using `[[cite:REF]]` syntax.
 - Citation validation strips any invalid reference before returning content.
+- If no model provider is available, the assistant returns matching source
+  excerpts without presenting them as scenario-specific legal analysis.
+- OpenAI embedding quota failures trigger full-text retrieval; OpenAI generation
+  quota failures use the same labeled excerpt-only response. Restore provider
+  quota or configure Anthropic for generated scenario analysis.
 - High-risk prompts trigger a safety-first response instead of legal reasoning.
 - Empty or malformed model output is treated as a failure.
 

@@ -35,8 +35,8 @@ to avoid maintaining two backend runtimes long-term. If you see references to
 | Dashboard | Sidebar/hamburger nav, avatar+name (not email) shown per product decision |
 | Legal search | `supabase/functions/legal` — keyword search over verified corpus |
 | Constitution browse | Same function, `mode=constitution` |
-| AI Assistant (Ask) | `supabase/functions/ask` — retrieval + Claude generation + citation validation. Type-checked and unit-tested; **not yet run end-to-end against live Supabase/OpenAI/Anthropic** — needs real credentials, which this build environment doesn't have |
-| Legal corpus | Constitution of Nigeria — ingestion scripts exist (`scripts/ingestion/`); **nothing is verified/published yet** until a human reviews and flips `verified = true` |
+| AI Assistant (Ask) | `supabase/functions/ask` — verified-source retrieval, scenario-focused generation, citation validation, and a clearly labeled source-excerpt fallback when model providers are unavailable |
+| Legal corpus | Constitution of Nigeria — verified/current corpus content is searchable; new or re-extracted legal content must be reviewed before publication |
 | Lawyers | Sample profiles (clearly labeled, not real) + a real waitlist signup |
 | My documents | Private PDF/DOCX/TXT upload, Baidu Unlimited-OCR for scanned PDF pages, embeddings, and selected-document Q&A with page/section citations |
 
@@ -78,8 +78,12 @@ supabase functions deploy create-user-document-upload
 supabase functions deploy process-user-document
 supabase functions deploy ask-user-document
 supabase secrets set OPENAI_API_KEY=sk-...
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 ```
+
+`OPENAI_API_KEY` is required for query embeddings and is also used for `ask`
+answer generation when `ANTHROPIC_API_KEY` is not configured. Set
+`ANTHROPIC_API_KEY` as a Supabase Edge Function secret to use Anthropic as the
+preferred answer-generation provider.
 
 Apply `database/schema.sql`, `database/waitlist_migration.sql`, and
 `database/user_documents_migration.sql` in that order in the Supabase SQL Editor
