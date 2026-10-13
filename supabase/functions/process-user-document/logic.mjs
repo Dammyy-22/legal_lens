@@ -40,7 +40,7 @@ export function chunkDocumentPages(pages) {
   }
 
   if (chunks.length === 0) {
-    throw new Error('No selectable text was found. Scanned PDFs are not supported because OCR is not enabled.')
+    throw new Error('No readable text was found after OCR.')
   }
 
   const characterCount = chunks.reduce((sum, chunk) => sum + chunk.text.length, 0)

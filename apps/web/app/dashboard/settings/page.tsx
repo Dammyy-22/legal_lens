@@ -177,11 +177,12 @@ export default function SettingsPage() {
       </div>
 
       <section className="bg-white/90 border border-seal/20 rounded-2xl p-6 mt-6">
-        <h2 className="font-display text-lg text-ink mb-1">Active sessions</h2>
+        <h2 className="font-display text-lg text-ink mb-1">Session security</h2>
         <p className="text-ink-400 text-sm mb-4">
-          Sign out on this device only from the sidebar, or revoke refreshable
-          sessions across all devices if you think your account may be at risk.
-          Existing access tokens can remain valid until they expire.
+          This device signs out after one hour without activity. Use the sidebar
+          to sign out here, or revoke refreshable sessions across all devices if
+          you think your account may be at risk. Existing access tokens can remain
+          valid until they expire.
         </p>
         <button
           type="button"

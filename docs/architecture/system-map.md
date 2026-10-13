@@ -7,6 +7,7 @@
 - API layer: Supabase Edge Functions in `supabase/functions/`
 - Data store: Postgres in Supabase with RLS enabled
 - AI providers: OpenAI for embeddings, Anthropic for answer generation
+- Scanned-PDF OCR: private PyMuPDF gateway and Baidu Unlimited-OCR vLLM/SGLang endpoint
 - Corpus management: ingestion scripts under `scripts/ingestion/`
 
 ## 2. Request flow
@@ -45,7 +46,10 @@
    `process-user-document`.
 4. The processor verifies the caller and ownership before using the server-side
    service key to download the exact object, extract selectable text from PDF,
-   DOCX, or UTF-8 TXT, split it into bounded overlapping chunks, and create
+   DOCX, or UTF-8 TXT. For PDF pages with fewer than 40 extracted characters,
+   it calls the private OCR gateway, which renders the requested pages and
+   forwards images to Baidu Unlimited-OCR. OCR is limited to 10 pages per PDF.
+   The processor then splits text into bounded overlapping chunks and creates
    OpenAI embeddings. It marks the record ready only after all chunks are saved.
 5. `ask-user-document` authenticates the user, checks ownership/readiness, and
    calls `match_user_document_chunks`. The database RPC independently binds the
@@ -65,9 +69,10 @@
   to the owner; no user document participates in public legal-corpus retrieval.
 - Verified corpus content is the only data available to normal users.
 - Admin users may review unverified versions, but they cannot bypass the verified-only app-facing logic.
-- Scanned PDFs are not OCR'd; the processor rejects documents with no selectable
-  text. User document text is sent to OpenAI/Anthropic only after explicit UI
-  acknowledgement.
+- Scanned PDF pages are sent to the configured OCR gateway only after the
+  authenticated user initiates processing. The gateway requires a shared bearer
+  key, private HTTPS, and access to the configured model endpoint. User document
+  text is sent to OCR/OpenAI/Anthropic only after explicit UI acknowledgement.
 
 ## 4. Admin workflow map
 

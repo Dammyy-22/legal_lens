@@ -23,7 +23,7 @@ test('chunkDocumentPages preserves page references and creates overlapping chunk
 test('chunkDocumentPages refuses documents without extractable text and excessive chunks', () => {
   assert.throws(
     () => chunkDocumentPages([{ page_number: 1, text: '' }]),
-    /Scanned PDFs are not supported/
+    /No readable text was found/
   )
 
   assert.throws(

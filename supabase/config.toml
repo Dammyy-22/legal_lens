@@ -1,0 +1,7 @@
+project_id = "legal_lens"
+
+[auth]
+jwt_expiry = 900
+
+[auth.sessions]
+inactivity_timeout = "1h"

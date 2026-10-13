@@ -20,6 +20,12 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { BrandLogo } from '@/components/BrandLogo'
+import {
+  isSessionInactive,
+  SESSION_INACTIVITY_TIMEOUT_MS,
+  sessionActivityStorageKey,
+  sessionIdFromAccessToken,
+} from '@/lib/session-idle'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Overview', Icon: LayoutDashboard },
@@ -53,6 +59,130 @@ export function DashboardShell({
   useEffect(() => {
     setOpen(false)
   }, [pathname])
+
+  useEffect(() => {
+    const supabase = createClient()
+    let activityKey: string | null = null
+    let lastActivity = 0
+    let lastStoredActivity = 0
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let endingSession = false
+    let disposed = false
+
+    async function clearUnvalidatedSession() {
+      try {
+        const { error } = await supabase.auth.signOut({ scope: 'local' })
+        if (error) throw error
+      } catch (error) {
+        console.error('Could not clear an unvalidated browser session:', error)
+      }
+    }
+
+    async function endIdleSession() {
+      if (endingSession || disposed) return
+      endingSession = true
+      try {
+        const { error } = await supabase.auth.signOut({ scope: 'local' })
+        if (error) throw error
+        if (activityKey) localStorage.removeItem(activityKey)
+        router.replace('/auth/login?reason=idle_timeout')
+        router.refresh()
+      } catch (error) {
+        console.error('Could not end an inactive session:', error)
+        setLogoutError('Your session expired, but sign-out could not complete. Please reload and sign in again.')
+        endingSession = false
+        timer = setTimeout(() => void endIdleSession(), 10_000)
+      }
+    }
+
+    function scheduleExpiry() {
+      if (!activityKey || disposed || endingSession) return
+      if (timer) clearTimeout(timer)
+      const remaining = lastActivity + SESSION_INACTIVITY_TIMEOUT_MS - Date.now()
+      if (remaining <= 0) {
+        void endIdleSession()
+        return
+      }
+      timer = setTimeout(() => void endIdleSession(), remaining)
+    }
+
+    function handleActivity(event: Event) {
+      if (!activityKey || disposed || endingSession) return
+      const now = Date.now()
+      if (isSessionInactive(String(lastActivity), now)) {
+        void endIdleSession()
+        return
+      }
+      lastActivity = now
+      if (event.type !== 'mousemove' || now - lastStoredActivity >= 10_000) {
+        localStorage.setItem(activityKey, String(now))
+        lastStoredActivity = now
+      }
+      scheduleExpiry()
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (!activityKey || event.key !== activityKey) return
+      if (event.newValue === null || isSessionInactive(event.newValue)) {
+        void endIdleSession()
+        return
+      }
+      lastActivity = Number(event.newValue)
+      scheduleExpiry()
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') scheduleExpiry()
+    }
+
+    async function initializeIdleTimeout() {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+        if (error) throw error
+        if (!session) {
+          await clearUnvalidatedSession()
+          router.replace('/auth/login?reason=session_expired')
+          router.refresh()
+          return
+        }
+
+        const sessionId = sessionIdFromAccessToken(session.access_token)
+        activityKey = sessionActivityStorageKey(sessionId)
+        const storedActivity = localStorage.getItem(activityKey)
+        if (isSessionInactive(storedActivity)) {
+          void endIdleSession()
+          return
+        }
+
+        lastActivity = storedActivity === null ? Date.now() : Number(storedActivity)
+        lastStoredActivity = lastActivity
+        if (storedActivity === null) localStorage.setItem(activityKey, String(lastActivity))
+        scheduleExpiry()
+      } catch (error) {
+        console.error('Could not initialize session inactivity timeout:', error)
+        await clearUnvalidatedSession()
+        router.replace('/auth/login?reason=session_expired')
+        router.refresh()
+      }
+    }
+
+    const activityEvents = ['pointerdown', 'keydown', 'touchstart', 'wheel', 'mousemove']
+    activityEvents.forEach((eventName) => window.addEventListener(eventName, handleActivity, { passive: true }))
+    window.addEventListener('storage', handleStorage)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    void initializeIdleTimeout()
+
+    return () => {
+      disposed = true
+      if (timer) clearTimeout(timer)
+      activityEvents.forEach((eventName) => window.removeEventListener(eventName, handleActivity))
+      window.removeEventListener('storage', handleStorage)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [router])
 
   // Per product decision: never show the user's raw email in the dashboard chrome —
   // show their name (or a neutral fallback) with an avatar icon instead. Email is

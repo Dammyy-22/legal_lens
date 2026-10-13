@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -12,7 +12,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const router = useRouter()
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('reason') === 'idle_timeout') {
+      setNotice('You were signed out after one hour of inactivity. Sign in again to continue.')
+    } else if (new URLSearchParams(window.location.search).get('reason') === 'session_expired') {
+      setNotice('Your session could not be validated. Sign in again to continue.')
+    }
+  }, [])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -61,6 +70,12 @@ export default function LoginPage() {
         {error && (
           <div className="mb-4 p-4 bg-seal/5 border border-seal/25 text-seal rounded-lg text-sm">
             {error}
+          </div>
+        )}
+
+        {notice && (
+          <div role="status" className="mb-4 p-4 bg-ink-50 border border-ink-100 text-ink-600 rounded-lg text-sm">
+            {notice}
           </div>
         )}
 

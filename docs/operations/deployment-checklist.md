@@ -16,13 +16,19 @@ admin user's RLS permissions or testing rejection.
 | `SUPABASE_ANON_KEY` | Supabase CLI smoke test | Set in the shell running the smoke test; Edge Functions receive it from Supabase |
 | `OPENAI_API_KEY` | `ask`, document processing and document Q&A | Supabase Edge Function secret |
 | `ANTHROPIC_API_KEY` | `ask` and document Q&A answer generation | Supabase Edge Function secret |
+| `UNLIMITED_OCR_GATEWAY_URL` | Scanned PDF processing Edge Function | Supabase Edge Function secret; private HTTPS URL of the OCR gateway |
+| `UNLIMITED_OCR_GATEWAY_KEY` | Scanned PDF processing Edge Function | Supabase Edge Function secret; shared bearer key for the OCR gateway |
+| `OCR_GATEWAY_API_KEY` | OCR gateway | Gateway deployment secret; must match `UNLIMITED_OCR_GATEWAY_KEY` |
+| `VLLM_API_BASE_URL` | OCR gateway | Gateway deployment variable; OpenAI-compatible vLLM `/v1` endpoint |
+| `VLLM_API_KEY` | OCR gateway | Gateway deployment secret, only if the vLLM endpoint requires a key |
 | `RATE_LIMIT_BACKEND` | `ask` Edge Function audit behavior | Supabase Edge Function secret; use `memory` unless the database audit table has been deployed |
 | `SUPABASE_AUTH_EMAIL` | Live smoke-test login | Staging-only test user credentials in the shell/CI secret store |
 | `SUPABASE_AUTH_PASSWORD` | Live smoke-test login | Staging-only test user credentials in the shell/CI secret store |
 | `SUPABASE_PROJECT_REF` | Supabase CLI target | Deployment shell or CI secret/variable; project ref is not a credential |
 
 Never add `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, or
-`ANTHROPIC_API_KEY` to a `NEXT_PUBLIC_*` variable or the web app's `.env` file.
+`ANTHROPIC_API_KEY`, `UNLIMITED_OCR_GATEWAY_KEY`, or `VLLM_API_KEY` to a
+`NEXT_PUBLIC_*` variable or the web app's `.env` file.
 The `SUPABASE_SERVICE_ROLE_KEY` must not be needed for the user-facing
 smoke-test script.
 
@@ -64,13 +70,29 @@ confirmation and password policy. Require MFA for administrator accounts.
 Test expiry, refresh, local logout, and global logout using dedicated staging
 accounts before production.
 
+The web dashboard signs out after one hour without local user activity. Configure
+the matching server-side policy in **Authentication → Sessions → Inactivity
+timeout** to `1 hour`; set **JWT expiry** to `15 minutes` so an already-issued
+access token has a bounded validity window after a session expires. The
+`supabase/config.toml` values apply to local Supabase development only and do
+not update a hosted project's dashboard settings.
+
 The document feature uses a private Storage bucket named `user-documents`,
 limits each upload to 15 MiB, and limits each account to 20 file reservations
 (at most 300 MiB using the bucket's per-file limit). It
 supports PDF, DOCX, and UTF-8 TXT. Scanned/image PDFs without selectable text
-fail processing; OCR is intentionally not configured. Extracted text is sent
-to OpenAI for embeddings and relevant retrieved passages are sent to Anthropic
-for answering. The Documents page requires user acknowledgement before upload.
+are OCR'd on up to 10 scanned pages per PDF by the separately deployed
+Unlimited-OCR gateway. The gateway rasterizes PDF pages with PyMuPDF and
+forwards them to Baidu's Unlimited-OCR model over its OpenAI-compatible
+vLLM/SGLang API. Expose the gateway only over private HTTPS, require a strong
+shared bearer key, and keep it network-restricted to the model endpoint. Its
+Docker build is in `services/unlimited-ocr-gateway/`; configure
+`OCR_GATEWAY_API_KEY`, `VLLM_API_BASE_URL`, and (if required) `VLLM_API_KEY`.
+Set `UNLIMITED_OCR_GATEWAY_URL` and the same key as
+`UNLIMITED_OCR_GATEWAY_KEY` in Supabase Edge Function secrets. Extracted text is
+sent to OpenAI for embeddings and relevant retrieved passages are sent to
+Anthropic for answering. The Documents page requires user acknowledgement
+before upload.
 
 ## 3. Set Edge Function secrets and deploy
 
@@ -82,6 +104,8 @@ command shape with values supplied by your secret manager:
 supabase secrets set --project-ref $env:SUPABASE_PROJECT_REF `
   OPENAI_API_KEY="your-openai-api-key" `
   ANTHROPIC_API_KEY="your-anthropic-api-key" `
+  UNLIMITED_OCR_GATEWAY_URL="https://private-ocr-gateway.example.com" `
+  UNLIMITED_OCR_GATEWAY_KEY="your-shared-ocr-gateway-key" `
   RATE_LIMIT_BACKEND="memory"
 
 supabase functions deploy ask --project-ref $env:SUPABASE_PROJECT_REF
@@ -153,10 +177,11 @@ Before treating a CI invocation as a release gate, make it fail on missing
 configuration or assert that its output contains successful results; a skipped
 smoke test must not be mistaken for a pass.
 
-After applying `database/user_documents_migration.sql` and deploying all three
-document functions,
+After applying `database/user_documents_migration.sql`, deploying all three
+document functions, and configuring the private OCR gateway,
 test document processing in staging with a non-sensitive text-based PDF,
-DOCX, and TXT, plus a scanned PDF that must be rejected with a clear message.
+DOCX, and TXT, plus a scanned PDF that must be recognized and indexed.
+Also confirm PDFs with more than 10 scanned pages fail with a clear limit message.
 Verify a second ordinary account cannot list, download, question, or cite the
 first account's document. Check that retrying processing does not leave duplicate
 chunks, the per-account quotas reject excess records, and deleting a document

@@ -13,8 +13,16 @@ import {
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024
 const MAX_PDF_PAGES = 200
+const MAX_OCR_PAGES = 10
+const MIN_PAGE_TEXT_CHARACTERS = 40
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const EMBEDDING_BATCH_SIZE = 32
+
+interface ExtractedDocumentText {
+  pages: Array<{ page_number: number | null; text: string }>
+  page_count: number | null
+  character_count: number
+}
 
 interface UserDocument {
   id: string
@@ -127,7 +135,10 @@ Deno.serve(async (request: Request) => {
       throw new DocumentProcessingError('Uploaded document size does not match its record.')
     }
 
-    const extracted = await extractDocumentText(bytes, document.mime_type)
+    let extracted = await extractDocumentText(bytes, document.mime_type)
+    if (document.mime_type === 'application/pdf') {
+      extracted = await recognizeScannedPdfPages(bytes, extracted)
+    }
     let chunks: ReturnType<typeof chunkDocumentPages>
     try {
       chunks = chunkDocumentPages(extracted.pages)
@@ -222,7 +233,7 @@ Deno.serve(async (request: Request) => {
 async function extractDocumentText(
   bytes: Uint8Array,
   mimeType: string,
-): Promise<{ pages: Array<{ page_number: number | null; text: string }>; page_count: number | null; character_count: number }> {
+): Promise<ExtractedDocumentText> {
   if (mimeType === 'text/plain') {
     let text: string
     try {
@@ -284,6 +295,121 @@ async function extractDocumentText(
   }
 
   throw new DocumentProcessingError('Only PDF, DOCX, and TXT documents are supported.')
+}
+
+async function recognizeScannedPdfPages(
+  bytes: Uint8Array,
+  extracted: ExtractedDocumentText,
+): Promise<ExtractedDocumentText> {
+  const pageNumbers: number[] = []
+  for (const page of extracted.pages) {
+    if (
+      page.page_number !== null &&
+      page.text.trim().length < MIN_PAGE_TEXT_CHARACTERS
+    ) {
+      pageNumbers.push(page.page_number)
+    }
+  }
+  if (pageNumbers.length === 0) return extracted
+  if (pageNumbers.length > MAX_OCR_PAGES) {
+    throw new DocumentProcessingError(
+      `OCR is limited to ${MAX_OCR_PAGES} scanned pages per document.`, 413
+    )
+  }
+
+  const gatewayUrl = Deno.env.get('UNLIMITED_OCR_GATEWAY_URL')
+  const gatewayKey = Deno.env.get('UNLIMITED_OCR_GATEWAY_KEY')
+  if (!gatewayUrl || !gatewayKey) {
+    throw new DocumentProcessingError('Scanned PDF OCR is not configured for this project.', 503)
+  }
+
+  let gatewayBase: URL
+  try {
+    gatewayBase = new URL(gatewayUrl)
+  } catch {
+    throw new DocumentProcessingError('Scanned PDF OCR gateway configuration is invalid.', 503)
+  }
+  if (
+    (gatewayBase.protocol !== 'https:' &&
+      !['localhost', '127.0.0.1'].includes(gatewayBase.hostname)) ||
+    gatewayBase.username ||
+    gatewayBase.password
+  ) {
+    throw new DocumentProcessingError('Scanned PDF OCR gateway must use HTTPS.', 503)
+  }
+
+  let response: Response
+  try {
+    const url = new URL('/v1/ocr/pdf', gatewayBase)
+    url.searchParams.set('pages', pageNumbers.join(','))
+    const requestBytes = new Uint8Array(bytes.byteLength)
+    requestBytes.set(bytes)
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${gatewayKey}`,
+        'Content-Type': 'application/pdf',
+      },
+      body: requestBytes.buffer,
+      signal: AbortSignal.timeout(300_000),
+    })
+  } catch (error) {
+    console.error('Unlimited-OCR gateway request failed:', error)
+    throw new DocumentProcessingError('Scanned PDF OCR is temporarily unavailable.', 502)
+  }
+
+  if (!response.ok) {
+    console.error('Unlimited-OCR gateway returned status:', response.status)
+    throw new DocumentProcessingError(
+      response.status === 413
+        ? 'A scanned page exceeds the OCR processing limits.'
+        : 'Scanned PDF OCR is temporarily unavailable.',
+      response.status === 413 ? 422 : 502,
+    )
+  }
+
+  let result: { pages?: unknown }
+  try {
+    result = await response.json()
+  } catch {
+    throw new DocumentProcessingError('Unlimited-OCR gateway returned an invalid response.', 502)
+  }
+  if (!Array.isArray(result.pages)) {
+    throw new DocumentProcessingError('Unlimited-OCR gateway returned an invalid response.', 502)
+  }
+
+  const recognizedPages = new Map<number, string>()
+  for (const page of result.pages) {
+    if (
+      !page ||
+      typeof page !== 'object' ||
+      !('page_number' in page) ||
+      !('text' in page) ||
+      typeof page.page_number !== 'number' ||
+      !Number.isInteger(page.page_number) ||
+      !pageNumbers.includes(page.page_number) ||
+      typeof page.text !== 'string' ||
+      recognizedPages.has(page.page_number)
+    ) {
+      throw new DocumentProcessingError('Unlimited-OCR gateway returned invalid page data.', 502)
+    }
+    recognizedPages.set(page.page_number, page.text)
+  }
+  if (recognizedPages.size !== pageNumbers.length) {
+    throw new DocumentProcessingError('Unlimited-OCR gateway returned an incomplete response.', 502)
+  }
+
+  const pages = extracted.pages.map((page) => ({
+    ...page,
+    text: page.page_number !== null && recognizedPages.has(page.page_number)
+      ? recognizedPages.get(page.page_number) ?? page.text
+      : page.text,
+  }))
+  const characterCount = pages.reduce((sum, page) => sum + page.text.length, 0)
+  if (characterCount > MAX_EXTRACTED_CHARACTERS) {
+    throw new DocumentProcessingError('This PDF contains too much text to process safely.')
+  }
+  return { ...extracted, pages, character_count: characterCount }
 }
 
 async function embedChunks(texts: string[], apiKey: string): Promise<number[][]> {

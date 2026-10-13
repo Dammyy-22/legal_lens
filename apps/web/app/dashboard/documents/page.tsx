@@ -52,26 +52,28 @@ export default function DocumentsPage() {
 
   async function loadDocuments() {
     setLoading(true)
-    const supabase = createClient()
-    const { data, error: queryError } = await supabase
-      .from('user_documents')
-      .select('id, original_filename, mime_type, file_size_bytes, processing_status, processing_error, page_count, created_at, storage_path')
-      .order('created_at', { ascending: false })
+    try {
+      const supabase = createClient()
+      const { data, error: queryError } = await supabase
+        .from('user_documents')
+        .select('id, original_filename, mime_type, file_size_bytes, processing_status, processing_error, page_count, created_at, storage_path')
+        .order('created_at', { ascending: false })
 
-    if (queryError) {
+      if (queryError) throw queryError
+
+      const rows = (data ?? []) as UserDocument[]
+      setDocuments(rows)
+      setSelectedDocumentId((current) =>
+        rows.some((document) => document.id === current)
+          ? current
+          : rows.find((document) => document.processing_status === 'ready')?.id ?? '',
+      )
+    } catch (error) {
+      console.error('Could not load user documents:', error)
       setError('Unable to load your documents. Please refresh and try again.')
+    } finally {
       setLoading(false)
-      return
     }
-
-    const rows = (data ?? []) as UserDocument[]
-    setDocuments(rows)
-    setSelectedDocumentId((current) =>
-      rows.some((document) => document.id === current)
-        ? current
-        : rows.find((document) => document.processing_status === 'ready')?.id ?? '',
-    )
-    setLoading(false)
   }
 
   async function handleUpload(event: FormEvent<HTMLFormElement>) {
@@ -98,63 +100,110 @@ export default function DocumentsPage() {
     }
 
     setUploading(true)
-    const supabase = createClient()
-    const { data: reservation, error: reservationError } = await supabase.functions.invoke(
-      'create-user-document-upload',
-      {
-        body: {
-          filename: file.name,
-          mime_type: typeInfo.mime,
-          file_size_bytes: file.size,
+    let supabase: ReturnType<typeof createClient> | null = null
+    let reservation: {
+      document_id: string
+      storage_path: string
+      token: string
+    } | null = null
+    let uploadSucceeded = false
+
+    try {
+      supabase = createClient()
+      const { data, error: reservationError } = await supabase.functions.invoke(
+        'create-user-document-upload',
+        {
+          body: {
+            filename: file.name,
+            mime_type: typeInfo.mime,
+            file_size_bytes: file.size,
+          },
         },
-      },
-    )
-    if (reservationError || !reservation) {
-      const response = reservationError?.context instanceof Response
-        ? await reservationError.context.json().catch(() => ({}))
-        : {}
-      setError(response.error || reservationError?.message || 'Could not prepare a secure upload.')
-      setUploading(false)
-      return
-    }
+      )
+      if (reservationError) {
+        throw new Error(await functionErrorMessage(reservationError, 'Could not prepare a secure upload.'))
+      }
+      if (
+        !data ||
+        typeof data.document_id !== 'string' ||
+        typeof data.storage_path !== 'string' ||
+        typeof data.token !== 'string'
+      ) {
+        throw new Error('The upload service returned an invalid reservation. Please try again.')
+      }
+      const uploadReservation = {
+        document_id: data.document_id,
+        storage_path: data.storage_path,
+        token: data.token,
+      }
+      reservation = uploadReservation
 
-    const { error: uploadError } = await supabase.storage
-      .from('user-documents')
-      .uploadToSignedUrl(reservation.storage_path, reservation.token, file, {
-        contentType: typeInfo.mime,
-      })
-
-    if (uploadError) {
-      const { error: objectCleanupError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('user-documents')
-        .remove([reservation.storage_path])
-      if (objectCleanupError) console.error('Could not clean up a failed signed upload:', objectCleanupError)
-      const { error: reservationCleanupError } = await supabase
-        .from('user_documents')
-        .delete()
-        .eq('id', reservation.document_id)
-      if (reservationCleanupError) console.error('Could not release failed upload reservation:', reservationCleanupError)
-      setError('The file could not be uploaded. Please try again.')
+        .uploadToSignedUrl(uploadReservation.storage_path, uploadReservation.token, file, {
+          contentType: typeInfo.mime,
+        })
+
+      if (uploadError) {
+        throw new Error(`The file could not be uploaded: ${uploadError.message}`)
+      }
+
+      uploadSucceeded = true
+      setSelectedDocumentId(uploadReservation.document_id)
+      setFile(null)
+      if (fileInput.current) fileInput.current.value = ''
+
+      try {
+        const { error: processingError } = await supabase.functions.invoke('process-user-document', {
+          body: { document_id: uploadReservation.document_id },
+        })
+        if (processingError) {
+          throw new Error(await functionErrorMessage(
+            processingError,
+            'Document uploaded, but processing could not be confirmed.'
+          ))
+        }
+      } catch (processingError) {
+        console.error('Document was uploaded but processing did not complete:', processingError)
+        setError(
+          `${processingError instanceof Error ? processingError.message : 'Document processing could not be confirmed.'} The file is saved; check its status below and retry processing if needed.`
+        )
+      }
+    } catch (uploadFlowError) {
+      console.error('Document upload failed:', uploadFlowError)
+      setError(
+        uploadFlowError instanceof Error
+          ? uploadFlowError.message
+          : 'The document could not be uploaded. Please try again.'
+      )
+
+      if (reservation && !uploadSucceeded && supabase) {
+        try {
+          const { error: objectCleanupError } = await supabase.storage
+            .from('user-documents')
+            .remove([reservation.storage_path])
+          if (objectCleanupError) {
+            console.error('Could not clean up a failed upload object:', objectCleanupError)
+          }
+        } catch (cleanupError) {
+          console.error('Could not clean up a failed upload object:', cleanupError)
+        }
+        try {
+          const { error: reservationCleanupError } = await supabase
+            .from('user_documents')
+            .delete()
+            .eq('id', reservation.document_id)
+          if (reservationCleanupError) {
+            console.error('Could not release failed upload reservation:', reservationCleanupError)
+          }
+        } catch (cleanupError) {
+          console.error('Could not release failed upload reservation:', cleanupError)
+        }
+      }
+    } finally {
+      if (uploadSucceeded) await loadDocuments()
       setUploading(false)
-      return
     }
-
-    setSelectedDocumentId(reservation.document_id)
-    setFile(null)
-    if (fileInput.current) fileInput.current.value = ''
-
-    const { error: processingError } = await supabase.functions.invoke('process-user-document', {
-      body: { document_id: reservation.document_id },
-    })
-    if (processingError) {
-      const response = processingError.context instanceof Response
-        ? await processingError.context.json().catch(() => ({}))
-        : {}
-      setError(response.error || 'Upload saved, but document processing failed. You can retry from the document list.')
-    }
-
-    await loadDocuments()
-    setUploading(false)
   }
 
   async function handleAsk(event: FormEvent<HTMLFormElement>) {
@@ -177,14 +226,20 @@ export default function DocumentsPage() {
 
   async function handleRetry(documentId: string) {
     setError('')
-    const supabase = createClient()
-    const { error: processingError } = await supabase.functions.invoke('process-user-document', {
-      body: { document_id: documentId },
-    })
-    if (processingError) {
-      setError(processingError.message || 'Unable to retry document processing.')
+    try {
+      const supabase = createClient()
+      const { error: processingError } = await supabase.functions.invoke('process-user-document', {
+        body: { document_id: documentId },
+      })
+      if (processingError) {
+        throw new Error(await functionErrorMessage(processingError, 'Unable to retry document processing.'))
+      }
+    } catch (error) {
+      console.error('Could not retry document processing:', error)
+      setError(error instanceof Error ? error.message : 'Unable to retry document processing.')
+    } finally {
+      await loadDocuments()
     }
-    await loadDocuments()
   }
 
   async function handleDelete(document: UserDocument) {
@@ -233,9 +288,10 @@ export default function DocumentsPage() {
       </p>
 
       <div className="mb-8 rounded-lg border border-brass-600/20 bg-white p-4 text-sm text-ink-400">
-        Your files are private to your account. Text is extracted from selectable
-        text; scanned or image-only PDFs are not supported. To answer questions,
-        relevant excerpts and your prompt are processed by OpenAI and Anthropic.
+        Your files are private to your account. Pages with little or no selectable
+        text in a PDF may be sent to the configured Baidu Unlimited-OCR service for
+        text extraction. Extracted text is sent to OpenAI for indexing; relevant
+        passages and your questions are sent to OpenAI and Anthropic to answer.
         Maximum file size: 15 MB. Delete a document to remove its stored file and
         associated Q&amp;A.
       </div>
@@ -268,8 +324,11 @@ export default function DocumentsPage() {
             className="mt-1"
           />
           <span>
-            I agree that relevant document text and my questions may be processed
-            by OpenAI and Anthropic to provide answers.
+            I agree that extracted document text may be processed by OpenAI for
+            indexing and that relevant passages and my questions may be processed
+            by OpenAI and Anthropic to provide answers. For PDFs with scanned
+            pages, those pages may be sent to the configured Baidu Unlimited-OCR
+            service for text extraction.
           </span>
         </label>
         <button
@@ -405,4 +464,27 @@ export default function DocumentsPage() {
       )}
     </div>
   )
+}
+
+async function functionErrorMessage(
+  error: { message: string; context?: unknown },
+  fallback: string,
+): Promise<string> {
+  if (error.context instanceof Response) {
+    try {
+      const body: unknown = await error.context.clone().json()
+      if (
+        body &&
+        typeof body === 'object' &&
+        'error' in body &&
+        typeof body.error === 'string'
+      ) {
+        return body.error
+      }
+    } catch {
+      return `${fallback} (HTTP ${error.context.status})`
+    }
+    return `${fallback} (HTTP ${error.context.status})`
+  }
+  return error.message || fallback
 }

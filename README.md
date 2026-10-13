@@ -8,13 +8,16 @@ system prompt in `supabase/functions/ask/index.ts` for how this is enforced in p
 
 ## Architecture (current, as of this update)
 
-**Fully Supabase-native.** No separate backend server to host or deploy.
+**Supabase-native application backend.** A private OCR adapter is additionally
+required only when enabling scanned-PDF processing; the Baidu model itself runs
+on a separately hosted GPU service.
 
 - **Frontend:** Next.js on Vercel (`apps/web/`)
 - **Auth:** Supabase Auth (email/password + Google OAuth)
 - **Database:** Supabase Postgres + pgvector, with Row Level Security as the
   enforcement layer for "only verified legal content is visible"
-- **Backend logic:** Supabase Edge Functions (Deno/TypeScript) — `supabase/functions/`
+- **Backend logic:** Supabase Edge Functions (Deno/TypeScript) —
+  `supabase/functions/`; scanned-PDF adaptation in `services/unlimited-ocr-gateway/`
 - **AI:** OpenAI for embeddings, Anthropic Claude for grounded answer generation
 
 FastAPI (a Python backend that existed earlier in this project's history) has been
@@ -35,7 +38,7 @@ to avoid maintaining two backend runtimes long-term. If you see references to
 | AI Assistant (Ask) | `supabase/functions/ask` — retrieval + Claude generation + citation validation. Type-checked and unit-tested; **not yet run end-to-end against live Supabase/OpenAI/Anthropic** — needs real credentials, which this build environment doesn't have |
 | Legal corpus | Constitution of Nigeria — ingestion scripts exist (`scripts/ingestion/`); **nothing is verified/published yet** until a human reviews and flips `verified = true` |
 | Lawyers | Sample profiles (clearly labeled, not real) + a real waitlist signup |
-| My documents | Private PDF/DOCX/TXT upload, text extraction, embeddings, and selected-document Q&A with page/section citations; no OCR |
+| My documents | Private PDF/DOCX/TXT upload, Baidu Unlimited-OCR for scanned PDF pages, embeddings, and selected-document Q&A with page/section citations |
 
 See `DECISIONS.md` for the full history of what's been verified vs. assumed, including
 several real bugs found by actually testing things rather than just reading code.
@@ -82,15 +85,19 @@ Apply `database/schema.sql`, `database/waitlist_migration.sql`, and
 `database/user_documents_migration.sql` in that order in the Supabase SQL Editor
 before deploying the document functions. The additive user-document migration
 creates the private bucket, owner-only RLS policies, upload quotas, and
-document-scoped retrieval RPC. See
+document-scoped retrieval RPC. Scanned pages are OCR'd by the authenticated
+Unlimited-OCR gateway in `services/unlimited-ocr-gateway/`; deploy it beside a
+Baidu Unlimited-OCR vLLM server and configure the gateway secrets described in
+`docs/operations/deployment-checklist.md`. See
 `docs/operations/deployment-checklist.md` for the staging checks and provider
-disclosure details. Scanned PDFs are not OCR'd.
+disclosure details.
 
 ## Repository structure
 
 ```
 apps/web/            Next.js frontend
-supabase/functions/  Edge Functions (ask, legal) — all backend logic lives here
+supabase/functions/  Supabase Edge Functions for app APIs and document processing
+services/            Private Baidu Unlimited-OCR PDF-rendering gateway
 database/            SQL schema + migrations for Supabase Postgres
 scripts/ingestion/   One-off scripts to fetch/chunk/embed legal source documents
 ```

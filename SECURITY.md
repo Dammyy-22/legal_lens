@@ -20,6 +20,10 @@ current implementation.
   server-side identity verification.
 - Sidebar sign-out revokes the current local session. Account Settings offers
   global session revocation.
+- The dashboard signs the current device out after one hour without browser
+  activity and synchronizes that inactivity timestamp across tabs. Supabase
+  project-level inactivity timeout must also be set to one hour; the browser
+  timer is not a substitute for server-side session policy.
 - OAuth callback redirects accept only local paths, preventing an untrusted
   `next` parameter from redirecting a signed-in user to an external site.
 - Supabase SSR cookies are managed by the SDK. Do not assume the auth token
@@ -31,6 +35,9 @@ current implementation.
   confirmation, and MFA settings in the project dashboard. Require MFA for
   administrator accounts before production. These project-level settings
   cannot be guaranteed by the application code alone.
+- `supabase/config.toml` sets local Auth inactivity to one hour and JWT expiry
+  to 15 minutes. Apply the same values in the hosted project's Auth settings;
+  the local config does not update hosted settings.
 
 ## Private document controls
 
@@ -48,8 +55,11 @@ current implementation.
 - Service-role processing is confined to Edge Functions and happens only after
   user JWT validation and a document-owner lookup. It is not returned to the
   browser.
-- PDF, DOCX, and UTF-8 TXT are supported. Scanned PDFs are rejected; OCR is not
-  enabled. Uploaded text is sent to OpenAI for embeddings and retrieved excerpts
+- PDF, DOCX, and UTF-8 TXT are supported. Up to 10 low-text PDF pages are
+  rasterized by the authenticated, shared-key OCR gateway and sent to the
+  configured Baidu Unlimited-OCR model endpoint. Gateway deployment and network
+  controls are required; OCR is not available until its Edge Function secrets
+  are set. Uploaded text is sent to OpenAI for embeddings and retrieved excerpts
   are sent to Anthropic for answer generation, after explicit UI acknowledgement.
 - Deletion removes the private Storage object and then deletes the DB record;
   cascading foreign keys remove chunks, Q&A, and passage references.
@@ -89,8 +99,8 @@ introduce it in report-only mode, test the real deployment, then enforce it.
 
 ## Production session checklist
 
-1. Set Supabase Auth access-token expiry and session/inactivity limits according
-   to the product's risk and usability requirements.
+1. Set Supabase Auth access-token expiry to 15 minutes and the inactivity
+   timeout to one hour. Verify a browser session ends after one idle hour.
 2. Enable refresh-token reuse detection and review the resulting session
    revocation behavior.
 3. Require MFA for all administrator accounts and retain a recovery process.
