@@ -26,6 +26,17 @@ test('selectValidCitationIds rejects citations to unreturned chunks', () => {
   assert.deepEqual(selectValidCitationIds(cited, retrievedIds), ['chunk-1', 'chunk-2'])
 })
 
+test('buildSourceExtract handles malformed inputs without crashing', () => {
+  assert.deepEqual(buildSourceExtract(null, null), {
+    answer: "I found verified legal text, but couldn't isolate a provision closely enough related to your wording to quote it reliably. I can't safely apply the law to your situation without a relevant passage and a working legal-analysis provider.",
+    citedChunkIds: [],
+  })
+  assert.deepEqual(buildSourceExtract('', [{ text: 'No match here' }]), {
+    answer: "I found verified legal text, but couldn't isolate a provision closely enough related to your wording to quote it reliably. I can't safely apply the law to your situation without a relevant passage and a working legal-analysis provider.",
+    citedChunkIds: [],
+  })
+})
+
 test('buildSourceExtract returns matching verified text and its source citation', () => {
   const chunks = [
     {

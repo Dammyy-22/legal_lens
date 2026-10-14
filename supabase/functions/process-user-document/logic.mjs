@@ -4,10 +4,15 @@ export const MAX_CHUNKS = 300
 export const MAX_EXTRACTED_CHARACTERS = 900_000
 
 export function chunkDocumentPages(pages) {
+  if (!Array.isArray(pages) || pages.length === 0) {
+    throw new Error('No readable text was found after OCR.')
+  }
+
   const chunks = []
   let globalChunkIndex = 0
 
   for (const page of pages) {
+    if (!page || typeof page !== 'object') continue
     const text = String(page.text ?? '').replace(/\s+/g, ' ').trim()
     if (!text) continue
 
@@ -52,7 +57,8 @@ export function chunkDocumentPages(pages) {
 }
 
 export function decodeTextFile(bytes) {
-  const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+  const typedBytes = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes ?? [])
+  const text = new TextDecoder('utf-8', { fatal: true }).decode(typedBytes)
   if (text.includes('\u0000')) {
     throw new Error('Text file contains invalid binary content.')
   }
@@ -60,6 +66,9 @@ export function decodeTextFile(bytes) {
 }
 
 export function validateDocxArchiveSize(bytes, maximumBytes = 25 * 1024 * 1024) {
+  if (!(bytes instanceof Uint8Array)) {
+    throw new Error('DOCX archive is malformed.')
+  }
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   const minimumOffset = Math.max(0, bytes.byteLength - 65_557)
   let endRecordOffset = -1

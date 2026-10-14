@@ -17,6 +17,7 @@ test('document citations are extracted uniquely and filtered to retrieved chunks
 test('document citation locations use PDF pages or text-section numbers', () => {
   assert.equal(documentSourceLabel(4, 3), 'Page 4')
   assert.equal(documentSourceLabel(null, 3), 'Text section 4')
+  assert.equal(documentSourceLabel(null, null), 'Text section 1')
 })
 
 test('answers without a valid retrieved citation are replaced with a safe fallback', () => {

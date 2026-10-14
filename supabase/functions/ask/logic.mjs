@@ -15,11 +15,20 @@ export function extractCitationIds(answerText = '') {
 }
 
 export function selectValidCitationIds(citedChunkIds, retrievedIds = []) {
-  const validIds = new Set(retrievedIds)
-  return [...new Set((citedChunkIds ?? []).filter((id) => validIds.has(id)))]
+  const validIds = new Set(Array.isArray(retrievedIds) ? retrievedIds.filter((id) => typeof id === 'string') : [])
+  return [...new Set((Array.isArray(citedChunkIds) ? citedChunkIds : []).filter((id) => validIds.has(id)))]
 }
 
 export function buildSourceExtract(question, chunks) {
+  const fallback = {
+    answer: "I found verified legal text, but couldn't isolate a provision closely enough related to your wording to quote it reliably. I can't safely apply the law to your situation without a relevant passage and a working legal-analysis provider.",
+    citedChunkIds: [],
+  }
+
+  if (typeof question !== 'string') return fallback
+  const normalizedQuestion = question.trim()
+  if (!normalizedQuestion) return fallback
+
   const stopWords = new Set([
     'about', 'after', 'against', 'also', 'and', 'are', 'can', 'does', 'for',
     'from', 'have', 'how', 'into', 'its', 'may', 'not', 'say', 'says', 'should',
@@ -28,11 +37,14 @@ export function buildSourceExtract(question, chunks) {
     'would', 'you', 'your',
   ])
   const terms = [...new Set(
-    question.toLowerCase().match(/[a-z]{3,}|\d+/g)?.filter((term) => !stopWords.has(term)) ?? []
+    normalizedQuestion.toLowerCase().match(/[a-z]{3,}|\d+/g)?.filter((term) => !stopWords.has(term)) ?? []
   )]
   const candidates = []
+  const safeChunks = Array.isArray(chunks) ? chunks : []
 
-  for (const chunk of chunks) {
+  for (const chunk of safeChunks) {
+    if (!chunk || typeof chunk !== 'object' || typeof chunk.text !== 'string') continue
+
     const passages = chunk.text
       .split(/(?<=[.;!?])\s+|\n+/)
       .map((passage) => passage.trim().replace(/\s+/g, ' '))
