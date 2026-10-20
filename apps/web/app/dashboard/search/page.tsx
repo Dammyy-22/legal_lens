@@ -2,9 +2,36 @@
 
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Search } from 'lucide-react'
+import { Filter, Search } from 'lucide-react'
 import Image from 'next/image'
-import { searchLegalSources, type LegalSearchResult } from '@/lib/api-client'
+import {
+  searchLegalSources,
+  type LegalSearchFilters,
+  type LegalSearchResult,
+} from '@/lib/api-client'
+
+const DOCUMENT_TYPES = [
+  { value: 'constitution', label: 'Constitution' },
+  { value: 'legislation', label: 'Legislation' },
+  { value: 'regulation', label: 'Regulation' },
+  { value: 'case_law', label: 'Case law' },
+  { value: 'agency_guidance', label: 'Agency guidance' },
+  { value: 'secondary_commentary', label: 'Commentary' },
+]
+
+const AUTHORITY_LEVELS = [
+  { value: 'primary', label: 'Primary authority' },
+  { value: 'institutional', label: 'Institutional source' },
+  { value: 'secondary', label: 'Secondary source' },
+]
+
+function sourceTypeLabel(value: string): string {
+  return DOCUMENT_TYPES.find((type) => type.value === value)?.label ?? value
+}
+
+function authorityLabel(value: string): string {
+  return AUTHORITY_LEVELS.find((authority) => authority.value === value)?.label ?? value
+}
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
@@ -14,8 +41,11 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searched, setSearched] = useState(false)
+  const [filters, setFilters] = useState<LegalSearchFilters>({
+    jurisdiction: 'Nigeria',
+  })
 
-  const runSearch = useCallback(async (value: string) => {
+  const runSearch = useCallback(async (value: string, activeFilters: LegalSearchFilters) => {
     const trimmedQuery = value.trim()
     if (trimmedQuery.length < 2) return
 
@@ -23,7 +53,7 @@ export default function SearchPage() {
     setError(null)
     setSearched(true)
     try {
-      setResults(await searchLegalSources(trimmedQuery))
+      setResults(await searchLegalSources(trimmedQuery, 20, activeFilters))
     } catch (searchError) {
       setResults([])
       setError(searchError instanceof Error ? searchError.message : 'Search failed')
@@ -35,12 +65,16 @@ export default function SearchPage() {
   useEffect(() => {
     if (!linkedQuery || linkedQuery.trim().length < 2) return
     setQuery(linkedQuery)
-    void runSearch(linkedQuery)
-  }, [linkedQuery, runSearch])
+    void runSearch(linkedQuery, filters)
+  }, [linkedQuery, runSearch, filters])
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    void runSearch(query)
+    void runSearch(query, filters)
+  }
+
+  function updateFilter(key: keyof LegalSearchFilters, value: string) {
+    setFilters((current) => ({ ...current, [key]: value || undefined }))
   }
 
   return (
@@ -88,9 +122,83 @@ export default function SearchPage() {
         </button>
       </form>
 
+      <section aria-label="Search filters" className="mb-7 rounded-xl border border-ink-100 bg-white p-4 sm:p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <Filter size={17} className="text-brass-600" />
+          <h2 className="font-display text-lg font-medium text-ink">Narrow your research</h2>
+          <span className="ml-auto font-mono text-[10px] uppercase tracking-wide text-ink-400">Verified, current sources</span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="text-xs font-medium text-ink-400">
+            Jurisdiction
+            <select
+              value={filters.jurisdiction ?? ''}
+              onChange={(event) => updateFilter('jurisdiction', event.target.value)}
+              className="mt-1.5 min-h-11 w-full rounded-lg border border-ink-100 bg-paper/50 px-3 text-sm text-ink focus:border-brass focus:outline-none focus:ring-2 focus:ring-brass/20"
+            >
+              <option value="">All jurisdictions</option>
+              <option value="Nigeria">Nigeria</option>
+            </select>
+          </label>
+          <label className="text-xs font-medium text-ink-400">
+            Source type
+            <select
+              value={filters.documentType ?? ''}
+              onChange={(event) => updateFilter('documentType', event.target.value)}
+              className="mt-1.5 min-h-11 w-full rounded-lg border border-ink-100 bg-paper/50 px-3 text-sm text-ink focus:border-brass focus:outline-none focus:ring-2 focus:ring-brass/20"
+            >
+              <option value="">All source types</option>
+              {DOCUMENT_TYPES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
+          <label className="text-xs font-medium text-ink-400">
+            Authority
+            <select
+              value={filters.authorityLevel ?? ''}
+              onChange={(event) => updateFilter('authorityLevel', event.target.value)}
+              className="mt-1.5 min-h-11 w-full rounded-lg border border-ink-100 bg-paper/50 px-3 text-sm text-ink focus:border-brass focus:outline-none focus:ring-2 focus:ring-brass/20"
+            >
+              <option value="">All authority levels</option>
+              {AUTHORITY_LEVELS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void runSearch(query, filters)}
+            disabled={loading || query.trim().length < 2}
+            className="min-h-10 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-ink-600 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Apply filters
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const clearedFilters: LegalSearchFilters = {}
+              setFilters(clearedFilters)
+              void runSearch(query, clearedFilters)
+            }}
+            disabled={loading || query.trim().length < 2}
+            className="min-h-10 rounded-lg border border-ink-100 px-4 py-2 text-sm font-medium text-ink-400 transition-colors hover:border-brass/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Clear filters
+          </button>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-ink-400">
+          Filters only narrow the sources currently available to your account. Case-law or other results appear only after verified material has been added to the corpus.
+        </p>
+      </section>
+
       {error && <p role="alert" className="mb-6 p-4 rounded-lg border border-seal/25 bg-seal/5 text-seal">{error}</p>}
       {searched && !loading && !error && results.length === 0 && (
-        <p className="text-ink-400">No verified source passages matched that search.</p>
+        <p className="text-ink-400">No verified source passages matched that search and these filters. Try broadening your filters or changing the search terms.</p>
+      )}
+
+      {searched && !loading && !error && results.length > 0 && (
+        <p className="mb-4 text-sm text-ink-400" role="status">
+          {results.length} verified {results.length === 1 ? 'passage' : 'passages'} found
+        </p>
       )}
 
       <div className="space-y-4">
@@ -100,6 +208,12 @@ export default function SearchPage() {
               <span>{result.source_title}</span>
               <span className="text-ink-100">/</span>
               <span>{result.section_label}</span>
+            </div>
+            <div className="mb-3 flex flex-wrap gap-2 text-[10px] font-mono uppercase tracking-wide text-ink-400">
+              <span className="rounded-full bg-paper px-2.5 py-1">{result.jurisdiction}</span>
+              <span className="rounded-full bg-paper px-2.5 py-1">{sourceTypeLabel(result.document_type)}</span>
+              <span className="rounded-full bg-paper px-2.5 py-1">{authorityLabel(result.authority_level)}</span>
+              <span className="rounded-full bg-ink/5 px-2.5 py-1">{result.status}</span>
             </div>
             <p className="text-ink leading-relaxed whitespace-pre-line">{result.text}</p>
             <a href={result.source_url} target="_blank" rel="noreferrer" className="inline-block mt-4 text-sm text-brass-600 hover:text-ink underline underline-offset-2">

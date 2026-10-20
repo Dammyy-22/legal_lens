@@ -20,6 +20,9 @@ interface LegalSearchResult {
   version_id: string
   source_title: string
   source_url: string
+  jurisdiction: string
+  document_type: string
+  authority_level: string
   version_label: string
   section_label: string
   section_heading: string | null
@@ -79,6 +82,27 @@ Deno.serve(async (req: Request) => {
       if (!q || q.length < 2 || q.length > 500) {
         return jsonResponse({ error: 'q must be between 2 and 500 characters' }, 400)
       }
+      const jurisdiction = url.searchParams.get('jurisdiction')?.trim()
+      const documentType = url.searchParams.get('document_type')
+      const authorityLevel = url.searchParams.get('authority_level')
+      const documentTypes = new Set([
+        'constitution',
+        'legislation',
+        'regulation',
+        'case_law',
+        'agency_guidance',
+        'secondary_commentary',
+      ])
+      const authorityLevels = new Set(['primary', 'institutional', 'secondary'])
+      if (jurisdiction && (jurisdiction.length > 100 || /[\r\n]/.test(jurisdiction))) {
+        return jsonResponse({ error: 'jurisdiction must be 100 characters or fewer' }, 400)
+      }
+      if (documentType && !documentTypes.has(documentType)) {
+        return jsonResponse({ error: 'document_type is invalid' }, 400)
+      }
+      if (authorityLevel && !authorityLevels.has(authorityLevel)) {
+        return jsonResponse({ error: 'authority_level is invalid' }, 400)
+      }
       const limitParam = Number(url.searchParams.get('limit') ?? '20')
       const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 50) : 20
 
@@ -88,6 +112,9 @@ Deno.serve(async (req: Request) => {
       for (const chunk of chunks) {
         const result = toResult(chunk, versionsById, sourcesById, sectionsById)
         if (!result) continue
+        if (jurisdiction && result.jurisdiction.toLowerCase() !== jurisdiction.toLowerCase()) continue
+        if (documentType && result.document_type !== documentType) continue
+        if (authorityLevel && result.authority_level !== authorityLevel) continue
 
         const searchable = `${result.source_title} ${result.section_label} ${result.section_heading ?? ''} ${result.text}`.toLowerCase()
         const phraseMatch = searchable.includes(q.toLowerCase()) ? 3 : 0
@@ -153,7 +180,7 @@ async function loadVerifiedCorpus(supabase: any): Promise<VerifiedCorpus> {
 
   const [{ data: sources, error: sourcesError }, { data: sections, error: sectionsError }, { data: chunks, error: chunksError }] =
     await Promise.all([
-      supabase.from('legal_sources').select('id, title, source_url').in('id', sourceIds).limit(1000),
+      supabase.from('legal_sources').select('id, title, source_url, jurisdiction, document_type, authority_level').in('id', sourceIds).limit(1000),
       supabase.from('legal_sections').select('id, label, heading').in('version_id', versionIds).limit(5000),
       supabase.from('document_chunks').select('id, version_id, section_id, text').in('version_id', versionIds).limit(10000),
     ])
@@ -193,6 +220,9 @@ function toResult(
     version_id: version.id,
     source_title: source.title,
     source_url: source.source_url,
+    jurisdiction: source.jurisdiction,
+    document_type: source.document_type,
+    authority_level: source.authority_level,
     version_label: version.version_label,
     section_label: section?.label ?? '',
     section_heading: section?.heading ?? null,

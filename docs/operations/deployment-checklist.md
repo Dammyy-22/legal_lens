@@ -14,8 +14,10 @@ admin user's RLS permissions or testing rejection.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Next.js browser client | Vercel project environment; this is the publishable/anon key, not the service-role key |
 | `SUPABASE_URL` | Supabase CLI smoke test | Set in the shell running the smoke test; Edge Functions receive it from Supabase |
 | `SUPABASE_ANON_KEY` | Supabase CLI smoke test | Set in the shell running the smoke test; Edge Functions receive it from Supabase |
-| `OPENAI_API_KEY` | `ask`, document processing and document Q&A | Supabase Edge Function secret |
-| `ANTHROPIC_API_KEY` | Preferred answer generation for `ask` and document Q&A; `ask` falls back to OpenAI if absent | Supabase Edge Function secret |
+| `OPENROUTER_API_KEY` | Chat generation and embeddings for `ask`, document processing, document Q&A, and drafting | Supabase Edge Function secret |
+| `OPENROUTER_MODEL` | Optional OpenRouter chat model slug; defaults to `openai/gpt-4.1-mini` | Supabase Edge Function secret |
+| `OPENROUTER_EMBEDDING_MODEL` | Optional OpenRouter embedding model; must return 1536 dimensions; defaults to `openai/text-embedding-3-small` | Supabase Edge Function secret |
+| `OPENAI_API_KEY` | Corpus ingestion scripts, if used | Ingestion environment/secret store; not required by user-facing Edge Functions |
 | `UNLIMITED_OCR_GATEWAY_URL` | Scanned PDF processing Edge Function | Supabase Edge Function secret; private HTTPS URL of the OCR gateway |
 | `UNLIMITED_OCR_GATEWAY_KEY` | Scanned PDF processing Edge Function | Supabase Edge Function secret; shared bearer key for the OCR gateway |
 | `OCR_GATEWAY_API_KEY` | OCR gateway | Gateway deployment secret; must match `UNLIMITED_OCR_GATEWAY_KEY` |
@@ -26,8 +28,8 @@ admin user's RLS permissions or testing rejection.
 | `SUPABASE_AUTH_PASSWORD` | Live smoke-test login | Staging-only test user credentials in the shell/CI secret store |
 | `SUPABASE_PROJECT_REF` | Supabase CLI target | Deployment shell or CI secret/variable; project ref is not a credential |
 
-Never add `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, or
-`ANTHROPIC_API_KEY`, `UNLIMITED_OCR_GATEWAY_KEY`, or `VLLM_API_KEY` to a
+Never add `SUPABASE_SERVICE_ROLE_KEY`, `OPENROUTER_API_KEY`,
+`OPENAI_API_KEY`, `UNLIMITED_OCR_GATEWAY_KEY`, or `VLLM_API_KEY` to a
 `NEXT_PUBLIC_*` variable or the web app's `.env` file.
 The `SUPABASE_SERVICE_ROLE_KEY` must not be needed for the user-facing
 smoke-test script.
@@ -47,7 +49,8 @@ supabase link --project-ref $env:SUPABASE_PROJECT_REF
 The database setup currently lives in root-level SQL scripts, not in
 `supabase/migrations/`. Apply `database/schema.sql`,
 `database/waitlist_migration.sql`, then `database/user_documents_migration.sql`, and
-`database/lexical_search_migration.sql` in the linked project's Supabase Dashboard
+`database/lexical_search_migration.sql`, then
+`database/matter_management_migration.sql` in the linked project's Supabase Dashboard
 SQL Editor. The document migration
 is additive and safe to re-run. Apply the initial `schema.sql` only once to a
 fresh database; it contains non-idempotent policy creation statements. Do not
@@ -93,9 +96,10 @@ Docker build is in `services/unlimited-ocr-gateway/`; configure
 `OCR_GATEWAY_API_KEY`, `VLLM_API_BASE_URL`, and (if required) `VLLM_API_KEY`.
 Set `UNLIMITED_OCR_GATEWAY_URL` and the same key as
 `UNLIMITED_OCR_GATEWAY_KEY` in Supabase Edge Function secrets. Extracted text is
-sent to OpenAI for embeddings and relevant retrieved passages are sent to
-Anthropic for answering. The Documents page requires user acknowledgement
-before upload.
+sent to OpenRouter for embeddings and relevant retrieved passages are sent to
+OpenRouter for document Q&A. The Documents page requires user acknowledgement
+before upload. Drafting separately requires explicit consent before user-provided
+descriptions are sent to OpenRouter.
 
 ## 3. Set Edge Function secrets and deploy
 
@@ -105,13 +109,15 @@ command shape with values supplied by your secret manager:
 
 ```powershell
 supabase secrets set --project-ref $env:SUPABASE_PROJECT_REF `
-  OPENAI_API_KEY="your-openai-api-key" `
-  ANTHROPIC_API_KEY="your-anthropic-api-key" `
+  OPENROUTER_API_KEY="your-openrouter-api-key" `
+  OPENROUTER_MODEL="openai/gpt-4.1-mini" `
+  OPENROUTER_EMBEDDING_MODEL="openai/text-embedding-3-small" `
   UNLIMITED_OCR_GATEWAY_URL="https://private-ocr-gateway.example.com" `
   UNLIMITED_OCR_GATEWAY_KEY="your-shared-ocr-gateway-key" `
   RATE_LIMIT_BACKEND="memory"
 
 supabase functions deploy ask --project-ref $env:SUPABASE_PROJECT_REF
+supabase functions deploy draft-document --project-ref $env:SUPABASE_PROJECT_REF
 supabase functions deploy legal --project-ref $env:SUPABASE_PROJECT_REF
 supabase functions deploy create-user-document-upload --project-ref $env:SUPABASE_PROJECT_REF
 supabase functions deploy process-user-document --project-ref $env:SUPABASE_PROJECT_REF

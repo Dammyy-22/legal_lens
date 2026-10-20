@@ -1,7 +1,16 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { FileText, LoaderCircle, MessageCircleQuestion, Trash2, Upload } from 'lucide-react'
+import {
+  CalendarDays,
+  FileSearch,
+  FileText,
+  LoaderCircle,
+  MessageCircleQuestion,
+  Scale,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { askAboutUserDocument, type UserDocumentAnswer } from '@/lib/api-client'
 
@@ -26,6 +35,37 @@ interface UserDocument {
   created_at: string
   storage_path: string
 }
+
+const DOCUMENT_REVIEW_PROMPTS = [
+  {
+    label: 'Summarize key terms',
+    description: 'A neutral overview of relevant retrieved passages.',
+    Icon: FileSearch,
+    question:
+      'Using only the retrieved passages from this uploaded document, give a concise, neutral summary of the key terms they contain. Group related points by topic, cite every factual statement, and say that these passages may not represent the entire document.',
+  },
+  {
+    label: 'Find dates and deadlines',
+    description: 'Surface dates and notice periods stated in the text.',
+    Icon: CalendarDays,
+    question:
+      'Which dates, deadlines, notice periods, renewal periods, or other time-sensitive actions are expressly stated in the retrieved passages? Cite each item. Do not calculate or infer dates. If none appear in these passages, say so without implying they are absent from the entire document.',
+  },
+  {
+    label: 'Review payment terms',
+    description: 'Locate amounts, fees, deposits and payment timing.',
+    Icon: FileText,
+    question:
+      'What payment amounts, fees, deposits, payment timing, or other financial obligations are expressly described in the retrieved passages? Cite each item, distinguish exact text from anything not stated, and do not infer terms from outside the document.',
+  },
+  {
+    label: 'Prepare questions for a lawyer',
+    description: 'Turn unclear wording into questions to discuss.',
+    Icon: Scale,
+    question:
+      'Based only on the retrieved passages, list specific wording or terms the reader may want to clarify with a qualified lawyer. Cite each item. Do not assess legality, identify a breach, or suggest that a term is missing from the entire document.',
+  },
+] as const
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<UserDocument[]>([])
@@ -208,13 +248,17 @@ export default function DocumentsPage() {
 
   async function handleAsk(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!selectedDocument || question.trim().length < 3) return
+    await askDocument(selectedDocument?.id, question)
+  }
+
+  async function askDocument(documentId: string | undefined, prompt: string) {
+    if (!documentId || prompt.trim().length < 3) return
 
     setAsking(true)
     setError('')
     setAnswer(null)
     try {
-      const result = await askAboutUserDocument(selectedDocument.id, question.trim())
+      const result = await askAboutUserDocument(documentId, prompt.trim())
       setAnswer(result)
       setQuestion('')
     } catch (askError) {
@@ -290,8 +334,9 @@ export default function DocumentsPage() {
       <div className="mb-8 rounded-lg border border-brass-600/20 bg-white p-4 text-sm text-ink-400">
         Your files are private to your account. Pages with little or no selectable
         text in a PDF may be sent to the configured Baidu Unlimited-OCR service for
-        text extraction. Extracted text is sent to OpenAI for indexing; relevant
-        passages and your questions are sent to OpenAI and Anthropic to answer.
+        text extraction. Extracted text is sent to OpenRouter for indexing;
+        relevant passages and your questions are sent through OpenRouter to the
+        selected model provider to answer.
         Maximum file size: 15 MB. Delete a document to remove its stored file and
         associated Q&amp;A.
       </div>
@@ -324,9 +369,9 @@ export default function DocumentsPage() {
             className="mt-1"
           />
           <span>
-            I agree that extracted document text may be processed by OpenAI for
+            I agree that extracted document text may be processed by OpenRouter for
             indexing and that relevant passages and my questions may be processed
-            by OpenAI and Anthropic to provide answers. For PDFs with scanned
+            through OpenRouter to its selected model provider to provide answers. For PDFs with scanned
             pages, those pages may be sent to the configured Baidu Unlimited-OCR
             service for text extraction.
           </span>
@@ -407,11 +452,40 @@ export default function DocumentsPage() {
           <div className="flex items-center gap-2 mb-4">
             <MessageCircleQuestion size={20} className="text-brass-600" />
             <h2 id="document-question-heading" className="font-display text-2xl text-ink">
-              Ask about {selectedDocument.original_filename}
+              Review {selectedDocument.original_filename}
             </h2>
           </div>
+          <p className="mb-4 max-w-3xl text-sm leading-6 text-ink-400">
+            Choose a topic to inspect or ask your own question. Answers use retrieved
+            passages only, may not cover the whole file, and are not a legal risk
+            assessment or legal advice.
+          </p>
+          <div className="mb-5 grid gap-3 sm:grid-cols-2">
+            {DOCUMENT_REVIEW_PROMPTS.map(({ label, description, Icon, question: reviewQuestion }) => (
+              <button
+                key={label}
+                type="button"
+                disabled={asking}
+                onClick={() => {
+                  setQuestion(reviewQuestion)
+                  void askDocument(selectedDocument.id, reviewQuestion)
+                }}
+                className="group flex min-h-20 items-start gap-3 rounded-lg border border-ink-100 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-brass/40 hover:shadow-[0_10px_24px_rgba(20,38,30,0.07)] disabled:cursor-wait disabled:opacity-60"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-paper text-brass-600 transition-colors group-hover:bg-ink group-hover:text-brass-400">
+                  <Icon size={18} />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-ink">{label}</span>
+                  <span className="mt-1 block text-xs leading-5 text-ink-400">{description}</span>
+                </span>
+              </button>
+            ))}
+          </div>
           <form onSubmit={handleAsk} className="rounded-lg border border-ink-100 bg-white p-4">
-            <label htmlFor="document-question" className="sr-only">Question about this document</label>
+            <label htmlFor="document-question" className="mb-2 block text-sm font-medium text-ink">
+              Or ask about a specific clause or topic
+            </label>
             <textarea
               id="document-question"
               value={question}

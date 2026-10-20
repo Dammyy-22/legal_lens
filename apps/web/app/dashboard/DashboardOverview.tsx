@@ -5,6 +5,10 @@ import Image from 'next/image'
 import {
   ArrowRight,
   ArrowUpRight,
+  AlertTriangle,
+  BriefcaseBusiness,
+  Gavel,
+  FilePenLine,
   BookOpenText,
   FileText,
   Landmark,
@@ -12,6 +16,8 @@ import {
   Search,
   Scale,
   UserRoundSearch,
+  FileSearch,
+  MessageCircleQuestion,
   type LucideIcon,
 } from 'lucide-react'
 import { LegalFactOfTheDay } from '@/components/LegalFactOfTheDay'
@@ -58,6 +64,27 @@ const TOOLS: {
     description: 'Upload a private file and ask questions about its text.',
     category: 'Your workspace',
   },
+  {
+    href: '/dashboard/matters',
+    Icon: BriefcaseBusiness,
+    title: 'Organize a matter',
+    description: 'Keep private follow-up tasks and user-entered dates together.',
+    category: 'Your workspace',
+  },
+  {
+    href: '/dashboard/cases',
+    Icon: Gavel,
+    title: 'Research judgments',
+    description: 'Search an external legal index; records are not yet verified in LegalLens.',
+    category: 'External research',
+  },
+  {
+    href: '/dashboard/drafting',
+    Icon: FilePenLine,
+    title: 'Prepare correspondence',
+    description: 'Create a preliminary, fact-based message with the AI writing assistant.',
+    category: 'Writing assistant',
+  },
 ]
 
 const STARTING_QUESTIONS = [
@@ -66,11 +93,43 @@ const STARTING_QUESTIONS = [
   'Which records should I keep for an employment dispute?',
 ]
 
+const WORKFLOW_STEPS: {
+  href: string
+  Icon: LucideIcon
+  title: string
+  description: string
+}[] = [
+  {
+    href: '/dashboard/ask',
+    Icon: MessageCircleQuestion,
+    title: 'Get oriented',
+    description: 'Describe the issue in plain language.',
+  },
+  {
+    href: '/dashboard/search',
+    Icon: FileSearch,
+    title: 'Check the source',
+    description: 'Read the available verified passages.',
+  },
+  {
+    href: '/dashboard/rights',
+    Icon: Scale,
+    title: 'Explore next steps',
+    description: 'Review a practical guide for your situation.',
+  },
+  {
+    href: '/dashboard/lawyers',
+    Icon: UserRoundSearch,
+    title: 'Find professional help',
+    description: 'Prepare to contact a qualified lawyer.',
+  },
+]
+
 export default function DashboardOverview({ fullName }: { fullName: string | null }) {
   const firstName = fullName?.trim().split(/\s+/)[0] || null
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8 md:py-12">
+    <div className="workspace-enter mx-auto max-w-6xl px-5 py-8 sm:px-8 md:py-12">
       <header className="mb-9">
         <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">
           Your legal workspace
@@ -104,6 +163,58 @@ export default function DashboardOverview({ fullName }: { fullName: string | nul
       <div className="mb-10">
         <LegalFactOfTheDay />
       </div>
+
+      <aside className="mb-5 flex flex-col gap-3 rounded-xl border border-seal/20 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="flex items-start gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-seal/5 text-seal">
+            <AlertTriangle size={18} />
+          </span>
+          <p className="text-sm leading-6 text-ink-400">
+            <strong className="font-semibold text-ink">Urgent situation?</strong>{' '}
+            If someone is in immediate danger, prioritize safety and contact local emergency support. For detention or arrest guidance, start here.
+          </p>
+        </div>
+        <Link
+          href="/dashboard/rights"
+          className="inline-flex min-h-10 shrink-0 items-center gap-2 self-start rounded-lg border border-seal/20 px-3 py-2 text-sm font-medium text-seal transition-colors hover:bg-seal/5 sm:self-auto"
+        >
+          Rights guides <ArrowRight size={15} />
+        </Link>
+      </aside>
+
+      <section aria-labelledby="workflow-heading" className="mb-10 rounded-2xl border border-ink-100 bg-white p-5 sm:p-7">
+        <div className="mb-5">
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-brass-600">A practical path</p>
+          <h2 id="workflow-heading" className="mt-1 font-display text-2xl font-medium tracking-tight text-ink">
+            From a question to a better-informed next step
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-400">
+            Move at your own pace. LegalLens provides information, not legal advice; seek a qualified lawyer for decisions about your situation.
+          </p>
+        </div>
+        <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {WORKFLOW_STEPS.map(({ href, Icon, title, description }, index) => (
+            <li key={href} className="workflow-step" style={{ animationDelay: `${index * 80}ms` }}>
+              <Link
+                href={href}
+                className="group flex h-full min-h-28 items-start gap-3 rounded-xl border border-ink-100 bg-paper/40 p-4 transition-all hover:-translate-y-0.5 hover:border-brass/40 hover:bg-white hover:shadow-[0_10px_24px_rgba(20,38,30,0.07)]"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-brass-400">
+                  {index + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2 font-display text-base font-medium text-ink">
+                    <Icon size={16} className="shrink-0 text-brass-600" />
+                    {title}
+                  </span>
+                  <span className="mt-1 block text-xs leading-5 text-ink-400">{description}</span>
+                </span>
+                <ArrowRight size={15} className="mt-1 shrink-0 text-ink-100 transition-all group-hover:translate-x-0.5 group-hover:text-brass-600" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <section className="relative mb-10 overflow-hidden rounded-2xl bg-ink text-paper shadow-[0_16px_44px_rgba(20,38,30,0.13)]">
         <div className="absolute -right-24 -top-36 h-80 w-80 rounded-full border border-brass/20" />

@@ -4,7 +4,7 @@
 
 This pass added the first operational guardrails around the ask flow:
 
-- Request validation before OpenAI/Anthropic calls.
+- Request validation before OpenRouter calls.
 - User-scoped rate limiting prototype in the `ask` edge function.
 - Structured rejection when the model cannot produce a trusted answer.
 - Explicit handling for empty generation output.

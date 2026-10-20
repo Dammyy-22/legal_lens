@@ -11,8 +11,9 @@
 //
 // Deploy: supabase functions deploy ask
 // Required secrets (supabase secrets set ...):
-//   OPENAI_API_KEY       — for query embeddings (must match the corpus embedding model)
-//   ANTHROPIC_API_KEY    — preferred for answer generation; falls back to OpenAI when absent
+//   OPENROUTER_API_KEY   — for query embeddings and answer generation
+//   OPENROUTER_MODEL     — optional chat model override
+//   OPENROUTER_EMBEDDING_MODEL — optional compatible embedding model override
 // SUPABASE_URL / SUPABASE_ANON_KEY are provided automatically by the Supabase runtime.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -25,10 +26,12 @@ import {
   normalizeQuestion,
   selectValidCitationIds,
 } from './logic.mjs'
+import {
+  embedWithOpenRouter,
+  generateWithOpenRouter,
+  OpenRouterError,
+} from '../_shared/openrouter.ts'
 
-const EMBEDDING_MODEL = 'text-embedding-3-small' // must match database/schema.sql's vector(1536)
-const GENERATION_MODEL = 'claude-sonnet-5'
-const OPENAI_GENERATION_MODEL = 'gpt-4.1-mini'
 const SIMILARITY_THRESHOLD = 0.72 // cosine similarity floor; below this, treat as "no relevant source found"
 const MAX_CHUNKS = 6
 const RATE_LIMIT_BUCKETS = new Map<string, { count: number; windowStart: number }>()
@@ -70,8 +73,7 @@ Deno.serve(async (req: Request) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
-  const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
+  const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')
 
   // Forward the caller's auth header so RLS applies as this specific user, not as
   // an unrestricted service role — the function should only ever see what the
@@ -145,14 +147,12 @@ Deno.serve(async (req: Request) => {
   }
 
   let queryEmbedding: number[] | null = null
-  let embeddingRateLimited = false
-  if (openaiKey) {
+  if (openRouterKey) {
     try {
-      queryEmbedding = await embedText(question, openaiKey)
+      queryEmbedding = (await embedWithOpenRouter(openRouterKey, question))[0]
     } catch (err) {
-      if (err instanceof ProviderRateLimitError) {
-        embeddingRateLimited = true
-        console.warn('OpenAI embeddings are rate-limited; falling back to verified legal-text search.')
+      if (err instanceof OpenRouterError && err.status === 429) {
+        console.warn('OpenRouter embeddings are rate-limited; falling back to verified legal-text search.')
       } else {
         console.error('Embedding failed:', err)
         return jsonResponse({ error: 'Failed to process question' }, 502)
@@ -217,22 +217,16 @@ Deno.serve(async (req: Request) => {
   // once third-party or less-curated sources are added later. ---
   let generation: { answer: string; citedChunkIds: string[] }
   let answerMode: 'generated' | 'source_extract' = 'generated'
-  const provider = anthropicKey ? 'anthropic' : openaiKey ? 'openai' : null
-  const generationApiKey = provider === 'anthropic' ? anthropicKey : provider === 'openai' ? openaiKey : null
-  if (!provider || !generationApiKey || (provider === 'openai' && embeddingRateLimited)) {
-    generation = buildSourceExtract(question, retrieved)
-    answerMode = 'source_extract'
-  } else {
+  if (!openRouterKey) {
+    console.warn('OPENROUTER_API_KEY is not configured; using verified legal-text search without embeddings.')
+  }
+
+  if (openRouterKey) {
     try {
-      generation = await generateGroundedAnswer(
-        question,
-        retrieved,
-        generationApiKey,
-        provider
-      )
+      generation = await generateGroundedAnswer(question, retrieved, openRouterKey)
     } catch (err) {
-      if (provider === 'openai' && err instanceof ProviderRateLimitError) {
-        console.warn('OpenAI answer generation is rate-limited; returning verified source excerpts.')
+      if (err instanceof OpenRouterError && err.status === 429) {
+        console.warn('OpenRouter answer generation is rate-limited; returning verified source excerpts.')
         generation = buildSourceExtract(question, retrieved)
         answerMode = 'source_extract'
       } else {
@@ -240,6 +234,9 @@ Deno.serve(async (req: Request) => {
         return jsonResponse({ error: 'Failed to generate an answer' }, 502)
       }
     }
+  } else {
+    generation = buildSourceExtract(question, retrieved)
+    answerMode = 'source_extract'
   }
 
   // --- Citation validation: strip any citation the model produced that doesn't
@@ -302,32 +299,10 @@ function buildSafetyFirstResponse(): string {
   )
 }
 
-class ProviderRateLimitError extends Error {}
-
-async function embedText(text: string, apiKey: string): Promise<number[]> {
-  const res = await fetch('https://api.openai.com/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({ model: EMBEDDING_MODEL, input: text }),
-  })
-  if (!res.ok) {
-    const details = await res.text()
-    const error = new Error(`OpenAI embeddings failed: ${res.status} ${details}`)
-    if (res.status === 429) throw new ProviderRateLimitError(error.message)
-    throw error
-  }
-  const data = await res.json()
-  return data.data[0].embedding
-}
-
 async function generateGroundedAnswer(
   question: string,
   chunks: RetrievedChunk[],
   apiKey: string,
-  provider: 'anthropic' | 'openai'
 ): Promise<{ answer: string; citedChunkIds: string[] }> {
   // Each chunk is labeled with an opaque reference tag the model must use verbatim
   // when citing — this makes citation validation exact-match rather than fuzzy text
@@ -356,51 +331,13 @@ CRITICAL RULES, in order of priority:
 SOURCES:
 ${contextBlock}`
 
-  const openAiAuthorization = ['Bearer', apiKey].join(' ')
-  const res =
-    provider === 'anthropic'
-      ? await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-          },
-          body: JSON.stringify({
-            model: GENERATION_MODEL,
-            max_tokens: 1024,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: question }],
-          }),
-        })
-      : await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: openAiAuthorization,
-          },
-          body: JSON.stringify({
-            model: OPENAI_GENERATION_MODEL,
-            max_completion_tokens: 1024,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: question },
-            ],
-          }),
-        })
-  if (!res.ok) {
-    const details = await res.text()
-    const error = new Error(`${provider === 'anthropic' ? 'Anthropic' : 'OpenAI'} API failed: ${res.status} ${details}`)
-    if (provider === 'openai' && res.status === 429) {
-      throw new ProviderRateLimitError(error.message)
-    }
-    throw error
-  }
-  const data = await res.json()
-  const rawAnswer: string =
-    provider === 'anthropic'
-      ? data.content?.[0]?.text ?? ''
-      : data.choices?.[0]?.message?.content ?? ''
+  const rawAnswer = await generateWithOpenRouter(apiKey, {
+    maxTokens: 1024,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: question },
+    ],
+  })
 
   // Extract [[cite:REF]] tags, then strip them from the visible answer — the
   // frontend renders citations as a separate list (see apps/web), not inline tags.

@@ -12,12 +12,21 @@ export type LegalSearchResult = {
   version_id: string
   source_title: string
   source_url: string
+  jurisdiction: string
+  document_type: string
+  authority_level: string
   version_label: string
   section_label: string
   section_heading: string | null
   status: string
   effective_date: string | null
   text: string
+}
+
+export type LegalSearchFilters = {
+  jurisdiction?: string
+  documentType?: string
+  authorityLevel?: string
 }
 
 export type AskCitation = {
@@ -51,6 +60,21 @@ export type UserDocumentAnswer = {
   }>
 }
 
+export type DraftType =
+  | 'information_request'
+  | 'repair_request'
+  | 'consumer_complaint'
+  | 'workplace_records'
+  | 'meeting_follow_up'
+
+export type DraftDocumentResponse = {
+  draft: string
+  draft_type: DraftType
+  provider: 'OpenRouter'
+  saved: false
+  disclaimer: string
+}
+
 async function getAccessToken(): Promise<string> {
   const supabase = createClient()
   const {
@@ -72,9 +96,13 @@ function functionsUrl(path: string): string {
 export async function searchLegalSources(
   query: string,
   limit = 20,
+  filters: LegalSearchFilters = {},
 ): Promise<LegalSearchResult[]> {
   const token = await getAccessToken()
   const params = new URLSearchParams({ mode: 'search', q: query, limit: String(limit) })
+  if (filters.jurisdiction) params.set('jurisdiction', filters.jurisdiction)
+  if (filters.documentType) params.set('document_type', filters.documentType)
+  if (filters.authorityLevel) params.set('authority_level', filters.authorityLevel)
   const response = await fetch(`${functionsUrl('legal')}?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
@@ -142,4 +170,25 @@ export async function askAboutUserDocument(
   }
 
   return data as UserDocumentAnswer
+}
+
+export async function draftCorrespondence(
+  draftType: DraftType,
+  recipient: string,
+  facts: string,
+): Promise<DraftDocumentResponse> {
+  const supabase = createClient()
+  const { data, error } = await supabase.functions.invoke('draft-document', {
+    body: { draft_type: draftType, recipient, facts },
+  })
+
+  if (error) {
+    if (error.context instanceof Response) {
+      const body = await error.context.json().catch(() => ({}))
+      throw new Error(body.error || `Draft generation failed (${error.context.status})`)
+    }
+    throw new Error(error.message || 'Draft generation failed')
+  }
+
+  return data as DraftDocumentResponse
 }

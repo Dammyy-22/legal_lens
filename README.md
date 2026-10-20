@@ -18,7 +18,7 @@ on a separately hosted GPU service.
   enforcement layer for "only verified legal content is visible"
 - **Backend logic:** Supabase Edge Functions (Deno/TypeScript) —
   `supabase/functions/`; scanned-PDF adaptation in `services/unlimited-ocr-gateway/`
-- **AI:** OpenAI for embeddings, Anthropic Claude for grounded answer generation
+- **AI:** OpenRouter for runtime embeddings and grounded generation; optional OpenAI ingestion tooling for corpus preparation
 
 FastAPI (a Python backend that existed earlier in this project's history) has been
 **retired and removed**. It was briefly revived with Supabase-JWT verification in a
@@ -33,12 +33,15 @@ to avoid maintaining two backend runtimes long-term. If you see references to
 |---|---|
 | Auth | Supabase Auth (email/password, Google OAuth), full profile fields at signup |
 | Dashboard | Sidebar/hamburger nav, avatar+name (not email) shown per product decision |
-| Legal search | `supabase/functions/legal` — keyword search over verified corpus |
+| Legal search | `supabase/functions/legal` — keyword search over verified corpus with jurisdiction, source-type, and authority filters |
 | Constitution browse | Same function, `mode=constitution` |
 | AI Assistant (Ask) | `supabase/functions/ask` — verified-source retrieval, scenario-focused generation, citation validation, and a clearly labeled source-excerpt fallback when model providers are unavailable |
 | Legal corpus | Constitution of Nigeria — verified/current corpus content is searchable; new or re-extracted legal content must be reviewed before publication |
 | Lawyers | Sample profiles (clearly labeled, not real) + a real waitlist signup |
 | My documents | Private PDF/DOCX/TXT upload, Baidu Unlimited-OCR for scanned PDF pages, embeddings, and selected-document Q&A with page/section citations |
+| Document review | Guided key-term, date, payment-term, and lawyer-question prompts over retrieved document passages |
+| Matters & tasks | Private owner-scoped matter organizer for user-entered tasks and dates; dates are not legal deadline calculations |
+| Case-law research | Outbound NigeriaLII search and court index; judgments are not imported into or verified by LegalLens |
 
 See `DECISIONS.md` for the full history of what's been verified vs. assumed, including
 several real bugs found by actually testing things rather than just reading code.
@@ -65,6 +68,8 @@ npm run dev   # http://localhost:3000
 2. `database/waitlist_migration.sql` — lawyer referral waitlist table
 3. `database/user_documents_migration.sql` — private user uploads, document Q&A,
    owner-scoped policies, quota trigger, and retrieval RPC
+4. `database/matter_management_migration.sql` — private matters and user-entered
+   task dates with owner-scoped row-level security
 
 ### Populating the legal corpus
 See `scripts/ingestion/README.md`. **Nothing ingested is visible to the app until you
@@ -73,17 +78,23 @@ manually verify it** — this is enforced by RLS, not just a suggestion.
 ### Deploying Edge Functions
 ```bash
 supabase functions deploy ask
+supabase functions deploy draft-document
 supabase functions deploy legal
 supabase functions deploy create-user-document-upload
 supabase functions deploy process-user-document
 supabase functions deploy ask-user-document
-supabase secrets set OPENAI_API_KEY=sk-...
+supabase secrets set OPENROUTER_API_KEY=your-openrouter-key
+supabase secrets set OPENROUTER_MODEL=openai/gpt-4.1-mini OPENROUTER_EMBEDDING_MODEL=openai/text-embedding-3-small
 ```
 
-`OPENAI_API_KEY` is required for query embeddings and is also used for `ask`
-answer generation when `ANTHROPIC_API_KEY` is not configured. Set
-`ANTHROPIC_API_KEY` as a Supabase Edge Function secret to use Anthropic as the
-preferred answer-generation provider.
+`OPENROUTER_API_KEY` is used server-side for chat generation and embeddings in
+the `ask`, document-processing, document-Q&A, and `draft-document` Edge
+Functions. `OPENROUTER_MODEL` optionally selects the chat model (default:
+`openai/gpt-4.1-mini`); `OPENROUTER_EMBEDDING_MODEL` optionally selects the
+embedding model (default: `openai/text-embedding-3-small`, which must return
+1536 dimensions to match the database index). Corpus ingestion scripts may
+continue to use `OPENAI_API_KEY`. Never put provider keys in `NEXT_PUBLIC_*`
+variables or the Next.js web app environment.
 
 Apply `database/schema.sql`, `database/waitlist_migration.sql`, and
 `database/user_documents_migration.sql` in that order in the Supabase SQL Editor

@@ -10,12 +10,12 @@ import {
   MAX_EXTRACTED_CHARACTERS,
   validateDocxArchiveSize,
 } from './logic.mjs'
+import { embedWithOpenRouter } from '../_shared/openrouter.ts'
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024
 const MAX_PDF_PAGES = 200
 const MAX_OCR_PAGES = 10
 const MIN_PAGE_TEXT_CHARACTERS = 40
-const EMBEDDING_MODEL = 'text-embedding-3-small'
 const EMBEDDING_BATCH_SIZE = 32
 
 interface ExtractedDocumentText {
@@ -53,8 +53,8 @@ Deno.serve(async (request: Request) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
-  if (!supabaseUrl || !anonKey || !serviceRoleKey || !openaiKey) {
+  const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')
+  if (!supabaseUrl || !anonKey || !serviceRoleKey || !openRouterKey) {
     console.error('Document processing environment is incomplete')
     return jsonResponse({ error: 'Document processing is not configured' }, 503)
   }
@@ -156,7 +156,7 @@ Deno.serve(async (request: Request) => {
       throw new DocumentProcessingError('This document contains too much text to process safely.')
     }
 
-    const embeddings = await embedChunks(chunks.map((chunk) => chunk.text), openaiKey)
+    const embeddings = await embedWithOpenRouter(openRouterKey, chunks.map((chunk) => chunk.text))
     const { error: clearError } = await service
       .from('user_document_chunks')
       .delete()
@@ -410,37 +410,6 @@ async function recognizeScannedPdfPages(
     throw new DocumentProcessingError('This PDF contains too much text to process safely.')
   }
   return { ...extracted, pages, character_count: characterCount }
-}
-
-async function embedChunks(texts: string[], apiKey: string): Promise<number[][]> {
-  const result: number[][] = new Array(texts.length)
-  for (let start = 0; start < texts.length; start += EMBEDDING_BATCH_SIZE) {
-    const inputs = texts.slice(start, start + EMBEDDING_BATCH_SIZE)
-    const response = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({ model: EMBEDDING_MODEL, input: inputs }),
-    })
-    if (!response.ok) {
-      console.error('Document embedding provider returned status:', response.status)
-      throw new Error('Embedding provider request failed')
-    }
-
-    const payload = await response.json()
-    if (!Array.isArray(payload.data) || payload.data.length !== inputs.length) {
-      throw new Error('Embedding provider returned an incomplete response')
-    }
-    for (const item of payload.data as Array<{ index: number; embedding: number[] }>) {
-      if (!Number.isInteger(item.index) || !Array.isArray(item.embedding) || item.embedding.length !== 1536) {
-        throw new Error('Embedding provider returned invalid vectors')
-      }
-      result[start + item.index] = item.embedding
-    }
-  }
-  return result
 }
 
 function hasPdfSignature(bytes: Uint8Array): boolean {

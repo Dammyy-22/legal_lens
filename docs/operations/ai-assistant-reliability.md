@@ -14,9 +14,9 @@ The assistant must answer only from retrieved verified legal text and must refus
 - Citation validation strips any invalid reference before returning content.
 - If no model provider is available, the assistant returns matching source
   excerpts without presenting them as scenario-specific legal analysis.
-- OpenAI embedding quota failures trigger full-text retrieval; OpenAI generation
-  quota failures use the same labeled excerpt-only response. Restore provider
-  quota or configure Anthropic for generated scenario analysis.
+- OpenRouter embedding quota failures trigger full-text retrieval; OpenRouter
+  chat quota failures use the same labeled excerpt-only response. Restore
+  provider quota or verify the configured OpenRouter model.
 - High-risk prompts trigger a safety-first response instead of legal reasoning.
 - Empty or malformed model output is treated as a failure.
 

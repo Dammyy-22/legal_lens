@@ -11,6 +11,9 @@ import {
   Scale,
   UserSearch,
   FileText,
+  BriefcaseBusiness,
+  BookOpenText,
+  FilePenLine,
   Settings,
   Menu,
   X,
@@ -20,6 +23,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { BrandLogo } from '@/components/BrandLogo'
+import { QuickNavigation } from '@/components/QuickNavigation'
 import {
   isSessionInactive,
   SESSION_INACTIVITY_TIMEOUT_MS,
@@ -35,6 +39,9 @@ const NAV_ITEMS = [
   { href: '/dashboard/rights', label: 'Rights explorer', Icon: Scale },
   { href: '/dashboard/lawyers', label: 'Find a lawyer', Icon: UserSearch },
   { href: '/dashboard/documents', label: 'My documents', Icon: FileText },
+  { href: '/dashboard/matters', label: 'Matters & tasks', Icon: BriefcaseBusiness },
+  { href: '/dashboard/cases', label: 'Case-law research', Icon: BookOpenText },
+  { href: '/dashboard/drafting', label: 'Prepare correspondence', Icon: FilePenLine },
 ]
 
 export interface DashboardUser {
@@ -231,6 +238,7 @@ export function DashboardShell({
 
         <nav aria-label="Workspace" className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
           <p className="mb-3 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">Workspace</p>
+          <QuickNavigation isAdmin={user.isAdmin} />
           {NAV_ITEMS.map(({ href, label, Icon }) => {
             const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(`${href}/`))
             return (

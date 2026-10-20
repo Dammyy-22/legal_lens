@@ -6,7 +6,7 @@
 - Identity: Supabase Auth
 - API layer: Supabase Edge Functions in `supabase/functions/`
 - Data store: Postgres in Supabase with RLS enabled
-- AI providers: OpenAI for embeddings, Anthropic for answer generation
+- AI provider: OpenRouter for runtime embeddings and grounded answer generation
 - Scanned-PDF OCR: private PyMuPDF gateway and Baidu Unlimited-OCR vLLM/SGLang endpoint
 - Corpus management: ingestion scripts under `scripts/ingestion/`
 
@@ -25,10 +25,10 @@
 1. Browser posts the question to `ask` Edge Function.
 2. Function validates the user and checks the question for obvious bad inputs.
 3. Function applies a rate-limit guard and safety triage.
-4. Function embeds the question with OpenAI.
+4. Function embeds the question with OpenRouter.
 5. Function retrieves similar verified chunks via `match_document_chunks`.
 6. Function checks whether enough evidence was found.
-7. Function calls Anthropic with only the retrieved content as context.
+7. Function calls OpenRouter with only the retrieved content as context.
 8. Function validates all model citations against real retrieved chunk IDs.
 9. Function persists the user message and assistant answer to Postgres.
 10. Response is returned to the user, with `uncertain` and `risk_level` metadata when needed.
@@ -50,11 +50,11 @@
    it calls the private OCR gateway, which renders the requested pages and
    forwards images to Baidu Unlimited-OCR. OCR is limited to 10 pages per PDF.
    The processor then splits text into bounded overlapping chunks and creates
-   OpenAI embeddings. It marks the record ready only after all chunks are saved.
+   OpenRouter embeddings. It marks the record ready only after all chunks are saved.
 5. `ask-user-document` authenticates the user, checks ownership/readiness, and
    calls `match_user_document_chunks`. The database RPC independently binds the
    vector search to `auth.uid()` and the selected document.
-6. Anthropic receives only the retrieved passages and question. Citation tags
+6. OpenRouter receives only the retrieved passages and question. Citation tags
    are filtered against retrieved chunk IDs, then the answer and passage
    references are persisted under owner-scoped RLS.
 7. Deleting the record cascades through chunks, answers, and citations; the
@@ -72,7 +72,7 @@
 - Scanned PDF pages are sent to the configured OCR gateway only after the
   authenticated user initiates processing. The gateway requires a shared bearer
   key, private HTTPS, and access to the configured model endpoint. User document
-  text is sent to OCR/OpenAI/Anthropic only after explicit UI acknowledgement.
+  text is sent to OCR/OpenRouter only after explicit UI acknowledgement.
 
 ## 4. Admin workflow map
 
