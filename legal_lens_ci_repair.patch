@@ -1,0 +1,53 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index bfcbc99..f9c4e6b 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -46,11 +46,13 @@ jobs:
+       - uses: actions/setup-node@v4
+         with:
+           node-version: "22"
+-      - name: Test document processing and Q&A logic
++      - name: Test AI assistant, document processing, document Q&A, and ingestion logic
+         run: |
+-          node --test supabase/functions/process-user-document/logic.test.mjs
+-          node --test supabase/functions/ask-user-document/logic.test.mjs
+-          node --test scripts/ingestion/constitution-structure.test.mjs
++          node --test \
++            supabase/functions/ask/logic.test.mjs \
++            supabase/functions/process-user-document/logic.test.mjs \
++            supabase/functions/ask-user-document/logic.test.mjs \
++            scripts/ingestion/constitution-structure.test.mjs
+ 
+   schema:
+     runs-on: ubuntu-latest
+@@ -109,7 +111,26 @@ jobs:
+           SQL
+       - name: Apply schema.sql
+         run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/schema.sql
+-      - name: Apply user document migration
+-        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_documents_migration.sql
+-      - name: Verify user document migration is rerunnable
+-        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_documents_migration.sql
++      - name: Apply migrations in documented deployment order
++        run: |
++          set -euo pipefail
++          for migration in \
++            database/waitlist_migration.sql \
++            database/user_documents_migration.sql \
++            database/lexical_search_migration.sql \
++            database/matter_management_migration.sql; do
++            echo "Applying ${migration}"
++            PGPASSWORD=postgres psql -h localhost -U postgres -d legalens \
++              -v ON_ERROR_STOP=1 -f "${migration}"
++          done
++      - name: Verify additive migrations are rerunnable
++        run: |
++          set -euo pipefail
++          for migration in \
++            database/user_documents_migration.sql \
++            database/lexical_search_migration.sql \
++            database/matter_management_migration.sql; do
++            echo "Re-applying ${migration}"
++            PGPASSWORD=postgres psql -h localhost -U postgres -d legalens \
++              -v ON_ERROR_STOP=1 -f "${migration}"
++          done

@@ -1,0 +1,44 @@
+diff --git a/scripts/ingestion/constitution-structure.mjs b/scripts/ingestion/constitution-structure.mjs
+index 228a16d..0b76f0d 100644
+--- a/scripts/ingestion/constitution-structure.mjs
++++ b/scripts/ingestion/constitution-structure.mjs
+@@ -27,11 +27,14 @@ function comparable(text) {
+ }
+ 
+ export function extractConstitutionMainText(text) {
+-  const bodyStart = BODY_MARKER.exec(text)?.index
++  // PDF text extraction can emit CRLF or bare CR line endings depending on the
++  // operating system/toolchain. Normalize before applying line-oriented markers.
++  const normalizedText = text.replace(/\r\n?/g, '\n')
++  const bodyStart = BODY_MARKER.exec(normalizedText)?.index
+   if (bodyStart === undefined) {
+     throw new Error('Could not locate the Constitution preamble after its contents pages.')
+   }
+-  return text.slice(bodyStart).trim()
++  return normalizedText.slice(bodyStart).trim()
+ }
+ 
+ export function splitConstitutionSections(text) {
+diff --git a/scripts/ingestion/constitution-structure.test.mjs b/scripts/ingestion/constitution-structure.test.mjs
+index c456b6c..ff51b3b 100644
+--- a/scripts/ingestion/constitution-structure.test.mjs
++++ b/scripts/ingestion/constitution-structure.test.mjs
+@@ -70,6 +70,18 @@ test('chapter sections begin at the substantive text, not the contents list', ()
+   assert.equal(sections[8].text, 'Schedules\nFIRST SCHEDULE\nState boundaries')
+ })
+ 
++test('Constitution extraction handles Windows and legacy Mac line endings', () => {
++  const crlfFixture = fixture.replace(/\n/g, '\r\n')
++  const crFixture = fixture.replace(/\n/g, '\r')
++
++  for (const source of [crlfFixture, crFixture]) {
++    const sections = splitConstitutionSections(source)
++    assert.equal(sections.length, 9)
++    assert.match(sections[0].text, /This Constitution is supreme/)
++    assert.match(sections[8].text, /^Schedules\nFIRST SCHEDULE/m)
++  }
++})
++
+ test('missing preamble or actual chapter content fails rather than returning TOC matches', () => {
+   assert.throws(() => extractConstitutionMainText('ARRANGEMENT OF SECTIONS\nCHAPTER I'), /preamble/)
+   assert.throws(() => splitConstitutionSections(fixture.replace('CHAPTER IV\nFundamental Rights', '')), /Chapter IV/)

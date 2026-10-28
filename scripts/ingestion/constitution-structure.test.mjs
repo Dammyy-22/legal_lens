@@ -70,6 +70,18 @@ test('chapter sections begin at the substantive text, not the contents list', ()
   assert.equal(sections[8].text, 'Schedules\nFIRST SCHEDULE\nState boundaries')
 })
 
+test('Constitution extraction handles Windows and legacy Mac line endings', () => {
+  const crlfFixture = fixture.replace(/\n/g, '\r\n')
+  const crFixture = fixture.replace(/\n/g, '\r')
+
+  for (const source of [crlfFixture, crFixture]) {
+    const sections = splitConstitutionSections(source)
+    assert.equal(sections.length, 9)
+    assert.match(sections[0].text, /This Constitution is supreme/)
+    assert.match(sections[8].text, /^Schedules\nFIRST SCHEDULE/m)
+  }
+})
+
 test('missing preamble or actual chapter content fails rather than returning TOC matches', () => {
   assert.throws(() => extractConstitutionMainText('ARRANGEMENT OF SECTIONS\nCHAPTER I'), /preamble/)
   assert.throws(() => splitConstitutionSections(fixture.replace('CHAPTER IV\nFundamental Rights', '')), /Chapter IV/)

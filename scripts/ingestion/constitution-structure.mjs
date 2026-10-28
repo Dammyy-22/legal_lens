@@ -27,11 +27,14 @@ function comparable(text) {
 }
 
 export function extractConstitutionMainText(text) {
-  const bodyStart = BODY_MARKER.exec(text)?.index
+  // PDF text extraction can emit CRLF or bare CR line endings depending on the
+  // operating system/toolchain. Normalize before applying line-oriented markers.
+  const normalizedText = text.replace(/\r\n?/g, '\n')
+  const bodyStart = BODY_MARKER.exec(normalizedText)?.index
   if (bodyStart === undefined) {
     throw new Error('Could not locate the Constitution preamble after its contents pages.')
   }
-  return text.slice(bodyStart).trim()
+  return normalizedText.slice(bodyStart).trim()
 }
 
 export function splitConstitutionSections(text) {
