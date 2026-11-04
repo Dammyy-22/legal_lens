@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BrandLogo } from '@/components/BrandLogo'
-import { safeLocalRedirectPath } from '@/lib/safe-redirect'
+import {
+  buildSafeAuthCallbackUrl,
+  safeLocalRedirectPath,
+} from '@/lib/safe-redirect'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -31,8 +34,12 @@ export default function LoginPage() {
     const next = safeLocalRedirectPath(
       new URLSearchParams(window.location.search).get('next')
     )
+    const normalizedEmail = email.trim().toLowerCase()
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    })
 
     if (error) {
       setError(error.message)
@@ -55,7 +62,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        redirectTo: buildSafeAuthCallbackUrl(window.location.origin, next),
       },
     })
     if (error) setError(error.message)

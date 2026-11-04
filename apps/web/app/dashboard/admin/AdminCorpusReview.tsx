@@ -22,7 +22,11 @@ interface SectionPreview {
   text: string
 }
 
-export default function AdminCorpusReview() {
+export default function AdminCorpusReview({
+  adminRole,
+}: {
+  adminRole?: string | null
+}) {
   const [versions, setVersions] = useState<PendingVersion[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -152,7 +156,9 @@ export default function AdminCorpusReview() {
     <div className="max-w-4xl mx-auto px-6 py-10 md:py-14">
       <div className="flex items-center gap-3 mb-2">
         <ShieldCheck size={22} className="text-brass-600" />
-        <p className="font-mono text-xs uppercase tracking-widest text-brass-600">Admin</p>
+        <p className="font-mono text-xs uppercase tracking-widest text-brass-600">
+          {adminRole ? adminRole.replace('_', ' ') : 'Admin'}
+        </p>
       </div>
       <h1 className="font-display text-4xl text-ink mb-3">Corpus review</h1>
       <p className="text-ink-400 leading-relaxed mb-10 max-w-2xl">

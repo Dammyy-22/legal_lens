@@ -20,3 +20,14 @@ export function safeLocalRedirectPath(
     return fallback
   }
 }
+
+export function buildSafeAuthCallbackUrl(
+  origin: string,
+  next: string | null | undefined,
+  fallback = '/dashboard',
+): string {
+  const safeNext = safeLocalRedirectPath(next, fallback)
+  const callbackUrl = new URL('/auth/callback', origin)
+  callbackUrl.searchParams.set('next', safeNext)
+  return callbackUrl.toString()
+}

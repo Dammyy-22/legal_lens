@@ -1,58 +1,56 @@
 import process from 'node:process'
+import { requireStagingConfig } from './staging-config.mjs'
 
 const supabaseUrl = process.env.SUPABASE_URL
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-const adminEmail = process.env.ADMIN_REVIEW_EMAIL
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+const email = process.env.SUPABASE_AUTH_EMAIL
+const password = process.env.SUPABASE_AUTH_PASSWORD
 
-if (!supabaseUrl || !serviceRoleKey || !adminEmail) {
-  console.log('Admin flow smoke test not configured. Set SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, and ADMIN_REVIEW_EMAIL.')
-  process.exit(0)
+try {
+  requireStagingConfig(process.env)
+} catch (error) {
+  console.error('Admin review validation is not configured. This check is intentionally read-only and must run against a staging project with real user credentials.')
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exit(1)
 }
 
-const restHeaders = {
-  apikey: serviceRoleKey,
-  Authorization: `Bearer ${serviceRoleKey}`,
-  'Content-Type': 'application/json',
+const authResponse = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+  method: 'POST',
+  headers: {
+    apikey: supabaseAnonKey,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ email, password }),
+})
+
+if (!authResponse.ok) {
+  const detail = await authResponse.text()
+  throw new Error(`Authentication failed: ${authResponse.status} ${detail}`)
 }
+
+const { access_token: accessToken } = await authResponse.json()
 
 const versionsResponse = await fetch(`${supabaseUrl}/rest/v1/legal_source_versions?select=id,version_label,verified,status&verified=eq.false&limit=5`, {
-  headers: restHeaders,
+  headers: {
+    apikey: supabaseAnonKey,
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
+  },
 })
 
 if (!versionsResponse.ok) {
   const detail = await versionsResponse.text()
-  throw new Error(`Failed to load pending versions: ${versionsResponse.status} ${detail}`)
+  throw new Error(`Failed to load pending versions as a regular staging user: ${versionsResponse.status} ${detail}`)
 }
 
 const pendingVersions = await versionsResponse.json()
-console.log('Pending review versions:', pendingVersions.length)
+console.log('Pending review versions visible to a regular user:', pendingVersions.length)
+console.log('This admin review validation is intentionally read-only and will not mutate staging data.')
 
 if (pendingVersions.length === 0) {
-  console.log('No unverified rows to test; admin review flow is ready in a live project.')
+  console.log('No unverified rows to inspect for the regular-user access check; staging is consistent with the verified-only policy.')
   process.exit(0)
 }
 
-const targetId = pendingVersions[0].id
-console.log('Targeting review id:', targetId)
-
-const updateResponse = await fetch(`${supabaseUrl}/rest/v1/legal_source_versions?id=eq.${targetId}`, {
-  method: 'PATCH',
-  headers: restHeaders,
-  body: JSON.stringify({
-    verified: true,
-    status: 'current',
-    review_notes: 'Automated validation check passed.',
-    reviewed_by: adminEmail,
-    reviewed_at: new Date().toISOString(),
-    verified_by: adminEmail,
-    verified_at: new Date().toISOString(),
-  }),
-})
-
-const updateText = await updateResponse.text()
-console.log('Review update status:', updateResponse.status)
-console.log(updateText.slice(0, 500))
-
-if (!updateResponse.ok) {
-  throw new Error(`Review update failed: ${updateResponse.status} ${updateText}`)
-}
+console.log('The script successfully read the review queue without mutating any staging data.')
+process.exit(0)

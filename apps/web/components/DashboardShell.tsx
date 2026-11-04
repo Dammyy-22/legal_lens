@@ -48,6 +48,7 @@ export interface DashboardUser {
   fullName: string | null
   email: string | null
   isAdmin?: boolean
+  adminRole?: string | null
 }
 
 export function DashboardShell({

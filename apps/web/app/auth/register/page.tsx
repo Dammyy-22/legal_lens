@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BrandLogo } from '@/components/BrandLogo'
+import { buildSafeAuthCallbackUrl } from '@/lib/safe-redirect'
 
 // Real Nigerian states + FCT — a factual, verifiable list (geography doesn't change),
 // not fabricated data.
@@ -58,12 +59,13 @@ export default function RegisterPage() {
       return
     }
 
+    const normalizedEmail = email.trim().toLowerCase()
     const supabase = createClient()
     // Extra profile fields are stored in Supabase's built-in user_metadata (no separate
     // profiles table needed for this). They're set once at signup — editing them later
     // would need a small addition to the Settings page, not built yet.
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         data: {
@@ -94,13 +96,16 @@ export default function RegisterPage() {
   async function handleGoogleSignUp() {
     setError('')
     const supabase = createClient()
+    const next = new URLSearchParams(window.location.search).get('next')
     // Google OAuth sign-ups skip this form entirely — Supabase automatically populates
     // full_name/avatar from the Google profile, but state/city/phone won't be captured
     // this way. Acceptable for now since those are optional profile details, not
     // required for the account to function.
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: buildSafeAuthCallbackUrl(window.location.origin, next),
+      },
     })
     if (error) setError(error.message)
   }

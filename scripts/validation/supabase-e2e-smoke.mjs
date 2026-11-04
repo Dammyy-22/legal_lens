@@ -1,13 +1,17 @@
 import process from 'node:process'
+import { requireStagingConfig } from './staging-config.mjs'
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
 const email = process.env.SUPABASE_AUTH_EMAIL
 const password = process.env.SUPABASE_AUTH_PASSWORD
 
-if (!supabaseUrl || !supabaseAnonKey || !email || !password) {
-  console.log('Supabase smoke test not configured. Set SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_AUTH_EMAIL, and SUPABASE_AUTH_PASSWORD.')
-  process.exit(0)
+try {
+  requireStagingConfig(process.env)
+} catch (error) {
+  console.error('Supabase staging smoke test is not configured correctly.')
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exit(1)
 }
 
 const authResponse = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
