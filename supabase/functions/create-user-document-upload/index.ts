@@ -33,7 +33,12 @@ Deno.serve(async (request: Request) => {
   } = await caller.auth.getUser()
   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
 
-  let body: { filename?: unknown; mime_type?: unknown; file_size_bytes?: unknown }
+  let body: {
+    filename?: unknown
+    mime_type?: unknown
+    file_size_bytes?: unknown
+    provider_consent?: unknown
+  }
   try {
     body = await request.json()
   } catch {
@@ -47,9 +52,10 @@ Deno.serve(async (request: Request) => {
     typeof body.file_size_bytes !== 'number' ||
     !Number.isInteger(body.file_size_bytes) ||
     body.file_size_bytes < 1 ||
-    body.file_size_bytes > MAX_FILE_BYTES
+    body.file_size_bytes > MAX_FILE_BYTES ||
+    body.provider_consent !== true
   ) {
-    return jsonResponse({ error: 'Invalid filename, file type, or file size' }, 400)
+    return jsonResponse({ error: 'Valid file details and provider consent are required' }, 400)
   }
 
   const extension = extensionForMime(body.mime_type)
@@ -67,6 +73,7 @@ Deno.serve(async (request: Request) => {
     storage_path: storagePath,
     mime_type: body.mime_type,
     file_size_bytes: body.file_size_bytes,
+    provider_consent_at: new Date().toISOString(),
     processing_status: 'uploaded',
   })
   if (insertError) {

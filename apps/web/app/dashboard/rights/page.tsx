@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import {
   AlertCircle,
   ArrowUpRight,
@@ -8,13 +8,13 @@ import {
   ChevronDown,
   FileSearch,
   Home,
+  Search,
   Scale,
   ShieldAlert,
   ShoppingBag,
   Stethoscope,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { searchLegalSources, type LegalSearchResult } from '@/lib/api-client'
 
@@ -220,6 +220,7 @@ export default function RightsPage() {
   const [resultsById, setResultsById] = useState<Record<string, LegalSearchResult[]>>({})
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [errorsById, setErrorsById] = useState<Record<string, string>>({})
+  const [searchTermsById, setSearchTermsById] = useState<Record<string, string>>({})
 
   async function toggleSituation(situation: Situation) {
     if (openId === situation.id) {
@@ -230,14 +231,26 @@ export default function RightsPage() {
     setOpenId(situation.id)
     if (Object.prototype.hasOwnProperty.call(resultsById, situation.id) || loadingId === situation.id) return
 
+    await searchSituation(situation)
+  }
+
+  async function searchSituation(situation: Situation, specificQuery = '') {
     setLoadingId(situation.id)
     setErrorsById((current) => {
       const next = { ...current }
       delete next[situation.id]
       return next
     })
+    setResultsById((current) => {
+      const next = { ...current }
+      delete next[situation.id]
+      return next
+    })
     try {
-      const results = await searchLegalSources(situation.search, 5)
+      const query = [situation.title, situation.note, situation.search, specificQuery.trim()]
+        .filter(Boolean)
+        .join(' ')
+      const results = await searchLegalSources(query, 5)
       const relevantResults = results.filter((result) => {
         const searchableText = result.text.toLowerCase()
         return situation.matchPhrases.some((phrase) => searchableText.includes(phrase))
@@ -253,6 +266,12 @@ export default function RightsPage() {
     }
   }
 
+  function handleSituationSearch(event: FormEvent<HTMLFormElement>, situation: Situation) {
+    event.preventDefault()
+    if (loadingId === situation.id) return
+    void searchSituation(situation, searchTermsById[situation.id] ?? '')
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 md:py-14 animate-ink-in">
       <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-2">
@@ -260,30 +279,9 @@ export default function RightsPage() {
       </p>
       <h1 className="font-display text-4xl text-ink mb-3 sm:text-5xl">Common situations</h1>
       <p className="text-ink-400 leading-relaxed mb-4 max-w-3xl">
-        Choose a situation to search the live, verified legal corpus, read practical
-        first steps and open relevant legislation or official services.
+        Search verified Constitution passages and open official links to other laws.
+        Tenancy and court procedure vary by state.
       </p>
-      <p className="text-sm text-ink-400 leading-relaxed mb-10 max-w-3xl">
-        The in-app verified corpus currently includes the Constitution. Other laws below
-        link to their publishers or official institutions and are not represented as
-        indexed in LegalLens. Tenancy and court procedure vary by state.
-      </p>
-
-      <div className="image-card group relative mb-10 h-44 overflow-hidden rounded-2xl border border-ink-100 bg-ink shadow-sm md:h-52">
-        <Image
-          src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=2400&q=90"
-          alt="Courthouse columns in warm light"
-          fill
-          priority
-          quality={90}
-          sizes="(max-width: 768px) 100vw, 1100px"
-          className="motion-image object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/75 via-ink/25 to-transparent" />
-        <p className="absolute bottom-5 left-6 max-w-xs font-display text-xl text-white">
-          A field guide for the moments when procedure matters.
-        </p>
-      </div>
 
       <div className="space-y-4">
         {SITUATIONS.map((situation) => {
@@ -333,6 +331,32 @@ export default function RightsPage() {
 
                   <div>
                     <h2 className="font-display text-xl text-ink mb-3">Search verified passages</h2>
+                    <form
+                      onSubmit={(event) => handleSituationSearch(event, situation)}
+                      className="mb-4 flex max-w-xl gap-2"
+                    >
+                      <label className="relative min-w-0 flex-1">
+                        <span className="sr-only">Search within {situation.title}</span>
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+                        <input
+                          type="search"
+                          value={searchTermsById[situation.id] ?? ''}
+                          onChange={(event) => setSearchTermsById((current) => ({
+                            ...current,
+                            [situation.id]: event.target.value,
+                          }))}
+                          placeholder={`Search within ${situation.title}`}
+                          className="min-h-10 w-full rounded-lg border border-ink-100 bg-white py-2 pl-9 pr-3 text-sm text-ink placeholder:text-ink-400 focus:border-brass focus:outline-none focus:ring-2 focus:ring-brass/20"
+                        />
+                      </label>
+                      <button
+                        type="submit"
+                        disabled={loadingId === situation.id}
+                        className="min-h-10 rounded-lg bg-ink px-3 text-sm font-medium text-white transition-colors hover:bg-ink-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Search
+                      </button>
+                    </form>
                     {loadingId === situation.id && (
                       <p role="status" className="text-sm text-ink-400">Searching the verified corpus…</p>
                     )}
@@ -363,7 +387,7 @@ export default function RightsPage() {
                               rel="noreferrer"
                               className="inline-flex items-center gap-1 mt-3 text-xs text-brass-600 underline underline-offset-2"
                             >
-                              Open source document <ArrowUpRight size={13} />
+                              Optional: open source document <ArrowUpRight size={13} />
                             </a>
                           </article>
                         ))}
@@ -375,22 +399,26 @@ export default function RightsPage() {
                     <h2 className="font-display text-xl text-ink mb-3">Relevant laws & official services</h2>
                     <div className="grid sm:grid-cols-2 gap-3">
                       {situation.sources.map((source) => (
-                        <a
+                        <article
                           key={source.title}
-                          href={source.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="group rounded-lg border border-ink-100 p-4 hover:border-brass/50 hover:bg-paper/50 transition-colors"
+                          className="rounded-lg border border-ink-100 p-4"
                         >
                           <span className={`inline-block rounded-full px-2 py-1 text-[9px] uppercase tracking-wide font-mono ${SOURCE_KIND_STYLES[source.kind]}`}>
                             {source.kind}
                           </span>
-                          <span className="mt-2 flex items-start justify-between gap-2 font-medium text-sm text-ink">
+                          <span className="mt-2 block font-medium text-sm text-ink">
                             {source.title}
-                            <ArrowUpRight size={15} className="shrink-0 text-brass-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                           </span>
                           <span className="block mt-1.5 text-xs text-ink-400 leading-relaxed">{source.description}</span>
-                        </a>
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-brass-600 underline underline-offset-2"
+                          >
+                            Optional: open official source <ArrowUpRight size={13} />
+                          </a>
+                        </article>
                       ))}
                     </div>
                   </div>
@@ -409,9 +437,8 @@ export default function RightsPage() {
       </div>
 
       <p className="text-xs text-ink-400 mt-8 leading-relaxed">
-        LegalLens provides legal information, not legal advice. Check the linked source
-        for its full text and current status. For urgent detention or court deadlines,
-        contact a qualified lawyer or the relevant official service promptly.
+        Legal information, not legal advice. Check linked sources for current law; consult
+        a lawyer about urgent detention or court deadlines.
       </p>
     </div>
   )

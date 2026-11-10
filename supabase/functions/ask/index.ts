@@ -154,8 +154,7 @@ Deno.serve(async (req: Request) => {
       if (err instanceof OpenRouterError && err.status === 429) {
         console.warn('OpenRouter embeddings are rate-limited; falling back to verified legal-text search.')
       } else {
-        console.error('Embedding failed:', err)
-        return jsonResponse({ error: 'Failed to process question' }, 502)
+        console.warn('OpenRouter embeddings failed; falling back to verified legal-text search:', err)
       }
     }
   }
@@ -227,12 +226,11 @@ Deno.serve(async (req: Request) => {
     } catch (err) {
       if (err instanceof OpenRouterError && err.status === 429) {
         console.warn('OpenRouter answer generation is rate-limited; returning verified source excerpts.')
-        generation = buildSourceExtract(question, retrieved)
-        answerMode = 'source_extract'
       } else {
-        console.error('Generation failed:', err)
-        return jsonResponse({ error: 'Failed to generate an answer' }, 502)
+        console.warn('OpenRouter answer generation failed; returning verified source excerpts:', err)
       }
+      generation = buildSourceExtract(question, retrieved)
+      answerMode = 'source_extract'
     }
   } else {
     generation = buildSourceExtract(question, retrieved)

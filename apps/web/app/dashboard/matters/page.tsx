@@ -214,14 +214,12 @@ export default function MattersPage() {
       <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">Private workspace</p>
       <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-ink">Matters &amp; tasks</h1>
       <p className="mb-7 mt-3 max-w-3xl leading-7 text-ink-400">
-        Organize personal matters and track dates you enter. This is a private organizer,
-        not a legal case-management service or a source of deadline calculations.
+        Organize matters and follow-up tasks.
       </p>
 
       <aside className="mb-7 rounded-xl border border-brass/25 bg-white p-4 text-sm leading-6 text-ink-400">
-        Your matters are visible only to your account. Keep names and task descriptions brief;
-        do not add information you do not need to store.         Dates are entered by you and
-        are not verified legal deadlines. Confirm any court or statutory deadline with a qualified lawyer.
+        Private to your account. Store only what you need. Dates are not verified legal deadlines;
+        confirm court or statutory deadlines with a lawyer.
       </aside>
 
       {error && <p role="alert" className="mb-5 rounded-lg border border-seal/25 bg-seal/5 p-4 text-sm text-seal">{error}</p>}

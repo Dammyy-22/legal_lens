@@ -1,37 +1,51 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, BookOpenText, ExternalLink, Search } from 'lucide-react'
-
-const NIGERIALII_SEARCH = 'https://nigerialii.org/search/'
-const NIGERIALII_JUDGMENTS = 'https://nigerialii.org/judgments/'
+import { ArrowUpRight, ExternalLink, Search } from 'lucide-react'
+import { searchLegalSources, type LegalSearchResult } from '@/lib/api-client'
 
 export default function CasesPage() {
   const [query, setQuery] = useState('')
-  const [submittedQuery, setSubmittedQuery] = useState('')
+  const [results, setResults] = useState<LegalSearchResult[]>([])
+  const [searched, setSearched] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  function handleSearch(event: FormEvent<HTMLFormElement>) {
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setSubmittedQuery(query.trim())
-  }
+    const term = query.trim()
+    if (term.length < 2) return
 
-  const searchUrl = submittedQuery
-    ? `${NIGERIALII_SEARCH}?q=${encodeURIComponent(submittedQuery)}`
-    : ''
+    setLoading(true)
+    setError('')
+    setSearched(true)
+    try {
+      setResults(await searchLegalSources(term, 20, {
+        jurisdiction: 'Nigeria',
+        documentType: 'case_law',
+      }))
+    } catch (searchError) {
+      setResults([])
+      setError(searchError instanceof Error ? searchError.message : 'Unable to search case law.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="workspace-enter mx-auto max-w-5xl px-5 py-8 sm:px-8 md:py-12">
-      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">Case-law research</p>
-      <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-ink">Find Nigerian judgments</h1>
+      <h1 className="font-display text-4xl font-medium tracking-tight text-ink">
+        Search Nigerian judgments
+      </h1>
       <p className="mb-7 mt-3 max-w-3xl leading-7 text-ink-400">
-        Search an external public legal-information index for judgment text. LegalLens does
-        not yet maintain a verified case-law corpus, so external judgments are not used in
-        LegalLens AI answers or presented as reviewed authorities.
+        Search verified case-law records in LegalLens. NigeriaLII live results are not connected.
       </p>
 
-      <form onSubmit={handleSearch} className="mb-6 rounded-xl border border-ink-100 bg-white p-4 sm:p-5">
-        <label htmlFor="case-search" className="mb-2 block text-sm font-medium text-ink">Search by case name, citation, court, or topic</label>
+      <form onSubmit={handleSearch} className="mb-7 rounded-xl border border-ink-100 bg-white p-4 sm:p-5">
+        <label htmlFor="case-search" className="mb-2 block text-sm font-medium text-ink">
+          Case name, citation, court or topic
+        </label>
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
@@ -39,74 +53,74 @@ export default function CasesPage() {
               id="case-search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              maxLength={200}
+              maxLength={500}
               placeholder="e.g. Supreme Court contract interpretation"
               className="min-h-12 w-full rounded-lg border border-ink-100 py-3 pl-10 pr-3 text-sm text-ink placeholder:text-ink-400 focus:border-brass focus:outline-none focus:ring-2 focus:ring-brass/20"
             />
           </div>
           <button
             type="submit"
-            disabled={query.trim().length < 2}
+            disabled={loading || query.trim().length < 2}
             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-ink px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-ink-600 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <Search size={16} /> Find judgments
+            <Search size={16} /> {loading ? 'Searching…' : 'Search'}
           </button>
         </div>
       </form>
 
-      {searchUrl && (
-        <section aria-live="polite" className="mb-7 rounded-xl border border-brass/25 bg-white p-5">
-          <p className="text-sm leading-6 text-ink-400">
-            Your search is ready. Results open on NigeriaLII, an external legal-information
-            service; LegalLens does not copy or independently verify its judgment records.
+      {error && (
+        <p role="alert" className="mb-6 rounded-lg border border-seal/25 bg-seal/5 p-4 text-sm text-seal">
+          {error}
+        </p>
+      )}
+
+      {searched && !loading && !error && results.length === 0 && (
+        <section role="status" className="rounded-xl border border-ink-100 bg-white p-5">
+          <h2 className="font-display text-lg font-medium text-ink">No verified judgments found</h2>
+          <p className="mt-1 text-sm text-ink-400">
+            Try another search. LegalLens only shows judgments added to its verified case-law collection.
           </p>
-          <a
-            href={searchUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-ink-600"
-          >
-            Search NigeriaLII for “{submittedQuery}” <ExternalLink size={15} />
-          </a>
         </section>
       )}
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <a
-          href={NIGERIALII_JUDGMENTS}
-          target="_blank"
-          rel="noreferrer"
-          className="group rounded-xl border border-ink-100 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brass/40 hover:shadow-[0_10px_24px_rgba(20,38,30,0.07)]"
-        >
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-paper text-brass-600">
-            <BookOpenText size={20} />
-          </span>
-          <h2 className="mt-4 flex items-center gap-2 font-display text-xl font-medium text-ink">
-            Browse judgments by court <ArrowUpRight size={16} className="text-brass-600 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-ink-400">
-            Open NigeriaLII’s court and tribunal judgment index.
+      {results.length > 0 && (
+        <section aria-label="Case-law search results">
+          <p className="mb-4 text-sm text-ink-400" role="status">
+            {results.length} {results.length === 1 ? 'judgment' : 'judgments'}
           </p>
-        </a>
+          <div className="space-y-4">
+            {results.map((result) => (
+              <article key={result.chunk_id} className="rounded-xl border border-ink-100 bg-white p-5 sm:p-6">
+                <div className="mb-3">
+                  <h2 className="font-display text-xl font-medium text-ink">{result.source_title}</h2>
+                  <p className="mt-1 text-xs text-ink-400">
+                    {[result.jurisdiction, result.section_label, result.section_heading, result.status, result.effective_date]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                </div>
+                <p className="whitespace-pre-line text-sm leading-6 text-ink">{result.text}</p>
+                <a
+                  href={result.source_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 inline-flex items-center gap-1 text-sm text-brass-600 underline underline-offset-2"
+                >
+                  Optional: open cited source <ExternalLink size={14} />
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
-        <div className="rounded-xl border border-ink-100 bg-paper/60 p-5">
-          <h2 className="font-display text-xl font-medium text-ink">Verify before relying on a case</h2>
-          <ul className="mt-3 space-y-2 text-sm leading-6 text-ink-400">
-            <li>Check the court, date, case number, and the full judgment.</li>
-            <li>Confirm whether a later decision or appeal affected the result.</li>
-            <li>Consult a qualified lawyer about how a case applies to your facts.</li>
-          </ul>
-          <Link href="/dashboard/lawyers" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brass-600 hover:text-ink">
-            Find professional support <ArrowUpRight size={14} />
-          </Link>
-        </div>
-      </section>
-
-      <p className="mt-7 text-xs leading-5 text-ink-400">
-        NigeriaLII states that it publishes Nigerian law for free access. This link is an
-        external research starting point, not a guarantee that its collection is complete
-        or current. LegalLens has not independently reviewed individual external records.
+      <p className="mt-8 text-xs leading-5 text-ink-400">
+        Check the full judgment, court and later appeal history before relying on a case.
+        For advice on your situation, consult a qualified lawyer.
       </p>
+      <Link href="/dashboard/lawyers" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brass-600 hover:text-ink">
+        Find a lawyer <ArrowUpRight size={14} />
+      </Link>
     </div>
   )
 }

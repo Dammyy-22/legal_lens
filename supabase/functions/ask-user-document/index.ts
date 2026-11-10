@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import {
+  buildDocumentSourceExtract,
   documentSourceLabel,
   extractCitationIds,
   validateDocumentAnswer,
@@ -31,7 +32,7 @@ Deno.serve(async (request: Request) => {
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')
-  if (!supabaseUrl || !anonKey || !serviceRoleKey || !openRouterKey) {
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
     console.error('Document Q&A environment is incomplete')
     return jsonResponse({ error: 'Document Q&A is not configured' }, 503)
   }
@@ -51,7 +52,7 @@ Deno.serve(async (request: Request) => {
   } = await supabase.auth.getUser()
   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
 
-  let body: { document_id?: unknown; question?: unknown }
+  let body: { document_id?: unknown; question?: unknown; provider_consent?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -60,6 +61,9 @@ Deno.serve(async (request: Request) => {
 
   if (typeof body.document_id !== 'string' || !isUuid(body.document_id)) {
     return jsonResponse({ error: 'A valid document_id is required' }, 400)
+  }
+  if (body.provider_consent !== true) {
+    return jsonResponse({ error: 'Provider processing consent is required' }, 403)
   }
   const question = normalizeQuestion(body.question)
   if (!question || question.length < 3 || question.length > 2000) {
@@ -80,27 +84,51 @@ Deno.serve(async (request: Request) => {
   if (document.processing_status !== 'ready') {
     return jsonResponse({ error: 'Document is not ready for questions yet' }, 409)
   }
-
-  let queryEmbedding: number[]
-  try {
-    queryEmbedding = (await embedWithOpenRouter(openRouterKey, question))[0]
-  } catch (error) {
-    console.error('Document question embedding failed:', error)
-    return jsonResponse({ error: 'Could not process question' }, 502)
+  const { error: consentError } = await service
+    .from('user_documents')
+    .update({ provider_consent_at: new Date().toISOString() })
+    .eq('id', document.id)
+    .eq('owner_id', user.id)
+  if (consentError) {
+    console.error('Could not record document Q&A consent:', consentError)
+    return jsonResponse({ error: 'Could not record provider processing consent' }, 502)
   }
 
-  const { data: chunks, error: retrievalError } = await supabase.rpc('match_user_document_chunks', {
-    query_embedding: queryEmbedding,
-    p_document_id: document.id,
-    match_threshold: SIMILARITY_THRESHOLD,
-    match_count: MAX_CHUNKS,
-  })
-  if (retrievalError) {
-    console.error('Private document retrieval failed:', retrievalError)
-    return jsonResponse({ error: 'Could not search document' }, 502)
+  let retrieved: RetrievedDocumentChunk[] = []
+  if (openRouterKey) {
+    try {
+      const [queryEmbedding] = await embedWithOpenRouter(openRouterKey, question)
+      const { data: chunks, error: retrievalError } = await supabase.rpc('match_user_document_chunks', {
+        query_embedding: queryEmbedding,
+        p_document_id: document.id,
+        match_threshold: SIMILARITY_THRESHOLD,
+        match_count: MAX_CHUNKS,
+      })
+      if (retrievalError) {
+        console.warn('Vector document retrieval failed; trying text search:', retrievalError)
+      } else {
+        retrieved = chunks ?? []
+      }
+    } catch (error) {
+      console.warn('Document embeddings are unavailable; trying text search:', error)
+    }
+  } else {
+    console.warn('OPENROUTER_API_KEY is not configured; using text search for document Q&A.')
   }
 
-  const retrieved: RetrievedDocumentChunk[] = chunks ?? []
+  if (retrieved.length === 0) {
+    const { data: chunks, error: retrievalError } = await supabase.rpc('search_user_document_chunks', {
+      query_text: question,
+      p_document_id: document.id,
+      match_count: MAX_CHUNKS,
+    })
+    if (retrievalError) {
+      console.error('Private document text search failed:', retrievalError)
+      return jsonResponse({ error: 'Could not search document' }, 502)
+    }
+    retrieved = chunks ?? []
+  }
+
   let answer: string
   let citedChunkIds: string[] = []
   let uncertain = true
@@ -110,19 +138,29 @@ Deno.serve(async (request: Request) => {
       "I couldn't find a passage in this document that adequately answers your question. " +
       'I will not fill the gap with assumptions. Check that you selected the right document or consult a qualified lawyer.'
   } else {
-    try {
-      const generation = await generateAnswer(question, retrieved, openRouterKey)
+    let usedSourceExtract = false
+    if (openRouterKey) {
+      let generated: { answer: string; citedChunkIds: string[] }
+      try {
+        generated = await generateAnswer(question, retrieved, openRouterKey)
+      } catch (error) {
+        console.warn('Document answer generation failed; returning cited source excerpts:', error)
+        generated = buildDocumentSourceExtract(retrieved)
+        usedSourceExtract = true
+      }
       const validated = validateDocumentAnswer(
-        generation.answer,
-        generation.citedChunkIds,
+        generated.answer,
+        generated.citedChunkIds,
         retrieved.map((chunk) => chunk.id),
       )
       answer = validated.answer
       citedChunkIds = validated.citedChunkIds
-      uncertain = validated.uncertain
-    } catch (error) {
-      console.error('Document answer generation failed:', error)
-      return jsonResponse({ error: 'Could not generate an answer from this document' }, 502)
+      uncertain = validated.uncertain || usedSourceExtract
+    } else {
+      const sourceExtract = buildDocumentSourceExtract(retrieved)
+      answer = sourceExtract.answer
+      citedChunkIds = sourceExtract.citedChunkIds
+      uncertain = true
     }
 
     if (!answer.trim()) return jsonResponse({ error: 'No answer could be generated safely' }, 502)

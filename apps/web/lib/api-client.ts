@@ -70,8 +70,10 @@ export type DraftType =
 export type DraftDocumentResponse = {
   draft: string
   draft_type: DraftType
-  provider: 'OpenRouter'
+  provider: 'OpenRouter' | null
   saved: false
+  generation_mode: 'ai' | 'template_fallback'
+  warning: string | null
   disclaimer: string
 }
 
@@ -155,10 +157,11 @@ export async function askLegalQuestion(question: string, conversationId?: string
 export async function askAboutUserDocument(
   documentId: string,
   question: string,
+  providerConsent: boolean,
 ): Promise<UserDocumentAnswer> {
   const supabase = createClient()
   const { data, error } = await supabase.functions.invoke('ask-user-document', {
-    body: { document_id: documentId, question },
+    body: { document_id: documentId, question, provider_consent: providerConsent },
   })
 
   if (error) {

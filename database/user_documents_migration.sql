@@ -12,6 +12,7 @@ create table if not exists public.user_documents (
         'text/plain'
     )),
     file_size_bytes bigint not null check (file_size_bytes between 1 and 15728640),
+    provider_consent_at timestamptz,
     processing_status text not null default 'uploaded' check (processing_status in (
         'uploaded', 'processing', 'ready', 'failed'
     )),
@@ -22,6 +23,9 @@ create table if not exists public.user_documents (
     created_at timestamptz not null default now(),
     unique (id, owner_id)
 );
+
+alter table public.user_documents
+    add column if not exists provider_consent_at timestamptz;
 
 create or replace function public.enforce_user_document_quota()
 returns trigger
@@ -243,3 +247,77 @@ $$;
 
 revoke all on function public.match_user_document_chunks(vector, uuid, float, int) from public;
 grant execute on function public.match_user_document_chunks(vector, uuid, float, int) to authenticated;
+
+-- Keep extracted text searchable when the embedding provider is unavailable.
+-- A missing vector never receives a fabricated placeholder embedding.
+alter table public.user_document_chunks
+    alter column embedding drop not null;
+
+create index if not exists idx_user_document_chunks_text_search
+    on public.user_document_chunks using gin (to_tsvector('english', text));
+
+create or replace function public.search_user_document_chunks(
+    query_text text,
+    p_document_id uuid,
+    match_count int default 6
+)
+returns table (
+    id uuid,
+    text text,
+    similarity float,
+    page_number integer,
+    chunk_index integer
+)
+language plpgsql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    search_query tsquery;
+begin
+    if auth.uid() is null then
+        raise exception 'Authentication required' using errcode = '42501';
+    end if;
+
+    if query_text is null or char_length(query_text) < 1 or char_length(query_text) > 2000
+       or match_count < 1 or match_count > 10 then
+        raise exception 'Invalid document search parameters' using errcode = '22023';
+    end if;
+
+    if not exists (
+        select 1
+        from public.user_documents d
+        where d.id = p_document_id
+          and d.owner_id = auth.uid()
+          and d.processing_status = 'ready'
+    ) then
+        raise exception 'Document not found or not ready' using errcode = '42501';
+    end if;
+
+    search_query := websearch_to_tsquery('english', query_text);
+    if numnode(search_query) = 0 then
+        search_query := plainto_tsquery('simple', query_text);
+    end if;
+    if numnode(search_query) = 0 then
+        return;
+    end if;
+
+    return query
+    select
+        c.id,
+        c.text,
+        ts_rank_cd(to_tsvector('english', c.text), search_query)::float,
+        c.page_number,
+        c.chunk_index
+    from public.user_document_chunks c
+    where c.document_id = p_document_id
+      and c.owner_id = auth.uid()
+      and to_tsvector('english', c.text) @@ search_query
+    order by ts_rank_cd(to_tsvector('english', c.text), search_query) desc, c.chunk_index
+    limit match_count;
+end;
+$$;
+
+revoke all on function public.search_user_document_chunks(text, uuid, int) from public, anon;
+grant execute on function public.search_user_document_chunks(text, uuid, int) to authenticated;

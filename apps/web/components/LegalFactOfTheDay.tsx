@@ -59,18 +59,11 @@ export function LegalFactOfTheDay() {
               <Sparkles size={21} strokeWidth={1.8} />
             </span>
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.17em] text-brass-600">
-                A fresh fact every day
-              </p>
               <h2 id="legal-fact-heading" className="mt-1 font-display text-2xl font-medium leading-tight tracking-tight text-ink sm:text-3xl">
-                Fun fact of the day
+                Legal fact of the day
               </h2>
             </div>
           </div>
-          <span className="legal-facts-daily-badge inline-flex w-fit items-center gap-2 rounded-full border border-brass/20 bg-paper/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.13em] text-brass-600">
-            <span className="h-1.5 w-1.5 rounded-full bg-brass" />
-            Nigerian law
-          </span>
         </header>
 
         <div
@@ -84,9 +77,6 @@ export function LegalFactOfTheDay() {
           <article className="legal-fact-card group relative grid min-h-64 overflow-hidden rounded-xl border border-ink-100 bg-paper/45 sm:min-h-72 sm:grid-cols-[minmax(0,1fr)_13rem]">
             <div className="legal-fact-card-glow" aria-hidden="true" />
             <div className="relative flex flex-col p-5 sm:p-7">
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-brass-600">
-                Fact {String(activeIndex + 1).padStart(2, '0')} <span className="text-ink-400">/ {String(facts.length).padStart(2, '0')}</span>
-              </span>
               <h3 className="legal-fact-title relative mt-4 font-display text-xl font-medium leading-snug tracking-tight text-ink sm:text-2xl">
                 {fact.title}
               </h3>

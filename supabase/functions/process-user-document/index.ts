@@ -54,7 +54,7 @@ Deno.serve(async (request: Request) => {
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')
-  if (!supabaseUrl || !anonKey || !serviceRoleKey || !openRouterKey) {
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
     console.error('Document processing environment is incomplete')
     return jsonResponse({ error: 'Document processing is not configured' }, 503)
   }
@@ -71,7 +71,7 @@ Deno.serve(async (request: Request) => {
   } = await caller.auth.getUser()
   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
 
-  let body: { document_id?: unknown }
+  let body: { document_id?: unknown; provider_consent?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -80,6 +80,9 @@ Deno.serve(async (request: Request) => {
 
   if (typeof body.document_id !== 'string' || !isUuid(body.document_id)) {
     return jsonResponse({ error: 'A valid document_id is required' }, 400)
+  }
+  if (body.provider_consent !== true) {
+    return jsonResponse({ error: 'Provider processing consent is required' }, 403)
   }
 
   const service = createClient(supabaseUrl, serviceRoleKey, {
@@ -97,6 +100,15 @@ Deno.serve(async (request: Request) => {
 
     if (lookupError) throw new Error('Could not load document record')
     if (!document) return jsonResponse({ error: 'Document not found' }, 404)
+    const { error: consentError } = await service
+      .from('user_documents')
+      .update({ provider_consent_at: new Date().toISOString() })
+      .eq('id', document.id)
+      .eq('owner_id', user.id)
+    if (consentError) {
+      console.error('Could not record document processing consent:', consentError)
+      return jsonResponse({ error: 'Could not record provider processing consent' }, 502)
+    }
     if (document.processing_status === 'ready') {
       return jsonResponse({ document_id: document.id, status: 'ready' })
     }
@@ -156,7 +168,24 @@ Deno.serve(async (request: Request) => {
       throw new DocumentProcessingError('This document contains too much text to process safely.')
     }
 
-    const embeddings = await embedWithOpenRouter(openRouterKey, chunks.map((chunk) => chunk.text))
+    let embeddings: number[][] | null = null
+    if (openRouterKey) {
+      try {
+        embeddings = []
+        for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
+          embeddings.push(...await embedWithOpenRouter(
+            openRouterKey,
+            chunks.slice(start, start + EMBEDDING_BATCH_SIZE).map((chunk) => chunk.text),
+          ))
+        }
+      } catch (error) {
+        console.warn('Embedding failed; indexing document for text search only:', error)
+        embeddings = null
+      }
+    } else {
+      console.warn('OPENROUTER_API_KEY is not configured; indexing document for text search only.')
+    }
+
     const { error: clearError } = await service
       .from('user_document_chunks')
       .delete()
@@ -170,7 +199,7 @@ Deno.serve(async (request: Request) => {
       chunk_index: chunk.chunk_index,
       page_number: chunk.page_number,
       text: chunk.text,
-      embedding: embeddings[index],
+      embedding: embeddings?.[index] ?? null,
     }))
 
     for (let start = 0; start < rows.length; start += 50) {

@@ -178,7 +178,7 @@ export function QuickNavigation({ isAdmin = false }: { isAdmin?: boolean }) {
         </div>
 
         <div className="border-t border-ink-100 px-4 py-3 text-xs text-ink-400">
-          Search results and AI answers should be checked against their cited sources.
+          Verify results against their cited sources.
         </div>
       </dialog>
     </>

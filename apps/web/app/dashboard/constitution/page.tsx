@@ -69,8 +69,7 @@ export default function ConstitutionPage() {
         Constitution of the Federal Republic of Nigeria
       </h1>
       <p className="text-ink-400 leading-relaxed mb-8 max-w-2xl">
-        Browse readable, structured passages from the verified Constitution source.
-        Formatting improves the extracted text&apos;s layout without changing its wording.
+        Read a structured transcription of the verified text. Formatting preserves the source wording.
       </p>
 
       <div className="relative mb-8">
@@ -114,9 +113,6 @@ export default function ConstitutionPage() {
                 <div className="border-t border-ink-100 px-5 py-5 space-y-5">
                   {chapterPassages.map((passage) => (
                     <article key={passage.chunk_id} className="space-y-4">
-                      <p className="font-mono text-[11px] uppercase tracking-wider text-ink-400">
-                        Readable transcription · source wording preserved
-                      </p>
                       <div className="space-y-3">
                         {formatLegalText(passage.text).map((block, index) => {
                           if (block.kind === 'chapter') {

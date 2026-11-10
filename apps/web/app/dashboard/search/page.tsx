@@ -3,7 +3,6 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Filter, Search } from 'lucide-react'
-import Image from 'next/image'
 import {
   searchLegalSources,
   type LegalSearchFilters,
@@ -82,25 +81,8 @@ export default function SearchPage() {
       <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">Research</p>
       <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-ink">Search legal sources</h1>
       <p className="mb-8 mt-3 max-w-2xl leading-7 text-ink-400">
-        Search available Nigerian legal text. Each result identifies its source
-        and section so you can check the original context.
+        Search verified Nigerian legal sources and open the original text.
       </p>
-
-      <div className="image-card group relative mb-7 h-32 overflow-hidden rounded-xl border border-ink-100 bg-ink shadow-sm">
-        <Image
-          src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=2400&q=90"
-          alt="Law books in a legal library"
-          fill
-          priority
-          quality={90}
-          sizes="(max-width: 768px) 100vw, 1000px"
-          className="motion-image object-cover opacity-70"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/45 to-transparent" />
-        <p className="absolute inset-y-0 left-5 flex items-center font-display text-2xl text-white">
-          Find the passage that matters.
-        </p>
-      </div>
 
       <form onSubmit={handleSearch} className="mb-9 flex flex-col gap-3 sm:flex-row">
         <label className="relative flex-1">
@@ -186,13 +168,13 @@ export default function SearchPage() {
           </button>
         </div>
         <p className="mt-3 text-xs leading-5 text-ink-400">
-          Filters only narrow the sources currently available to your account. Case-law or other results appear only after verified material has been added to the corpus.
+          Filters cover only verified sources currently available.
         </p>
       </section>
 
       {error && <p role="alert" className="mb-6 p-4 rounded-lg border border-seal/25 bg-seal/5 text-seal">{error}</p>}
       {searched && !loading && !error && results.length === 0 && (
-        <p className="text-ink-400">No verified source passages matched that search and these filters. Try broadening your filters or changing the search terms.</p>
+        <p className="text-ink-400">No verified passages found. Try different terms or filters.</p>
       )}
 
       {searched && !loading && !error && results.length > 0 && (
@@ -217,7 +199,7 @@ export default function SearchPage() {
             </div>
             <p className="text-ink leading-relaxed whitespace-pre-line">{result.text}</p>
             <a href={result.source_url} target="_blank" rel="noreferrer" className="inline-block mt-4 text-sm text-brass-600 hover:text-ink underline underline-offset-2">
-              Open source document
+              Optional: open source document
             </a>
           </article>
         ))}

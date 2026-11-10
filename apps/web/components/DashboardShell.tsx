@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
@@ -46,6 +47,8 @@ const NAV_ITEMS = [
 
 export interface DashboardUser {
   fullName: string | null
+  userName: string | null
+  avatarUrl: string | null
   email: string | null
   isAdmin?: boolean
   adminRole?: string | null
@@ -195,7 +198,7 @@ export function DashboardShell({
   // Per product decision: never show the user's raw email in the dashboard chrome —
   // show their name (or a neutral fallback) with an avatar icon instead. Email is
   // still used internally (Supabase auth, Settings page) — just not displayed here.
-  const displayName = user.fullName?.trim() || 'Account'
+  const displayName = user.userName?.trim() || user.fullName?.trim() || 'Account'
 
   async function handleLogout() {
     setLoggingOut(true)
@@ -291,7 +294,18 @@ export function DashboardShell({
 
           <div className="flex items-center justify-between px-3 py-3 mt-1 rounded-lg bg-paper/70">
             <div className="flex items-center gap-2 min-w-0">
-              <UserCircle size={28} strokeWidth={1.5} className="text-ink-400 shrink-0" />
+              {user.avatarUrl ? (
+                <Image
+                  src={user.avatarUrl}
+                  alt=""
+                  width={28}
+                  height={28}
+                  unoptimized
+                  className="h-7 w-7 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <UserCircle size={28} strokeWidth={1.5} className="text-ink-400 shrink-0" />
+              )}
               <span className="text-sm text-ink font-medium truncate">{displayName}</span>
             </div>
             <button

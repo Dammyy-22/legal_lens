@@ -162,8 +162,7 @@ export default function AdminCorpusReview({
       </div>
       <h1 className="font-display text-4xl text-ink mb-3">Corpus review</h1>
       <p className="text-ink-400 leading-relaxed mb-10 max-w-2xl">
-        Ingested content stays hidden from users until you read and verify it. This is enforced by Row
-        Level Security in the database — not just this page&apos;s UI.
+        Unverified content stays hidden until approved; database RLS enforces this.
       </p>
 
       {error && (

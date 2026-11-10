@@ -9,7 +9,6 @@ import {
   HeartHandshake,
   MapPin,
   ShieldCheck,
-  TriangleAlert,
   UserRoundSearch,
 } from 'lucide-react'
 
@@ -131,10 +130,8 @@ export default function LawyersPage() {
   )
   const resources = AREA_RESOURCES[area.id] ?? []
   const referralMessage = [
-    'Hello, I am looking for a referral to a Nigerian lawyer.',
-    `State/FCT: ${state || '[state or FCT]'}`,
-    `Matter: ${area.label}`,
-    'Please let me know how to find an NBA member who handles this area and how I can verify their current right to practise.',
+    `Hello, I need a referral to a Nigerian lawyer in ${state || '[state or FCT]'}.`,
+    `My matter is ${area.label}. Please direct me to an NBA member who handles it and explain how to verify their current licence.`,
   ].join('\n')
 
   async function copyReferralMessage() {
@@ -165,14 +162,10 @@ export default function LawyersPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 md:py-14 animate-ink-in">
-      <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-2">
-        Find a lawyer
-      </p>
       <h1 className="font-display text-4xl text-ink mb-3 sm:text-5xl">Find a lawyer</h1>
       <p className="text-ink-400 leading-relaxed mb-8 max-w-3xl">
-        Search the Nigerian Bar Association&apos;s member directory, then verify the
-        lawyer&apos;s current digital practice licence before sharing documents or
-        paying fees. LegalLens does not list or endorse individual lawyers.
+        Search by name or enrolment number. LegalLens does not provide live NBA membership
+        or licence status.
       </p>
 
       <section className="rounded-2xl border border-ink-100 bg-white p-6 md:p-8 mb-8">
@@ -183,11 +176,13 @@ export default function LawyersPage() {
           <div>
             <h2 className="font-display text-2xl text-ink">Search an NBA member</h2>
             <p className="mt-1 text-sm text-ink-400 leading-relaxed">
-              The official NBA directory searches by a lawyer&apos;s full name or
-              enrolment number. It does not search by state or practice area.
+              Search by full name or enrolment number.
             </p>
           </div>
         </div>
+        <p role="status" className="mb-5 rounded-lg border border-brass/25 bg-brass/5 p-3 text-sm text-ink-400">
+          In-app verification is unavailable. LegalLens has not checked NBA membership or licence status.
+        </p>
 
         <label htmlFor="lawyer-search" className="block text-sm font-medium text-ink mb-2">
           Lawyer&apos;s full name or enrolment number (optional)
@@ -197,7 +192,7 @@ export default function LawyersPage() {
             id="lawyer-search"
             value={lawyerSearch}
             onChange={(event) => setLawyerSearch(event.target.value)}
-            placeholder="Enter a name or enrolment number to copy into the NBA directory"
+            placeholder="Enter a name or enrolment number"
             autoComplete="off"
             maxLength={160}
             className="min-w-0 flex-1 px-4 py-3 border border-ink-100 rounded-lg bg-white text-ink text-sm placeholder:text-ink-400 focus:border-brass focus:outline-none"
@@ -217,41 +212,38 @@ export default function LawyersPage() {
             rel="noreferrer"
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-5 py-3 text-sm font-medium text-paper hover:bg-ink-600 transition-colors"
           >
-            Open official NBA directory <ArrowUpRight size={16} />
+            Optional: NBA directory <ArrowUpRight size={16} />
           </a>
         </div>
         <p className="mt-2 text-xs text-ink-400">
-          The NBA site opens separately. Copy the name or enrolment number above and
-          enter it in the directory&apos;s search field.
+          LegalLens has not checked a lawyer&apos;s identity, membership or licence. The NBA directory is an optional live check.
         </p>
         {lawyerSearchCopyError && <p role="alert" className="mt-2 text-xs text-seal">{lawyerSearchCopyError}</p>}
 
         <div className="mt-6 grid sm:grid-cols-2 gap-3">
-          <a
-            href={NBA_LICENSE_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="group flex items-start gap-3 rounded-lg border border-brass/30 bg-brass/5 p-4 hover:border-brass transition-colors"
-          >
+          <div className="flex items-start gap-3 rounded-lg border border-brass/30 bg-brass/5 p-4">
             <ShieldCheck size={20} className="shrink-0 text-brass-600" />
             <span>
               <span className="block text-sm font-semibold text-ink">Verify the practice licence</span>
               <span className="block mt-1 text-xs text-ink-400 leading-relaxed">
-                Use the serial number printed on the NBA digital practice licence or
-                its QR verification code.
+                Check the licence holder&apos;s name and status using its serial number or QR code.
+                LegalLens cannot confirm live status.
               </span>
-              <span className="inline-flex items-center gap-1 mt-2 text-xs text-brass-600">
-                Open NBA verification portal <ArrowUpRight size={13} />
-              </span>
+              <a
+                href={NBA_LICENSE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 mt-2 text-xs text-brass-600 underline underline-offset-2"
+              >
+                Optional: NBA verification portal <ArrowUpRight size={13} />
+              </a>
             </span>
-          </a>
+          </div>
           <div className="rounded-lg border border-ink-100 p-4">
             <h3 className="text-sm font-semibold text-ink">Before you retain anyone</h3>
             <p className="mt-1 text-xs text-ink-400 leading-relaxed">
-              Match the name on the licence to the person you are speaking with. Ask
-              for a written engagement letter, scope, fee breakdown and receipts.
-              A directory result alone is not a recommendation or proof of current
-              licence status.
+              Agree on scope and fees in writing, request receipts, and never share
+              passwords, one-time codes or original documents with an unverified contact.
             </p>
           </div>
         </div>
@@ -265,9 +257,8 @@ export default function LawyersPage() {
           <div>
             <h2 className="font-display text-2xl text-ink">Prepare a local referral request</h2>
             <p className="mt-1 text-sm text-ink-400 leading-relaxed">
-              Choose where you need help and the kind of matter. We&apos;ll prepare a
-              message you can send through the NBA&apos;s official contact channel;
-              LegalLens does not store or send this information.
+              Choose a location and matter, then copy a message to send to the NBA.
+              LegalLens does not send or store it.
             </p>
           </div>
         </div>
@@ -295,7 +286,6 @@ export default function LawyersPage() {
             </select>
           </label>
         </div>
-        <p className="text-xs text-ink-400 mb-4">{area.detail}</p>
 
         <label htmlFor="referral-message" className="block text-sm font-medium text-ink mb-2">
           Referral message (review it before sending)
@@ -322,7 +312,7 @@ export default function LawyersPage() {
             rel="noreferrer"
             className="inline-flex items-center gap-2 text-sm font-medium text-brass-600 underline underline-offset-2"
           >
-            Contact the NBA <ArrowUpRight size={15} />
+            Optional: contact the NBA <ArrowUpRight size={15} />
           </a>
         </div>
         {copyError && <p role="alert" className="mt-2 text-xs text-seal">{copyError}</p>}
@@ -364,45 +354,32 @@ export default function LawyersPage() {
           </div>
           <div className="space-y-3">
             {resources.map((resource) => (
-              <a
+              <article
                 key={resource.title}
-                href={resource.url}
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-start justify-between gap-4 rounded-lg border border-ink-100 p-4 hover:border-brass/40 transition-colors"
+                className="rounded-lg border border-ink-100 p-4"
               >
                 <span>
                   <span className="block text-sm font-semibold text-ink">{resource.title}</span>
                   <span className="block mt-1 text-xs text-ink-400 leading-relaxed">{resource.detail}</span>
                   <span className="block mt-2 text-[10px] uppercase tracking-wide font-mono text-brass-600">{resource.label}</span>
                 </span>
-                <ArrowUpRight size={16} className="shrink-0 text-brass-600" />
-              </a>
+                <a
+                  href={resource.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-brass-600 underline underline-offset-2"
+                >
+                  Optional: open official resource <ArrowUpRight size={13} />
+                </a>
+              </article>
             ))}
           </div>
         </section>
       )}
 
-      <section className="rounded-2xl border border-seal/20 bg-seal/5 p-5 md:p-6 mb-8">
-        <div className="flex items-start gap-3">
-          <TriangleAlert size={20} className="mt-0.5 shrink-0 text-seal" />
-          <div>
-            <h2 className="font-semibold text-ink">Protect yourself from referral and payment scams</h2>
-            <ul className="mt-2 space-y-1.5 list-disc list-inside text-sm text-ink-400 leading-relaxed">
-              <li>Verify the lawyer&apos;s identity and current NBA digital practice licence independently.</li>
-              <li>Confirm the engagement and fees in writing; request receipts for every payment.</li>
-              <li>Do not send passwords, one-time codes or original documents to an unverified contact.</li>
-              <li>LegalLens has no lawyer profiles, does not endorse practitioners and cannot promise a referral.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
       <p className="text-xs text-ink-400 leading-relaxed">
-        LegalLens provides legal information, not legal advice. The NBA website and
-        external organizations are responsible for their own directories, referrals
-        and services. If you face immediate danger or an imminent court deadline,
-        contact emergency services or a qualified local lawyer promptly.
+        For immediate danger or an urgent court deadline, contact emergency services
+        or a qualified local lawyer.
       </p>
     </div>
   )

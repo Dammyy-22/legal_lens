@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  buildDocumentSourceExtract,
   documentSourceLabel,
   extractCitationIds,
   selectValidCitationIds,
@@ -31,4 +32,19 @@ test('answers without a valid retrieved citation are replaced with a safe fallba
     citedChunkIds: ['retrieved'],
     uncertain: false,
   })
+})
+
+test('provider fallback returns bounded direct excerpts and only retrieved citations', () => {
+  const result = buildDocumentSourceExtract([
+    { id: 'chunk-1', text: 'The tenancy term begins on 1 January.', page_number: 2, chunk_index: 0 },
+    { id: 'chunk-2', text: 'Rent is due on the first day of each month.', page_number: null, chunk_index: 1 },
+    { id: 'chunk-3', text: 'A third passage.', page_number: null, chunk_index: 2 },
+    { id: 'chunk-4', text: 'This passage should not be included.', page_number: null, chunk_index: 3 },
+  ])
+
+  assert.match(result.answer, /AI analysis is unavailable/)
+  assert.match(result.answer, /— Page 2/)
+  assert.match(result.answer, /— Text section 2/)
+  assert.doesNotMatch(result.answer, /should not be included/)
+  assert.deepEqual(result.citedChunkIds, ['chunk-1', 'chunk-2', 'chunk-3'])
 })

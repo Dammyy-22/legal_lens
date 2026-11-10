@@ -61,15 +61,15 @@ export default function RegisterPage() {
 
     const normalizedEmail = email.trim().toLowerCase()
     const supabase = createClient()
-    // Extra profile fields are stored in Supabase's built-in user_metadata (no separate
-    // profiles table needed for this). They're set once at signup — editing them later
-    // would need a small addition to the Settings page, not built yet.
+    // Profile details live in Supabase user_metadata and can be edited in Settings.
     const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
       options: {
         data: {
           full_name: fullName.trim(),
+          username: fullName.trim(),
+          nickname: fullName.trim(),
           state: state || null,
           city: city.trim() || null,
           phone: phone.trim() || null,
@@ -97,10 +97,8 @@ export default function RegisterPage() {
     setError('')
     const supabase = createClient()
     const next = new URLSearchParams(window.location.search).get('next')
-    // Google OAuth sign-ups skip this form entirely — Supabase automatically populates
-    // full_name/avatar from the Google profile, but state/city/phone won't be captured
-    // this way. Acceptable for now since those are optional profile details, not
-    // required for the account to function.
+    // Google OAuth populates the initial name and photo; optional profile details can
+    // be completed later in Settings.
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

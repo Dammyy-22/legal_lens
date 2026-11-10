@@ -39,28 +39,28 @@ interface UserDocument {
 const DOCUMENT_REVIEW_PROMPTS = [
   {
     label: 'Summarize key terms',
-    description: 'A neutral overview of relevant retrieved passages.',
+    description: 'Summarize retrieved passages.',
     Icon: FileSearch,
     question:
       'Using only the retrieved passages from this uploaded document, give a concise, neutral summary of the key terms they contain. Group related points by topic, cite every factual statement, and say that these passages may not represent the entire document.',
   },
   {
     label: 'Find dates and deadlines',
-    description: 'Surface dates and notice periods stated in the text.',
+    description: 'List dates stated in the text.',
     Icon: CalendarDays,
     question:
       'Which dates, deadlines, notice periods, renewal periods, or other time-sensitive actions are expressly stated in the retrieved passages? Cite each item. Do not calculate or infer dates. If none appear in these passages, say so without implying they are absent from the entire document.',
   },
   {
     label: 'Review payment terms',
-    description: 'Locate amounts, fees, deposits and payment timing.',
+    description: 'Find amounts and payment timing.',
     Icon: FileText,
     question:
       'What payment amounts, fees, deposits, payment timing, or other financial obligations are expressly described in the retrieved passages? Cite each item, distinguish exact text from anything not stated, and do not infer terms from outside the document.',
   },
   {
     label: 'Prepare questions for a lawyer',
-    description: 'Turn unclear wording into questions to discuss.',
+    description: 'Turn unclear terms into questions.',
     Icon: Scale,
     question:
       'Based only on the retrieved passages, list specific wording or terms the reader may want to clarify with a qualified lawyer. Cite each item. Do not assess legality, identify a breach, or suggest that a term is missing from the entire document.',
@@ -78,6 +78,7 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [asking, setAsking] = useState(false)
+  const [retrying, setRetrying] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState('')
 
@@ -128,7 +129,7 @@ export default function DocumentsPage() {
       return
     }
     if (file.size < 1 || file.size > MAX_UPLOAD_BYTES) {
-      setError('Files must be smaller than 15 MB.')
+      setError('Files must be no larger than 15 MiB.')
       return
     }
 
@@ -157,6 +158,7 @@ export default function DocumentsPage() {
             filename: file.name,
             mime_type: typeInfo.mime,
             file_size_bytes: file.size,
+            provider_consent: providerConsent,
           },
         },
       )
@@ -195,7 +197,7 @@ export default function DocumentsPage() {
 
       try {
         const { error: processingError } = await supabase.functions.invoke('process-user-document', {
-          body: { document_id: uploadReservation.document_id },
+          body: { document_id: uploadReservation.document_id, provider_consent: providerConsent },
         })
         if (processingError) {
           throw new Error(await functionErrorMessage(
@@ -253,12 +255,16 @@ export default function DocumentsPage() {
 
   async function askDocument(documentId: string | undefined, prompt: string) {
     if (!documentId || prompt.trim().length < 3) return
+    if (!providerConsent) {
+      setError('Review and accept provider processing before asking about this document.')
+      return
+    }
 
     setAsking(true)
     setError('')
     setAnswer(null)
     try {
-      const result = await askAboutUserDocument(documentId, prompt.trim())
+      const result = await askAboutUserDocument(documentId, prompt.trim(), providerConsent)
       setAnswer(result)
       setQuestion('')
     } catch (askError) {
@@ -269,11 +275,16 @@ export default function DocumentsPage() {
   }
 
   async function handleRetry(documentId: string) {
+    if (!providerConsent) {
+      setError('Review and accept provider processing before retrying this document.')
+      return
+    }
     setError('')
+    setRetrying(documentId)
     try {
       const supabase = createClient()
       const { error: processingError } = await supabase.functions.invoke('process-user-document', {
-        body: { document_id: documentId },
+        body: { document_id: documentId, provider_consent: providerConsent },
       })
       if (processingError) {
         throw new Error(await functionErrorMessage(processingError, 'Unable to retry document processing.'))
@@ -283,6 +294,7 @@ export default function DocumentsPage() {
       setError(error instanceof Error ? error.message : 'Unable to retry document processing.')
     } finally {
       await loadDocuments()
+      setRetrying((current) => current === documentId ? null : current)
     }
   }
 
@@ -321,24 +333,13 @@ export default function DocumentsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 md:py-14">
-      <div className="flex items-center gap-3 mb-3">
-        <FileText size={26} className="text-brass-600" />
-        <p className="font-mono text-xs uppercase tracking-widest text-brass-600">Private workspace</p>
-      </div>
       <h1 className="font-display text-4xl text-ink mb-3">My documents</h1>
       <p className="text-ink-400 leading-relaxed mb-8 max-w-3xl">
-        Upload a document to ask questions about its contents. This provides information
-        from the document, not legal advice.
+        Upload a file and ask questions. Not legal advice.
       </p>
 
       <div className="mb-8 rounded-lg border border-brass-600/20 bg-white p-4 text-sm text-ink-400">
-        Your files are private to your account. Pages with little or no selectable
-        text in a PDF may be sent to the configured Baidu Unlimited-OCR service for
-        text extraction. Extracted text is sent to OpenRouter for indexing;
-        relevant passages and your questions are sent through OpenRouter to the
-        selected model provider to answer.
-        Maximum file size: 15 MB. Delete a document to remove its stored file and
-        associated Q&amp;A.
+        Private · PDF, DOCX or TXT · 15 MiB max. Delete removes the file and Q&amp;A.
       </div>
 
       {error && (
@@ -349,7 +350,7 @@ export default function DocumentsPage() {
 
       <form onSubmit={handleUpload} className="mb-10 bg-white border border-ink-100 rounded-lg p-5 space-y-4">
         <label htmlFor="user-document-file" className="block text-sm font-medium text-ink">
-          Choose a PDF, DOCX, or TXT file
+          Choose a PDF, DOCX or TXT file (up to 15 MiB)
         </label>
         <input
           ref={fileInput}
@@ -369,11 +370,9 @@ export default function DocumentsPage() {
             className="mt-1"
           />
           <span>
-            I agree that extracted document text may be processed by OpenRouter for
-            indexing and that relevant passages and my questions may be processed
-            through OpenRouter to its selected model provider to provide answers. For PDFs with scanned
-            pages, those pages may be sent to the configured Baidu Unlimited-OCR
-            service for text extraction.
+            I agree to send document text to OpenRouter for indexing, relevant passages
+            and questions to its selected AI provider for answers, and scanned PDF pages
+            to Baidu OCR when needed.
           </span>
         </label>
         <button
@@ -400,7 +399,7 @@ export default function DocumentsPage() {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-ink">{document.original_filename}</p>
                 <p className="mt-1 text-xs text-ink-400">
-                  {(document.file_size_bytes / (1024 * 1024)).toFixed(1)} MB
+                  {(document.file_size_bytes / (1024 * 1024)).toFixed(1)} MiB
                   {document.page_count ? ` · ${document.page_count} pages` : ''}
                   {' · '}
                   {document.processing_status === 'ready' ? 'Ready for questions' : document.processing_status}
@@ -427,9 +426,10 @@ export default function DocumentsPage() {
                   <button
                     type="button"
                     onClick={() => void handleRetry(document.id)}
-                    className="rounded-lg border border-ink-100 px-3 py-2 text-sm text-ink"
+                    disabled={retrying === document.id || !providerConsent}
+                    className="rounded-lg border border-ink-100 px-3 py-2 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Retry
+                    {retrying === document.id ? 'Retrying…' : 'Retry'}
                   </button>
                 )}
                 <button
@@ -456,9 +456,7 @@ export default function DocumentsPage() {
             </h2>
           </div>
           <p className="mb-4 max-w-3xl text-sm leading-6 text-ink-400">
-            Choose a topic to inspect or ask your own question. Answers use retrieved
-            passages only, may not cover the whole file, and are not a legal risk
-            assessment or legal advice.
+            Answers use retrieved passages only and may not cover the full file. Not legal advice.
           </p>
           <div className="mb-5 grid gap-3 sm:grid-cols-2">
             {DOCUMENT_REVIEW_PROMPTS.map(({ label, description, Icon, question: reviewQuestion }) => (
@@ -511,11 +509,6 @@ export default function DocumentsPage() {
           {answer && (
             <article className="mt-6 rounded-lg border border-ink-100 bg-white p-6">
               <p className="whitespace-pre-line leading-relaxed text-ink">{answer.answer}</p>
-              {answer.uncertain && (
-                <p className="mt-4 text-sm text-ink-400">
-                  This answer is uncertain because no source passage could be attached.
-                </p>
-              )}
               {answer.citations.length > 0 && (
                 <div className="mt-5 border-t border-ink-100 pt-4">
                   <p className="mb-2 font-mono text-xs uppercase tracking-widest text-brass-600">

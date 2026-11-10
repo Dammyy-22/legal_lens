@@ -98,8 +98,17 @@ Set `UNLIMITED_OCR_GATEWAY_URL` and the same key as
 `UNLIMITED_OCR_GATEWAY_KEY` in Supabase Edge Function secrets. Extracted text is
 sent to OpenRouter for embeddings and relevant retrieved passages are sent to
 OpenRouter for document Q&A. The Documents page requires user acknowledgement
-before upload. Drafting separately requires explicit consent before user-provided
-descriptions are sent to OpenRouter.
+before upload, records that acknowledgement, and requires it again for retries
+and document questions. If embeddings are unavailable, documents remain searchable
+through owner-scoped full-text search; when answer generation is unavailable, the
+app returns cited excerpts without AI interpretation.
+
+Uploads use an authenticated reservation, a one-use signed URL, an opaque
+user-scoped storage path, private-bucket RLS, a 15 MiB limit and a 20-file quota.
+The processor checks file signatures, UTF-8 text, archive expansion, PDF pages,
+and extracted-text limits before indexing. These controls do not replace a
+dedicated malware-scanning service; configure one before accepting higher-risk
+or untrusted public uploads.
 
 ## 3. Set Edge Function secrets and deploy
 

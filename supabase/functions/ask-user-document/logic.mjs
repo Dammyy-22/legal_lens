@@ -21,6 +21,33 @@ export function validateDocumentAnswer(answer, citedChunkIds, retrievedIds) {
   return { answer: normalizedAnswer, citedChunkIds: validCitations, uncertain: false }
 }
 
+export function buildDocumentSourceExtract(chunks) {
+  const safeChunks = Array.isArray(chunks)
+    ? chunks.filter((chunk) => chunk && typeof chunk.id === 'string' && typeof chunk.text === 'string').slice(0, 3)
+    : []
+
+  if (safeChunks.length === 0) {
+    return {
+      answer: "I couldn't find a passage in this document that adequately answers your question. Check that you selected the right document or consult a qualified lawyer.",
+      citedChunkIds: [],
+    }
+  }
+
+  const excerpts = safeChunks.map((chunk) => {
+    const text = chunk.text.trim()
+    const excerpt = text.length > 700 ? `${text.slice(0, 697).trimEnd()}…` : text
+    const location = documentSourceLabel(chunk.page_number, chunk.chunk_index)
+    return `“${excerpt}”\n— ${location}`
+  })
+
+  return {
+    answer:
+      "AI analysis is unavailable. These are direct excerpts from the passages most closely matching your question, without interpretation:\n\n" +
+      excerpts.join('\n\n'),
+    citedChunkIds: safeChunks.map((chunk) => chunk.id),
+  }
+}
+
 export function documentSourceLabel(pageNumber, chunkIndex) {
   const safeChunkIndex = Number.isInteger(chunkIndex) ? chunkIndex : 0
   return Number.isInteger(pageNumber) && pageNumber > 0

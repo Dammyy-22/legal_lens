@@ -5,7 +5,6 @@ import {
   Copy,
   Download,
   FilePenLine,
-  FileText,
   LoaderCircle,
   WandSparkles,
 } from 'lucide-react'
@@ -19,27 +18,27 @@ const DRAFT_OPTIONS: { value: DraftType; label: string; description: string }[] 
   {
     value: 'information_request',
     label: 'Request information or records',
-    description: 'A neutral request for details or copies of records.',
+    description: 'Ask for details or records.',
   },
   {
     value: 'repair_request',
     label: 'Report a repair issue',
-    description: 'A polite request to inspect or address a reported repair issue.',
+    description: 'Request a repair.',
   },
   {
     value: 'consumer_complaint',
     label: 'Write to a seller or service provider',
-    description: 'Describe a problem and request a response or proposed resolution.',
+    description: 'Explain a problem and request a response.',
   },
   {
     value: 'workplace_records',
     label: 'Request workplace records or clarification',
-    description: 'A neutral request for employment records or an explanation.',
+    description: 'Request records or clarification.',
   },
   {
     value: 'meeting_follow_up',
     label: 'Summarize a conversation',
-    description: 'Record discussion points you want the recipient to confirm.',
+    description: 'Ask the recipient to confirm discussion points.',
   },
 ]
 
@@ -96,18 +95,15 @@ export default function DraftingPage() {
 
   return (
     <div className="workspace-enter mx-auto max-w-4xl px-5 py-8 sm:px-8 md:py-12">
-      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">OpenRouter-powered writing assistant</p>
+      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">Writing assistant</p>
       <h1 className="mt-2 font-display text-4xl font-medium tracking-tight text-ink">Prepare correspondence</h1>
       <p className="mb-7 mt-3 max-w-3xl leading-7 text-ink-400">
-        Create a preliminary, plain-language message from facts you provide. This tool
-        does not create contracts, court documents, legal notices, or legal advice.
+        Create a preliminary message—not a contract, court filing, legal notice, or legal advice.
       </p>
 
       <aside className="mb-6 rounded-xl border border-seal/20 bg-white p-4 text-sm leading-6 text-ink-400">
         <strong className="font-semibold text-ink">Protect private information.</strong>{' '}
-        Your description is sent through OpenRouter to the selected model provider for generation. Avoid account numbers,
-        identity documents, health details, children&apos;s information, or anything you
-        would not share with an AI provider. Drafts are not saved by LegalLens.
+        Avoid sensitive details. LegalLens does not save drafts.
       </aside>
 
       {error && <p role="alert" className="mb-5 rounded-lg border border-seal/25 bg-seal/5 p-4 text-sm text-seal">{error}</p>}
@@ -149,7 +145,7 @@ export default function DraftingPage() {
             maxLength={4000}
             required
             rows={7}
-            placeholder="What happened, when did it happen, what have you already asked for, and what response would you like? Avoid sensitive personal details."
+            placeholder="Include key dates, what happened, earlier requests, and the exact action or outcome you want. Avoid sensitive personal details."
             className="mt-1.5 w-full resize-y rounded-lg border border-ink-100 px-3 py-3 text-sm font-normal leading-6 text-ink placeholder:text-ink-400 focus:border-brass focus:outline-none focus:ring-2 focus:ring-brass/20"
           />
           <span className="mt-1 block text-right text-xs font-normal text-ink-400">{facts.length}/4000</span>
@@ -163,7 +159,7 @@ export default function DraftingPage() {
             disabled={loading}
             className="mt-1"
           />
-          <span>I understand my description is sent through OpenRouter to its selected model provider, the output is AI-generated and not lawyer-reviewed, and I will verify every detail before using it.</span>
+          <span>I agree to send my description through OpenRouter to its selected AI provider. The draft is not lawyer-reviewed; I will verify it before use.</span>
         </label>
 
         <button
@@ -181,12 +177,19 @@ export default function DraftingPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <FilePenLine size={19} className="text-brass-600" />
-              <h2 id="draft-result-heading" className="font-display text-xl font-medium text-ink">Preliminary draft</h2>
+              <h2 id="draft-result-heading" className="font-display text-xl font-medium text-ink">
+                {result.generation_mode === 'template_fallback' ? 'Editable template' : 'Preliminary draft'}
+              </h2>
             </div>
             <span className="rounded-full bg-paper px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-ink-400">
-              Generated with {result.provider}
+              {result.generation_mode === 'template_fallback' ? 'Template' : 'AI-generated'}
             </span>
           </div>
+          {result.warning && (
+            <p role="status" className="mt-4 rounded-lg border border-brass/25 bg-brass/5 p-3 text-sm text-ink-400">
+              {result.warning}
+            </p>
+          )}
           <pre className="mt-5 whitespace-pre-wrap break-words rounded-lg bg-paper/60 p-4 font-body text-sm leading-7 text-ink">{result.draft}</pre>
           <p className="mt-4 rounded-lg border border-brass/25 bg-brass/5 p-3 text-sm leading-6 text-ink-400">{result.disclaimer}</p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -198,10 +201,6 @@ export default function DraftingPage() {
             </button>
             {copyStatus && <span role="status" className="text-xs text-ink-400">{copyStatus}</span>}
           </div>
-          <p className="mt-5 flex items-start gap-2 text-xs leading-5 text-ink-400">
-            <FileText size={14} className="mt-0.5 shrink-0 text-brass-600" />
-            LegalLens does not store this draft. Check names, dates, amounts, and statements carefully. Ask a qualified Nigerian lawyer to review it if the issue may affect your rights or obligations.
-          </p>
         </article>
       )}
     </div>
