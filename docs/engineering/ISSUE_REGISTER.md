@@ -2,7 +2,25 @@
 
 Date: 2026-11-23. **Type** is one of: `Confirmed` (seen in code/tooling output), `Potential` (plausible, needs verification), `Gap` (feature absent vs. the master prompt), `Unknown` (cannot be determined from the repo).
 **Priority:** P0 critical (auth/access/data integrity/secret exposure), P1 core workflow/document security/RAG reliability/provider, P2 agents/observability/performance/maintainability, P3 optional.
-**No P0 was found.** Status of every item: `Open` — nothing has been fixed yet.
+**No P0 was found.** Status: see **Status log** below; items not listed there are `Open`.
+
+## Status log
+
+| ID | Status | Batch / date | Evidence |
+|---|---|---|---|
+| LL-001 | **Fixed in branch** (not deployed) | Batch 1 · 2026-11-23 | `next` 16.3.4 → 16.4.6, `eslint` 8 → 9, `eslint-config-next` 14 → 16.4.6. `npm audit` (prod and dev): 0 vulnerabilities. `tsc` exit 0; `next build` exit 0; clean `npm ci` succeeds. Vercel build not yet run |
+| LL-002 | **Fixed in code** (not deployed; **deploy check required**) | Batch 1 | All chat and embedding requests now carry `provider: {zdr: true, data_collection: "deny"}` via `_shared/openrouter-policy.mjs`; no opt-out. 6 unit tests assert the request body. **Risk:** if a configured model has no ZDR endpoint, calls fail closed (HTTP 404 from OpenRouter, logged with a clear message, returned as 502). Eligibility of `openai/gpt-4.1-mini` and `openai/text-embedding-3-small` could not be checked from the sandbox — verify before deploy (see CHANGELOG) |
+| LL-004 | **Fixed** | Batch 1 | `npm run lint` now runs `eslint .` with a flat config; exit 0 (0 errors, 7 warnings — see LL-050) |
+| LL-005 | **Partly fixed** | Batch 1 | CI now runs: lint, `npm audit --audit-level=high`, `ask` and provider-policy tests, `draft-document` type-check, OCR gateway tests, gitleaks scan, all five migrations (+ re-run of the three idempotent ones). Still open: RLS/authorization tests, retrieval/citation evals |
+| LL-053 | **Fixed** | Batch 1 | Pre-existing type errors found by running `deno check` locally for the first time on all six functions: (a) `draft-document`: `jsonResponse` was called with a third headers argument it did not accept, so the `Retry-After` header was never sent; (b) `process-user-document`: `crypto.subtle.digest` rejected `Uint8Array<ArrayBufferLike>` under current Deno/TS. All six functions now pass `deno check` (Deno 2.9.6) |
+
+## New issues found during Batch 1
+
+| ID | P | Title | Evidence / note |
+|---|---|---|---|
+| LL-050 | P3 | 7 lint warnings in existing UI code | `react-hooks/set-state-in-effect` (login, search, DashboardShell, LegalFactOfTheDay), `react-hooks/immutability` (AdminCorpusReview, documents page), `no-location-assign-relative-destination` (register). Downgraded to warnings in `eslint.config.mjs` so CI gates on real errors; refactor later |
+| LL-051 | P3 | React 18 is deprecated in Next 16 | Build warning: React 18 support removed in Next 17. Plan an upgrade to React 19 |
+| LL-052 | P3 | `schema.sql` and `waitlist_migration.sql` are not re-runnable | Re-run fails on `create policy` for existing policies. CI applies them once only |
 
 ## Confirmed defects
 

@@ -1,3 +1,9 @@
+import {
+  buildChatBody,
+  buildEmbeddingBody,
+  describePolicyFailure,
+} from './openrouter-policy.mjs'
+
 export type OpenRouterMessage = {
   role: 'system' | 'user' | 'assistant'
   content: string
@@ -34,16 +40,13 @@ export async function generateWithOpenRouter(
       'Content-Type': 'application/json',
       'X-OpenRouter-Title': 'LegalLens',
     },
-    body: JSON.stringify({
-      model,
-      messages: request.messages,
-      max_tokens: request.maxTokens,
-      ...(request.temperature === undefined ? {} : { temperature: request.temperature }),
-    }),
+    body: JSON.stringify(buildChatBody(model, request)),
     signal: AbortSignal.timeout(45_000),
   })
 
   if (!response.ok) {
+    const policyHint = describePolicyFailure(response.status, model)
+    if (policyHint) console.error(policyHint)
     throw new OpenRouterError(`OpenRouter returned HTTP ${response.status}`, response.status)
   }
 
@@ -87,11 +90,13 @@ export async function embedWithOpenRouter(
       'Content-Type': 'application/json',
       'X-OpenRouter-Title': 'LegalLens',
     },
-    body: JSON.stringify({ model, input }),
+    body: JSON.stringify(buildEmbeddingBody(model, input)),
     signal: AbortSignal.timeout(45_000),
   })
 
   if (!response.ok) {
+    const policyHint = describePolicyFailure(response.status, model)
+    if (policyHint) console.error(policyHint)
     throw new OpenRouterError(`OpenRouter embeddings returned HTTP ${response.status}`, response.status)
   }
 
