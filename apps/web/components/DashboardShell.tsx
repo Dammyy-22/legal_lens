@@ -214,7 +214,7 @@ export function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F7F4] md:flex">
+    <div className="min-h-screen overflow-x-hidden bg-[#F7F7F4] md:flex">
       {/* Mobile top bar with hamburger */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-ink-100 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
         <BrandLogo href="/dashboard" compact />
@@ -232,7 +232,7 @@ export function DashboardShell({
       <aside
         className={`${
           open ? 'flex' : 'hidden'
-        } md:flex md:w-[17rem] w-full shrink-0 flex-col border-b border-ink-100 bg-white md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r`}
+        } md:flex md:w-60 lg:w-[17rem] w-full shrink-0 flex-col border-b border-ink-100 bg-white md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r`}
       >
         <div className="hidden border-b border-ink-100 px-6 py-6 md:block">
           <BrandLogo href="/dashboard" compact />

@@ -155,7 +155,7 @@ export default function DashboardOverview({ fullName }: { fullName: string | nul
           className="motion-image object-cover opacity-80"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/50 to-transparent" />
-        <div className="absolute inset-y-0 left-6 flex max-w-lg flex-col justify-center sm:left-8">
+        <div className="absolute inset-y-0 left-6 right-6 flex max-w-lg flex-col justify-center sm:left-8 sm:right-8">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-brass-400">Research with context</p>
           <p className="mt-2 font-display text-2xl font-medium leading-tight text-white sm:text-3xl">Keep the law and its sources in view.</p>
         </div>
@@ -193,24 +193,30 @@ export default function DashboardOverview({ fullName }: { fullName: string | nul
             Move at your own pace. LegalLens provides information, not legal advice; seek a qualified lawyer for decisions about your situation.
           </p>
         </div>
-        <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <ol className="grid gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4">
           {WORKFLOW_STEPS.map(({ href, Icon, title, description }, index) => (
-            <li key={href} className="workflow-step" style={{ animationDelay: `${index * 80}ms` }}>
+            <li key={href} className="workflow-step h-full" style={{ animationDelay: `${index * 80}ms` }}>
               <Link
                 href={href}
-                className="group flex h-full min-h-28 items-start gap-3 rounded-xl border border-ink-100 bg-paper/40 p-4 transition-all hover:-translate-y-0.5 hover:border-brass/40 hover:bg-white hover:shadow-[0_10px_24px_rgba(20,38,30,0.07)]"
+                className="group flex h-full flex-col justify-between gap-4 rounded-xl border border-ink-100 bg-paper/40 p-5 transition-all hover:-translate-y-0.5 hover:border-brass/40 hover:bg-white hover:shadow-[0_10px_24px_rgba(20,38,30,0.07)]"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-brass-400">
-                  {index + 1}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2 font-display text-base font-medium text-ink">
-                    <Icon size={16} className="shrink-0 text-brass-600" />
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-brass-400">
+                    {index + 1}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-brass-600 ring-1 ring-ink-100/80 transition-colors group-hover:bg-paper">
+                      <Icon size={16} />
+                    </span>
+                    <ArrowRight size={15} className="shrink-0 text-ink-400/60 transition-all group-hover:translate-x-0.5 group-hover:text-brass-600" aria-hidden="true" />
+                  </div>
+                </div>
+                <div>
+                  <span className="block font-display text-base font-medium leading-snug text-ink">
                     {title}
                   </span>
-                  <span className="mt-1 block text-xs leading-5 text-ink-400">{description}</span>
-                </span>
-                <ArrowRight size={15} className="mt-1 shrink-0 text-ink-100 transition-all group-hover:translate-x-0.5 group-hover:text-brass-600" aria-hidden="true" />
+                  <span className="mt-1.5 block text-xs leading-5 text-ink-400">{description}</span>
+                </div>
               </Link>
             </li>
           ))}
@@ -250,7 +256,7 @@ export default function DashboardOverview({ fullName }: { fullName: string | nul
           </div>
           <BookOpenText size={21} className="mb-1 text-brass-600" />
         </div>
-        <Stagger className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <Stagger className="grid gap-3 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
           {TOOLS.map(({ href, Icon, title, description, category }) => (
             <StaggerItem key={href} className="h-full">
             <Link
@@ -281,7 +287,7 @@ export default function DashboardOverview({ fullName }: { fullName: string | nul
             Questions you can explore
           </h2>
         </div>
-        <ul className="grid gap-2 md:grid-cols-3">
+        <ul className="grid gap-2 lg:grid-cols-3">
           {STARTING_QUESTIONS.map((question) => (
             <li key={question}>
               <Link
