@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import { BrandLogo } from '@/components/BrandLogo'
 import { LegalFactOfTheDay } from '@/components/LegalFactOfTheDay'
+import { KnowledgeGraph } from '@/components/three/KnowledgeGraph'
+import { Reveal, Stagger, StaggerItem } from '@/components/motion/Reveal'
 
 const FEATURES = [
   {
@@ -33,7 +35,7 @@ const FEATURES = [
 export default function Home() {
   return (
     <main className="min-h-screen overflow-hidden bg-paper text-ink">
-      <header className="relative z-10 border-b border-ink-100/80 bg-white/85 backdrop-blur">
+      <header className="relative z-10 bg-paper/85 backdrop-blur">
         <nav
           aria-label="Main navigation"
           className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8"
@@ -57,6 +59,7 @@ export default function Home() {
       </header>
 
       <section className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-16 sm:px-8 sm:pb-20 sm:pt-24 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16 lg:pt-28">
+        <KnowledgeGraph className="absolute inset-0 opacity-50" />
         <div className="motion-enter relative z-10">
           <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-brass/30 bg-white/80 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-brass-600">
             <Landmark size={14} /> Nigerian legal information
@@ -122,9 +125,9 @@ export default function Home() {
       </div>
 
       <section id="features" className="border-y border-ink-100 bg-white">
-        <div className="mx-auto grid max-w-7xl gap-2 px-5 py-7 sm:grid-cols-3 sm:gap-8 sm:px-8 sm:py-10">
+        <Stagger className="mx-auto grid max-w-7xl gap-2 px-5 py-7 sm:grid-cols-3 sm:gap-8 sm:px-8 sm:py-10">
           {FEATURES.map(({ Icon, title, body }) => (
-            <article key={title} className="motion-enter flex gap-4 rounded-xl p-4 sm:p-3">
+            <StaggerItem as="article" key={title} className="flex gap-4 rounded-xl p-4 sm:p-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-paper text-brass-600">
                 <Icon size={20} strokeWidth={1.8} />
               </span>
@@ -132,13 +135,13 @@ export default function Home() {
                 <h2 className="font-display text-lg font-medium tracking-tight text-ink">{title}</h2>
                 <p className="mt-1.5 text-sm leading-6 text-ink-400">{body}</p>
               </div>
-            </article>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       <section id="about" className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-        <div>
+        <Reveal>
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-brass-600">A considered way to begin</p>
           <h2 className="mt-3 font-display text-3xl font-medium leading-tight tracking-[-0.035em] text-ink sm:text-4xl">
             Clear information. Better-informed next steps.
@@ -148,8 +151,8 @@ export default function Home() {
             for advice from a qualified lawyer. See what a source says, check its
             context, then decide what support you need.
           </p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        </Reveal>
+        <Reveal delay={0.12} className="grid gap-3 sm:grid-cols-2">
           <div className="image-card group relative min-h-56 overflow-hidden rounded-2xl border border-ink-100 bg-ink p-5 text-white shadow-sm sm:p-6">
             <Image
               src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=2000&q=90"
@@ -171,7 +174,7 @@ export default function Home() {
             <h3 className="mt-4 font-display text-xl font-medium text-ink">Clear limitations</h3>
             <p className="mt-2 text-sm leading-6 text-ink-400">Know when the available material is incomplete or your issue needs a lawyer.</p>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className="mx-5 mb-16 overflow-hidden rounded-2xl bg-ink text-paper sm:mx-8 lg:mx-auto lg:mb-20 lg:max-w-7xl">

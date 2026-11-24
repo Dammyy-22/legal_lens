@@ -21,8 +21,8 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'LegalLens | Nigerian Legal Information',
-    template: '%s | LegalLens',
+    default: 'LegalLens AI | Nigerian Legal Information',
+    template: '%s | LegalLens AI',
   },
   description:
     'Understand Nigerian law through clear explanations, searchable primary sources, and practical guides.',

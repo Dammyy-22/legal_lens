@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import { ChevronDown, Landmark, Search } from 'lucide-react'
 import { getConstitution, type LegalSearchResult } from '@/lib/api-client'
 import { formatLegalText } from '@/lib/legal-text-formatting'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
 export default function ConstitutionPage() {
+  const reduceMotion = useReducedMotion()
   const [passages, setPassages] = useState<LegalSearchResult[]>([])
   const [query, setQuery] = useState('')
   const [openChapters, setOpenChapters] = useState<Set<string>>(new Set())
@@ -110,7 +112,16 @@ export default function ConstitutionPage() {
                 </span>
                 <ChevronDown size={20} className={`shrink-0 text-brass-600 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
               </button>
+              <AnimatePresence initial={false}>
               {isOpen && (
+                <motion.div
+                  key="panel"
+                  initial={reduceMotion ? false : { height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: [0.2, 0.75, 0.25, 1] }}
+                  className="overflow-hidden"
+                >
                 <div className="border-t border-ink-100 px-5 py-5 space-y-5">
                   {chapterPassages.map((passage) => (
                     <article key={passage.chunk_id} className="space-y-4">
@@ -138,7 +149,9 @@ export default function ConstitutionPage() {
                     </article>
                   ))}
                 </div>
+                </motion.div>
               )}
+              </AnimatePresence>
             </section>
           )
         })}

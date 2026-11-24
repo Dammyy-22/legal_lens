@@ -1,0 +1,524 @@
+From 02f919650a829be9428c614779f9046738cd10a4 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Mon, 23 Nov 2026 10:34:38 +0000
+Subject: [PATCH] docs: Stage 1 audit, issue register, plan, security, AI
+ architecture, provider matrix, RAG/citations
+
+---
+ docs/ai/AI_ARCHITECTURE.md              | 93 +++++++++++++++++++++++++
+ docs/ai/PROVIDER_MATRIX.md              | 49 +++++++++++++
+ docs/ai/RAG_AND_CITATIONS.md            | 75 ++++++++++++++++++++
+ docs/engineering/IMPLEMENTATION_PLAN.md | 53 ++++++++++++++
+ docs/engineering/ISSUE_REGISTER.md      | 57 +++++++++++++++
+ docs/engineering/REPOSITORY_AUDIT.md    | 75 ++++++++++++++++++++
+ docs/security/SECURITY_AUDIT.md         | 54 ++++++++++++++
+ 7 files changed, 456 insertions(+)
+ create mode 100644 docs/ai/AI_ARCHITECTURE.md
+ create mode 100644 docs/ai/PROVIDER_MATRIX.md
+ create mode 100644 docs/ai/RAG_AND_CITATIONS.md
+ create mode 100644 docs/engineering/IMPLEMENTATION_PLAN.md
+ create mode 100644 docs/engineering/ISSUE_REGISTER.md
+ create mode 100644 docs/engineering/REPOSITORY_AUDIT.md
+ create mode 100644 docs/security/SECURITY_AUDIT.md
+
+diff --git a/docs/ai/AI_ARCHITECTURE.md b/docs/ai/AI_ARCHITECTURE.md
+new file mode 100644
+index 0000000..392834c
+--- /dev/null
++++ b/docs/ai/AI_ARCHITECTURE.md
+@@ -0,0 +1,93 @@
++# LegalLens — AI Architecture (current state and target design)
++
++Status: **proposal for approval.** Nothing in this document has been implemented.
++
++## 1. Current state
++
++Three independent request pipelines inside Supabase Edge Functions, all calling one OpenRouter wrapper:
++
++| Function | Purpose | Retrieval | Output |
++|---|---|---|---|
++| `ask` | Verified-corpus Q&A | pgvector (0.72, k=6) → FTS fallback | Free text + `[[cite:ID]]` tags, stripped and re-listed as citations |
++| `ask-user-document` | Q&A over one private document | owner-scoped pgvector RPC | Free text + citations validated by ID |
++| `draft-document` | Plain correspondence drafts | none (user facts only) | Free text draft |
++
++No orchestrator, tools, agents, tracing, fallbacks or provider abstraction. Safety behaviour is hard-coded (regex triage, empty-retrieval refusal, prompt rules).
++
++## 2. Framework decision
++
++**Recommendation: no agent framework.** Use a small typed TypeScript orchestrator inside the existing Edge Function runtime.
++
++Reasons: the existing code is already plain TypeScript with unit-testable `logic.mjs` modules; the required capabilities are a fixed pipeline with one bounded loop, not open-ended autonomy; Edge Functions favour small cold-start footprints; and the master prompt asks for one framework only if a need is demonstrated. Revisit if durable multi-step workflows or human-approval pauses outgrow Edge Functions (then evaluate a queue + worker, not an agent framework).
++
++## 3. Target design
++
++```
++Client ─▶ Edge entrypoint (auth, rate/budget limit, input validation)
++            │
++            ▼
++       Orchestrator  (fixed state machine, max steps, deadline, trace id)
++            │  calls only registered capabilities via typed contracts
++   ┌────────┼───────────┬──────────────┬──────────────┬───────────────┐
++   ▼        ▼           ▼              ▼              ▼               ▼
++ Research  Rights     Scenario      Document       Composer       Verifier
++ /Retrieval info      analysis      intelligence   (answer)       (citations/evidence)
++   │                                    │
++   ▼                                    ▼
++ Retrieval service (authorisation first)   Private-doc retrieval (owner check first)
++   │
++   ▼
++ ModelProvider interface ─▶ adapters (OpenRouter-ZDR, Gemini paid, Workers AI)
++```
++
++### Capability contracts and permissions (least privilege)
++
++| Capability | Reads | Writes | Provider data class | Notes |
++|---|---|---|---|---|
++| Legal research / retrieval | verified corpus via RLS client | none | A | Returns chunk IDs, text, source/version/section metadata. No generation |
++| Rights information | verified corpus (filtered to rights topics) | none | A | Structured "what the source says" output; no advice |
++| Scenario analysis | retrieval results + user facts | none | A | Must label assumptions; conditional language enforced by schema |
++| Document intelligence | one selected `ready` private document (owner check) | `user_document_questions/answer_sources` via service role after owner check | B | Consent flag required; no cross-document access |
++| Answer composition | retrieved evidence only | none | A/B | Emits structured claims, each pointing to evidence IDs |
++| Citation / evidence verification | evidence store | none | none (deterministic code, no model) | Gate: answer is not released unless verification passes or is downgraded to "uncertain/excerpt" |
++
++No capability can send email, file anything, contact a lawyer, or take any action outside the app. `draft-document` stays a **suggestion for the user to edit and send themselves**; any future consequential action requires explicit user approval in the UI.
++
++### Orchestrator bounds
++
++- Fixed pipeline; at most one retrieval retry (query rewrite) and one composition retry after a verifier failure.
++- Hard limits per request: wall-clock deadline, max model calls (proposal: 4), max tokens, max retrieved chunks, max input size.
++- Every step receives and returns schema-validated objects (proposal: Zod via `npm:zod`); a validation failure ends the request with a safe fallback, never a free-text retry loop.
++- Per-user daily request and token budget, enforced in the database (see LL-003).
++- Trace record per request: trace id, user id (hashed in logs), steps, provider/model, token counts, latency, retrieval chunk IDs, verifier outcome, final mode (`generated | source_extract | refused | safety`). No prompt/response text in logs for class B.
++
++### Provider abstraction
++
++```ts
++interface ModelProvider {
++  id: string
++  dataClasses: Array<'A' | 'B' | 'C' | 'D'>   // which classes it may receive
++  chat(req: ChatRequest): Promise<ChatResult>        // optional JSON-schema output
++  embed?(input: string[]): Promise<EmbedResult>      // returns model id + dimension
++  rerank?(q: string, docs: string[]): Promise<RerankResult>
++}
++```
++
++Selection is by class eligibility, then health/timeout policy and ordered fallbacks. Embedding results carry model id and dimension, stored with each vector (see LL-024). Mocked providers implement the same interface for CI.
++
++## 4. AI security controls (design requirements)
++
++| Threat | Control |
++|---|---|
++| Direct prompt injection | User text only in the user channel, length-capped; system prompt never interpolates user text; output schema-validated |
++| Indirect injection / retrieval poisoning | Retrieved text wrapped as data and escaped (exists); corpus rows reach retrieval only after admin verification (exists); add content-hash pinning at verification (LL-021); strip instruction-like patterns only for logging, never as a defence |
++| Cross-user leakage | Authorisation before retrieval (exists for private docs via RPC); add automated RLS/RPC tests with two users (LL-005) |
++| Sensitive-data disclosure | Class-based provider eligibility; ZDR enforcement; no prompt/response text in logs; consent record for class B |
++| Unsafe file processing | Existing size/MIME/signature/page/character limits; keep OCR gateway private; add malware-scan decision (open since Phase 16 in `DECISIONS.md`) |
++| Tool abuse | No write-capable tools exposed to the model; model proposes, deterministic code executes |
++| Unbounded loops/cost | Fixed orchestrator bounds + DB-backed budgets |
++| Fabricated law | Deterministic verifier; refusal/uncertainty over guess (see `RAG_AND_CITATIONS.md`) |
++
++## 5. Migration approach
++
++Strangler pattern: introduce the provider interface and orchestrator behind the existing endpoints with identical response shapes, switch one function at a time (`ask` first), keep the old path behind a flag until evaluation parity is shown. See `IMPLEMENTATION_PLAN.md` batches 4–6.
+diff --git a/docs/ai/PROVIDER_MATRIX.md b/docs/ai/PROVIDER_MATRIX.md
+new file mode 100644
+index 0000000..d3d1365
+--- /dev/null
++++ b/docs/ai/PROVIDER_MATRIX.md
+@@ -0,0 +1,49 @@
++# LegalLens — Provider Matrix (Stage 1, desk research)
++
++Researched 2026-11-23 from the providers' own documentation pages where they were retrievable; third-party summaries are labelled. **Model quality for Nigerian legal tasks has NOT been measured** — it must be decided by the evaluation set in `RAG_AND_CITATIONS.md`, not by this table. Provider terms change; every row needs re-checking at implementation time.
++
++## Data classes (drives provider eligibility)
++
++| Class | Content | Rule |
++|---|---|---|
++| A | Verified public legal text + a user's question (`ask`) | Question may contain personal facts → treat as personal data. Zero-retention / no-training routing required |
++| B | Private user documents, OCR text, document questions (`ask-user-document`, `process-user-document`) | Only providers with documented zero retention **and** no training, plus explicit user consent. Otherwise do not send |
++| C | Drafting inputs (`draft-document`) | Treat as class B (free-text personal facts) |
++| D | Public-corpus ingestion (embedding public statutes) | Any provider whose terms allow it |
++
++Applicability of Nigeria's data-protection law to these flows should be confirmed with qualified counsel; this document does not assess it.
++
++## Matrix
++
++| Provider | Free / paid | Data handling (source) | Production suitability | Notes for LegalLens |
++|---|---|---|---|---|
++| **Google Gemini API** | Free tier with lower limits; paid tier with higher limits. Example paid price seen: Gemini 3.1 Flash-Lite $0.25 in / $1.50 out per 1M tokens (ai.google.dev/pricing) | Pricing page: free tier "Used to improve our products: Yes", paid tier "No". Additional Terms (quoted in a Google GitHub issue): paid services' prompts/responses not used to improve products | **Paid tier only.** Free tier is unsuitable for classes A–C | Strong structured output / long context (not benchmarked here). Embedding dimensionality vs the 1536 index must be verified before use |
++| **Groq** | Free and paid (not tabulated here) | console.groq.com/docs/your-data: inference data not retained by default; retained for batch/fine-tune and for reliability/abuse handling; ZDR self-serve in Data Controls. The page's meta description says "standard 30-day retention" — **Groq's own text is inconsistent**; customer data stored in US GCP buckets | Viable for class A **with ZDR enabled** | Low-latency fallback candidate. Embedding/rerank availability not verified |
++| **NVIDIA NIM (build.nvidia.com)** | Free developer access, rate-limited (forum: ~40 RPM, not published per model) | NVIDIA forum FAQ: developer-program endpoints are for "research, development, and test use only"; production use needs an NVIDIA AI Enterprise licence | **Not for production** on the free API. Self-hosted NIM or a paid partner endpoint would be a separate evaluation | Exclude from the production path; usable for offline experiments on public text only |
++| **Cohere** | Trial key (free, 1,000 calls/month) vs paid production key (docs.cohere.com/docs/rate-limits; going-live page) | Production key requires acknowledging terms; if usage is flagged as a sensitive use case, the key may be throttled like a trial key until Cohere approves. Retention/ZDR terms **not verified** | Paid key needed; sensitive-use approval may apply to legal use | Main value is **Rerank** (prod rate limit listed as 1,000 req/min) and Embed. Re-check ZDR before sending class B |
++| **OpenRouter** | Pay-per-use aggregator; some models free | openrouter.ai/docs/guides/privacy/zdr: ZDR can be enforced per request (`provider.zdr: true`), per account, or per guardrail; `data_collection: "deny"` excludes providers that store/train; default is `allow`; endpoints with unknown policy are treated as retaining and training; ZDR does not cover plugins/tools such as web search | Viable **only with ZDR enforced** | Already integrated. Enforcement is the immediate fix for LL-002; the set of ZDR-eligible models is a subset and must be checked via OpenRouter's ZDR endpoint list |
++| **Cloudflare Workers AI** | Free 10,000 Neurons/day; Workers Paid $0.011 per 1,000 Neurons beyond that (developers.cloudflare.com/workers-ai/platform/pricing) | developers.cloudflare.com/workers-ai/privacy: states zero data retention and no training on Customer Content for Workers AI; storage occurs if you add R2/KV/Vectorize/AI Gateway logging | Documented terms fit class A/B best of the six. Free-tier daily cap is far too small for production | Candidate for embeddings and private-document inference. Model catalogue quality for legal reasoning unmeasured. If AI Gateway is used, disable logging/caching for class B |
++
++## Recommendation (provisional — subject to evaluation and your approval)
++
++1. **Immediately (Batch 1):** keep OpenRouter but enforce `provider: { zdr: true, data_collection: "deny" }` on every request, with a model allow-list restricted to ZDR-eligible endpoints. This closes LL-002 without changing architecture.
++2. **Provider abstraction (Batch 4):** one `ModelProvider` interface (chat, structured output, embeddings, rerank) with adapters for OpenRouter (default), Gemini paid tier, and Cloudflare Workers AI. Per-class eligibility is declared in config and checked at call time, so a class B request cannot reach an adapter not marked eligible.
++3. **Class B (private documents):** default to the provider that documents zero retention + no training (Cloudflare Workers AI or ZDR-enforced OpenRouter), and require recorded user consent before any upload is processed.
++4. **Reranking:** evaluate Cohere Rerank on class A only (public text + question) once a paid key and its sensitive-use status are confirmed.
++5. **Exclude** NVIDIA NIM free API and any free tier whose terms permit training from all production paths.
++6. **Groq:** optional low-latency fallback for class A only, with ZDR enabled, if the evaluation shows acceptable quality.
++
++## Constraints that affect any change
++
++- **Embeddings are not interchangeable.** The index is `vector(1536)` built from `text-embedding-3-small`. Switching embedding provider/model means re-embedding the whole corpus and every user document (or running a second index). Store `embedding_model` and dimension per row before any switch.
++- **Selection criteria still to measure:** answer quality on Nigerian legal questions, latency (p50/p95 from Lagos), context window, JSON/tool-call reliability, embedding/rerank availability, rate limits at expected load, price per answer, and reliability. None of these has been benchmarked in this audit.
++- **Open questions for you:** monthly budget, expected users, whether class B must stay processable at all, and whether a Nigeria/EU/US processing location matters to you.
++
++## Sources consulted (2026-11-23)
++
++- ai.google.dev/gemini-api/docs/pricing
++- console.groq.com/docs/your-data
++- forums.developer.nvidia.com (NVIDIA NIM FAQ and rate-limit threads)
++- docs.cohere.com/docs/rate-limits and /docs/going-live
++- openrouter.ai/docs/guides/privacy/zero-data-retention and provider-routing docs
++- developers.cloudflare.com/workers-ai/platform/pricing and /workers-ai/privacy
+diff --git a/docs/ai/RAG_AND_CITATIONS.md b/docs/ai/RAG_AND_CITATIONS.md
+new file mode 100644
+index 0000000..c57d108
+--- /dev/null
++++ b/docs/ai/RAG_AND_CITATIONS.md
+@@ -0,0 +1,75 @@
++# LegalLens — RAG and Citations
++
++Status: current-state findings plus proposed design. Nothing here is implemented yet.
++
++## 1. Current pipeline
++
++1. **Ingestion (manual scripts):** fetch/normalise → structure detection → chunk → embed → store. Tables: `legal_sources`, `legal_source_versions` (`version_label`, `effective_date`, `status`, `verified`, `verified_by/at`), `legal_sections` (label, heading), `document_chunks` (text, `vector(1536)`).
++2. **Visibility gate:** only `verified = true` versions are visible to users (RLS + explicit filter); admins verify in `/dashboard/admin`.
++3. **Retrieval (`ask`):** cosine ≥ 0.72, top 6; if none, Postgres FTS over verified, current versions.
++4. **Generation:** sources passed as escaped `<source ref="CHUNK_ID">` blocks; model must append `[[cite:CHUNK_ID]]`.
++5. **Validation:** citation IDs not in the retrieved set are dropped; zero valid citations → `uncertain`.
++6. **Response:** answer + citations (chunk id, source title, section label/heading, source URL).
++
++## 2. Strengths
++
++- Stable chunk IDs, section labels and source versioning exist; unverified content cannot be retrieved by end users.
++- Exact-match reference tags instead of fuzzy text matching.
++- Honest refusal when retrieval is empty; excerpt-only mode when generation is unavailable.
++
++## 3. Gaps
++
++| Gap | Issue |
++|---|---|
++| Validation checks the ID was retrieved, not that the text supports the claim; uncited text passes | LL-007 |
++| No stored exact supporting passage per citation (only chunk ID); chunk text may change on re-ingestion | LL-007 |
++| Version/currency of the cited provision is not shown or checked (`effective_date`/`status` stored but not surfaced in `ask` output) | LL-007 |
++| No amendment-status or "source incomplete" signal | — |
++| Four generations of Police Act chunks in git; live version unrecorded | LL-011 |
++| Vector-then-FTS fallback, no fusion or reranking; ivfflat built at schema time | LL-022, LL-034 |
++| No evaluation set or metrics | LL-008 |
++| Embedding model identity not stored per row | LL-024 |
++
++## 4. Proposed design
++
++### 4.1 Evidence model
++Add (in a reversible additive migration) to answer storage: `citations.quote` (exact span), `citations.quote_start/end` (offsets within the chunk), `citations.version_id`, `citations.chunk_text_sha256` (hash at answer time). Add `embedding_model` and `embedding_dim` to chunk tables. Add `content_sha256` to the verified version, recorded by a trigger/RPC at verification time so later edits invalidate verification.
++
++### 4.2 Structured answers
++Composer returns JSON validated against a schema:
++
++```json
++{
++  "claims": [
++    { "text": "…", "type": "source_statement | explanation | process_guidance",
++      "evidence": [ { "chunk_id": "…", "quote": "…" } ] }
++  ],
++  "uncertainty": "none | partial_sources | no_sources",
++  "missing_information": ["…"]
++}
++```
++
++`source_statement` claims **must** carry at least one evidence quote; `explanation` and `process_guidance` claims must be labelled and may not introduce statutes, sections, cases, URLs or dates absent from evidence.
++
++### 4.3 Deterministic verifier (no model call)
++For every claim: (a) `chunk_id` was retrieved for this request and is visible to this user; (b) `quote` occurs verbatim (after whitespace/Unicode normalisation) in the stored chunk text; (c) section/instrument/year strings mentioned in the claim text appear in the evidence or its metadata; (d) the evidence version is `current` or labelled otherwise. Any failure drops the claim; if too few claims survive the response degrades to `source_extract` with an explicit message. Never repair a citation by guessing.
++
++### 4.4 Retrieval
++- Hybrid retrieval (vector + FTS) fused by rank (e.g. reciprocal-rank fusion), not fallback-only.
++- Optional reranker (see `PROVIDER_MATRIX.md`) on class A only.
++- Rebuild/choose vector index after data load (ivfflat reindex or HNSW) and measure recall against exact search.
++- Return instrument type, jurisdiction (federal/Lagos), `version_label`, `effective_date` and `status` with each chunk and show them in the UI.
++- When retrieved sources cover only part of the question, say so explicitly (`partial_sources`).
++
++### 4.5 Ingestion hygiene
++Record per chunk: source file checksum, normaliser/chunker version, embedding model, verification record. Keep one active chunk generation per source; archive others outside git.
++
++## 5. Evaluation plan
++
++**Question set:** build `evals/questions.jsonl` with 60–100 questions across the ingested instruments (Constitution, Police Act 2020, Labour Act, FCCPA, Lagos Road Traffic Law, etc.), plus: out-of-corpus questions (must refuse), ambiguous-jurisdiction questions, multi-section questions, adversarial/injection questions, and non-English or Pidgin phrasings.
++
++**Important:** expected sources and answers must be authored or verified by a qualified Nigerian lawyer. I will not invent expected legal answers; the first deliverable of Stage 2 for this item is the schema and runner, with questions drafted by you/counsel.
++
++**Metrics:** retrieval recall@k and MRR against expected chunk/section IDs; citation validity (deterministic); citation support rate (quote present and relevant); groundedness (claim-level, human-reviewed sample); refusal/uncertainty accuracy on out-of-corpus items; answer relevance (human-rated sample); latency p50/p95; provider failure handling.
++
++**CI vs live:** CI runs the verifier, schema validation and mocked-provider end-to-end tests deterministically. Live-provider smoke tests are manual/optional and never gate merges.
+diff --git a/docs/engineering/IMPLEMENTATION_PLAN.md b/docs/engineering/IMPLEMENTATION_PLAN.md
+new file mode 100644
+index 0000000..92a26e5
+--- /dev/null
++++ b/docs/engineering/IMPLEMENTATION_PLAN.md
+@@ -0,0 +1,53 @@
++# LegalLens — Implementation Plan (proposed, awaiting approval)
++
++**Nothing below has been started.** Per the master prompt, Stage 2 begins only after you approve this plan (or an edited version of it). Each batch: state scope and files, smallest safe change, tests, typecheck/lint/build, diff review, update `ISSUE_REGISTER.md` and a changelog. No batch proceeds past a blocker that risks data loss or a security regression. No deployment without your explicit approval.
++
++## Decisions needed from you before Stage 2
++
++1. **Hosting for Next.js:** Vercel-managed or self-hosted? (affects LL-001 urgency)
++2. **OpenRouter account privacy settings:** are ZDR / data-collection restrictions already enabled? Any spend cap on the key?
++3. **Private documents:** keep the feature enabled during remediation, or disable processing until consent (LL-020) ships?
++4. **Budget and scale:** target monthly AI spend and expected users (drives provider choice).
++5. **Corpus rights:** which committed sources may be redistributed (LL-011)?
++6. **Safety triage behaviour:** should "under arrest / being detained" questions get rights information alongside emergency guidance (LL-023)?
++7. **Eval set authorship:** who will author/verify expected answers (a Nigerian-qualified lawyer is required)?
++8. **Migrations:** confirm you have a Supabase staging project; production migrations will not be run by me.
++
++## Batches
++
++### Batch 0 — Repo hygiene and ground rules (P3, low risk)
++Add root `CLAUDE.md` (build/test commands, security rules, "never read `.env*`", stage gates); remove `supabase/.temp`, stray `.bat`, root `.patch` files (or archive); mark `DECISIONS.md` legacy and add current `DECISIONS` entries; add `AI_SAFETY.md`. Tests: none needed. Reversible by git.
++
++### Batch 1 — Quality gates and urgent security (P1)
++- Upgrade `next`, `eslint-config-next`, flagged transitive deps; fix `lint` script for Next 16 (LL-001, LL-004).
++- Extend CI: `ask` tests, `draft-document` check, all migrations, OCR gateway tests, lint, `npm audit --omit=dev --audit-level=high`, secret scan, Dependabot config (LL-005).
++- Add ZDR + `data_collection: "deny"` to `_shared/openrouter.ts` with unit test asserting the request body (LL-002).
++Files: `apps/web/package.json(+lock)`, `.github/workflows/ci.yml`, `.github/dependabot.yml`, `supabase/functions/_shared/openrouter.ts` (+test).
++Risk: Next upgrade may need code changes; verified by build/typecheck/tests.
++
++### Batch 2 — Abuse and cost controls (P1)
++New migration: `rate_limits` table + atomic `consume_rate_limit(user, action, window, max)` RPC and a per-user daily token budget; shared helper used by all AI-calling functions; tests with two simulated users. Migration is additive; rollback script provided (drop function/table).
++
++### Batch 3 — Private-document consent and persistence correctness (P1/P2)
++Consent table + UI step before upload processing; function-side consent check. Atomic conversation/message/citation persistence RPC; ownership check for `conversation_id`; surface persistence failures. Add two-user RLS/RPC tests (LL-006, LL-020, LL-005). Additive migrations with rollback.
++
++### Batch 4 — Provider abstraction (P1/P2)
++`ModelProvider` interface, OpenRouter adapter (ZDR), mocked provider for CI, class-based eligibility, model allow-list, timeouts/fallback; embeddings record model id and dimension (LL-009, LL-024). Adapters for Gemini (paid) and Workers AI only after the evaluation shows value and you approve account setup. Live smoke tests optional, never in CI gate.
++
++### Batch 5 — Evidence model and verifier (P1/P2)
++Additive migration for `quote`, offsets, `version_id`, hashes, `embedding_model`, verification `content_sha256`; deterministic verifier module with unit tests (fabricated section, altered quote, cross-user chunk, stale version); structured claim output with fallback to `source_extract` (LL-007, LL-021 partly). Server-side verification RPC with audit log (LL-021).
++
++### Batch 6 — Orchestrator and capabilities (P2)
++Fixed-pipeline orchestrator with bounds and tracing; migrate `ask` first behind a flag, then `ask-user-document`, then `draft-document`. Capabilities: research/retrieval, composer, verifier, document intelligence; then rights information and scenario analysis. No write-capable tools; no autonomous actions (LL-030…LL-033).
++
++### Batch 7 — Retrieval quality and evaluation (P2)
++Eval question schema and runner (questions authored by counsel); hybrid retrieval fusion; index rebuild/HNSW recall test; reranker trial on class A (LL-008, LL-022, LL-034). Corpus artefact clean-up and active-version record (LL-011).
++
++### Batch 8 — Product polish (P3)
++CORS restriction, triage improvements and multilingual phrasing, stale-processing reaper, UI display of version/effective-date/currency (LL-012, LL-023, LL-026).
++
++## Definition of done per batch
++Targeted tests pass; `tsc`, lint, `next build` and `deno check` pass in CI; migration applied to staging and re-run once to prove idempotence where applicable; diff reviewed; register updated; rollback documented.
++
++## Final report (at the end of Stage 2)
++Issues fixed with evidence; features added; providers/models and rationale; agents/tools and permission boundaries; files changed; migrations and reversibility; commands/tests actually run with results; remaining risks and manual configuration; deployment steps (not executed).
+diff --git a/docs/engineering/ISSUE_REGISTER.md b/docs/engineering/ISSUE_REGISTER.md
+new file mode 100644
+index 0000000..dbee048
+--- /dev/null
++++ b/docs/engineering/ISSUE_REGISTER.md
+@@ -0,0 +1,57 @@
++# LegalLens — Issue Register (Stage 1)
++
++Date: 2026-11-23. **Type** is one of: `Confirmed` (seen in code/tooling output), `Potential` (plausible, needs verification), `Gap` (feature absent vs. the master prompt), `Unknown` (cannot be determined from the repo).
++**Priority:** P0 critical (auth/access/data integrity/secret exposure), P1 core workflow/document security/RAG reliability/provider, P2 agents/observability/performance/maintainability, P3 optional.
++**No P0 was found.** Status of every item: `Open` — nothing has been fixed yet.
++
++## Confirmed defects
++
++| ID | P | Title | Evidence | Proposed fix (Stage 2) |
++|---|---|---|---|---|
++| LL-001 | P1 | Next.js 16.3.4 is inside the advisory range (`16.0.0 – 16.4.4`); `sharp` and `source-map-js` also flagged | `npm audit --omit=dev`: 1 critical, 2 high, fixes available. Installed version from `node_modules/next/package.json`. App uses `next/image`. Reachability of each advisory depends on hosting (Vercel-managed vs self-hosted) — *unverified* | Upgrade `next` (and `eslint-config-next`) to a patched release; re-run build; add Dependabot/`npm audit` CI gate |
++| LL-002 | P1 | No data-policy controls on OpenRouter requests | `_shared/openrouter.ts` sends only `model/messages/max_tokens/temperature`; no `provider.zdr` / `provider.data_collection`. OpenRouter docs: `data_collection` defaults to `allow` (providers may store/train) | Add request-level `provider: { zdr: true, data_collection: "deny" }` for all calls (immediate); full provider policy in `PROVIDER_MATRIX.md`. Check account-level privacy toggles (Unknown) |
++| LL-003 | P1 | Rate limiting missing on 4 of 6 functions; the 2 that have it are per-isolate memory only | Rate-limit code exists only in `ask` and `draft-document`, both `Map`-based. `ask`'s `supabase` backend only inserts audit rows (no enforcement). `ask-user-document` and `process-user-document` each trigger paid embedding/chat calls with no limit | Shared DB-backed (atomic) limiter used by all AI-calling functions; per-user daily token/cost budget |
++| LL-004 | P2 | `npm run lint` is broken | `next lint` exits 1 ("Invalid project directory …/apps/web/lint") on Next 16; `eslint-config-next@^14` vs `next@^16` mismatch; CI has no lint step | Migrate to ESLint CLI flat config; add lint to CI |
++| LL-005 | P1 | CI does not cover most safety-relevant code | `ci.yml` omits: `ask/logic.test.mjs`, `draft-document` type-check, waitlist/matter/lexical migrations, `services/unlimited-ocr-gateway/test_gateway.py`, any RLS/authorization test, any lint/secret scan | Extend CI (batch 1) before further feature work |
++| LL-006 | P2 | Conversation persistence errors are swallowed and non-atomic | `persistExchange` ignores the user-message insert result, logs-and-returns on assistant insert error, ignores citation insert errors; client-supplied `conversation_id` is used unchecked (RLS rejects foreign IDs, so the answer is returned but silently unsaved) | Validate ownership up front; single RPC/transaction; surface persistence failure |
++| LL-007 | P2 | Citation validation proves the cited ID was retrieved, not that the claim is supported | `selectValidCitationIds` only intersects IDs; text without citations is still returned (flagged `uncertain` only when zero valid citations) | Deterministic quote/span verification + claim-level citations — see `RAG_AND_CITATIONS.md` |
++| LL-008 | P2 | No evaluation or regression set for retrieval/citation/groundedness | `docs/operations/ai-assistant-reliability.md` lists an evaluation *plan*; no dataset or runner in repo | Build lawyer-verified question set + CI mocked evals |
++| LL-009 | P2 | Single provider, single model, no fallback chain | Only OpenRouter; non-429 provider errors return 502; fixed 45 s timeout; model overridable by env with no allow-list | Provider abstraction with typed fallback and health/timeout policy |
++| LL-010 | P3 | Repo hygiene and stale docs | No root `CLAUDE.md` (only `apps/web/CLAUDE.md`, a Next.js agent block); `DECISIONS.md` mostly documents the retired FastAPI/Alembic stack; README references `AI_SAFETY.md` (absent); `supabase/.temp/*` committed (project ref, org id, pooler host); two `.patch` files in root; stray file `scripts/ingestioncUsershpDocumentslegal_lens.venvScriptsactivate.bat`; ingestion README contains the real Supabase project URL | Add root `CLAUDE.md`; archive/rewrite `DECISIONS.md`; remove `.temp` and stray files; add `AI_SAFETY.md` |
++| LL-011 | P2 | Committed corpus artefacts: licensing, size and version ambiguity | Raw texts, OCR page PNGs and four chunk generations for the Police Act (`chunks`, `chunks-v2`, `chunks-v4`, plus audit files) are in git despite `.gitignore` excluding `/legal corpus/`. Source rights *unverified* | Decide per-source redistribution rights; move heavy artefacts out of git; record the live chunk version |
++| LL-012 | P3 | CORS `Access-Control-Allow-Origin: *` on all functions | Present in every `index.ts`. Auth is bearer-token so risk is low | Restrict to the app origin(s) |
++
++## Potential risks (need verification)
++
++| ID | P | Title | Why it matters / how to verify |
++|---|---|---|---|
++| LL-020 | P1 | No consent/disclosure before private documents go to a third-party model | A text search of `apps/web/app/dashboard/documents` found no consent wording; page not read in full. Master prompt forbids sending confidential documents to providers before privacy terms and consent are addressed. Verify UI + `deployment-checklist.md` |
++| LL-021 | P2 | Admin verification is a direct client-side `UPDATE` with a client-supplied `verified_by` | `AdminCorpusReview.tsx` writes `verified_by` from the browser; RLS policy lets an admin update any column of `legal_source_versions`; no immutable audit log or content-hash pinning at verification time; admin MFA depends on dashboard settings |
++| LL-022 | P2 | ivfflat indexes created at schema time (`lists=100` / `50`) | ivfflat quality depends on building after data load; likely poor recall until reindexed. Verify with a recall test on loaded data; consider HNSW |
++| LL-023 | P2 | English-only regex safety triage with high-recall phrases | `under arrest` / `being detained` route to a fixed message instead of rights information; Pidgin/Yoruba/Igbo/Hausa phrasing unhandled. Product decision needed |
++| LL-024 | P2 | Embedding drift between ingestion (OpenAI direct) and runtime (OpenRouter) | Same model name today, but env overrides on either side would silently mix vector spaces; dimension is checked (1536) but model identity is not stored |
++| LL-025 | P3 | Lexical fallback returns `ts_rank_cd` in the `similarity` field | Different scale/meaning from cosine similarity; UI/logic that treats it uniformly could mislead |
++| LL-026 | P3 | Document stuck in `processing` after a hard runtime kill | Normal failures reset to `failed` (verified in the `catch`); a platform timeout/kill would not, and the claim query only accepts `uploaded|failed`. Add a stale-claim reaper |
++| LL-027 | P2 | `ask` high-risk and no-evidence replies are written to `messages` as assistant content with no version stamp of the policy text | Minor traceability gap for safety messages |
++
++## Gaps versus the master prompt (features)
++
++| ID | P | Gap |
++|---|---|---|
++| LL-030 | P2 | No central orchestrator; three separate pipelines (`ask`, `ask-user-document`, `draft-document`) |
++| LL-031 | P2 | No typed tool contracts or structured-output validation (answers are free text with `[[cite:…]]` tags) |
++| LL-032 | P2 | No scenario-analysis, rights-information or evidence-verification agent capability |
++| LL-033 | P2 | No request tracing/observability (no trace IDs, token/cost/latency logging) |
++| LL-034 | P2 | No reranking or hybrid retrieval fusion (vector then FTS fallback only) |
++| LL-035 | P3 | No mocked-provider test harness; no live-provider smoke tests |
++
++## Unknowns
++
++| ID | Item |
++|---|---|
++| LL-040 | Hosted Supabase Auth settings (MFA, inactivity, refresh-token reuse detection, email confirmation, password policy) |
++| LL-041 | OpenRouter account privacy toggles and key scoping/spend limits |
++| LL-042 | Which corpus rows are `verified`/`current` in production |
++| LL-043 | Hosting model for Next.js (Vercel-managed or self-hosted) |
++| LL-044 | Contents of `legal` and `create-user-document-upload` beyond header/auth checks; user-facing pages beyond those cited |
++| LL-045 | Migration reversibility: all `database/*.sql` files are forward-only; user-documents migration is re-runnable (CI proves), others untested for re-run |
+diff --git a/docs/engineering/REPOSITORY_AUDIT.md b/docs/engineering/REPOSITORY_AUDIT.md
+new file mode 100644
+index 0000000..e130438
+--- /dev/null
++++ b/docs/engineering/REPOSITORY_AUDIT.md
+@@ -0,0 +1,75 @@
++# LegalLens — Repository Audit (Stage 1, read-only)
++
++- **Date:** 2026-11-23
++- **Repo:** `Dammyy-22/legal_lens`, branch `main`, single commit `9bebfca` ("latest-add"), 443 tracked files
++- **Scope of this audit:** reconnaissance only. No application code was modified. `.env*` files were not read.
++- **Status:** first-pass audit. Items marked *unverified* need a second look before Stage 2.
++
++## 1. Architecture as found
++
++| Layer | Implementation |
++|---|---|
++| Frontend | Next.js 16.3.4 / React 18 App Router in `apps/web` (Vercel) |
++| Auth | Supabase Auth (email/password, Google OAuth); `proxy.ts` refreshes session; dashboard layout and admin page re-check `getUser()` |
++| Data | Supabase Postgres + pgvector (`vector(1536)`), RLS on all tables |
++| Backend | Supabase Edge Functions (Deno): `ask`, `legal`, `draft-document`, `create-user-document-upload`, `process-user-document`, `ask-user-document`; shared wrapper `_shared/openrouter.ts` |
++| AI | OpenRouter only. Chat default `openai/gpt-4.1-mini`; embeddings default `openai/text-embedding-3-small`. Ingestion scripts use `OPENAI_API_KEY` directly |
++| OCR | Python gateway `services/unlimited-ocr-gateway` calling a self-hosted Baidu Unlimited-OCR vLLM endpoint (max 10 OCR pages/doc) |
++| Corpus | Normalised/chunked Nigerian instruments under `scripts/ingestion/normalized-corpus`: Constitution 1999, Police Act 2020 (+PLAC comparison), Labour Act, FCCPA 2018, Lagos State Road Traffic Law, DCRMA compendium, RC compendium, "Roles, Rights, Responsibilities under new Police Act" |
++| CI | `.github/workflows/ci.yml`: web build, `deno check` of 5 functions, 3 node test files, schema + user-documents migration against pgvector Postgres |
++
++Retired: FastAPI/Alembic backend (documented in README; `DECISIONS.md` still describes it).
++
++## 2. Request flows (as implemented)
++
++**`ask`:** JWT check → length validation → in-memory rate limit → English regex risk triage (fixed reply) → embed question → `match_document_chunks` (threshold 0.72, 6 chunks) → fallback to `search_verified_document_chunks` (Postgres FTS) → refuse if empty → grounded generation with `[[cite:REF]]` tags → drop citation IDs not in retrieved set → persist → respond.
++
++**`ask-user-document`:** JWT check → owner-scoped document lookup → embed question → `match_user_document_chunks` (SECURITY DEFINER; checks `auth.uid()` owns a `ready` document) → generate → validate → store question and sources.
++
++**`process-user-document`:** JWT check → service-role lookup constrained to `owner_id = user.id` → atomic claim (`uploaded|failed → processing`) → download → type/signature/size checks → extract → optional OCR → chunk → embed → store.
++
++## 3. What is working well (evidence-based)
++
++- Every function verifies the JWT server-side; RLS enabled on all corpus, conversation and user-document tables.
++- Verified-only corpus enforced in RLS **and** in function code; admin read of unverified rows derives from `app_metadata` (not user-editable `user_metadata`).
++- Private-document design is careful: owner-bound rows, composite FKs tying citations to same-document chunks, quota trigger with advisory lock, private bucket with folder-per-user policies, signed upload tokens, MIME/signature/size checks.
++- Retrieved text is escaped and fenced as data; prompt rule 6 states sources are data, not instructions.
++- OCR gateway uses constant-time key comparison and minimum 32-char key.
++- Honest-by-design refusal when retrieval is empty, and an excerpt-only fallback on provider 429.
++
++## 4. Verification actually run (this audit)
++
++| Command | Result |
++|---|---|
++| `node --test` on `ask`, `process-user-document`, `ask-user-document` logic tests | 16/16 pass |
++| `node --test scripts/ingestion/constitution-structure.test.mjs` | 4/4 pass |
++| `npm ci` in `apps/web` | succeeds (376 packages) |
++| `npx tsc --noEmit` in `apps/web` | exit 0 |
++| `next build` (dummy public Supabase env) | exit 0, 20 pages generated |
++| `npm run lint` (`next lint`) | **fails** — exit 1, "Invalid project directory …/apps/web/lint" |
++| `npm audit --omit=dev` | **1 critical (next), 2 high (sharp, source-map-js)**; fixes available |
++| Pattern scan of tracked files for API keys/JWTs/private keys | no matches |
++
++**Not run:** `deno check` and Deno tests (Deno not installed in the audit sandbox), OCR gateway Python tests (PyMuPDF not installed in sandbox — an environment gap, not a repo defect), SQL migrations against Postgres, live provider calls, any hosted-Supabase inspection.
++
++## 5. Findings summary
++
++See `ISSUE_REGISTER.md` for IDs, priority, evidence and status. Headlines:
++
++1. **Dependency exposure** — installed Next.js 16.3.4 is inside the audited vulnerable range (LL-001).
++2. **Provider data policy not enforced** — OpenRouter requests send no `provider` data-policy block, so routing defaults to providers that may store or train on data; private document content is in scope (LL-002).
++3. **Cost-abuse surface** — document functions have no rate limiting; `ask`/`draft-document` limit only per warm isolate (LL-003).
++4. **Quality gates are thin** — lint is broken, several tests and migrations are outside CI, no authorization/RLS or retrieval/citation evaluation tests (LL-004, LL-005, LL-016).
++5. **Citation verification is ID-level only** (LL-007).
++6. **Repo hygiene** — no root `CLAUDE.md`, stale `DECISIONS.md`, committed `supabase/.temp`, stray files, committed raw corpus (LL-010, LL-011).
++
++## 6. Unknowns (must be resolved before or during Stage 2)
++
++- Hosted Supabase settings: MFA for admins, inactivity timeout, refresh-token reuse detection, email confirmation, password policy.
++- OpenRouter account-level privacy settings (ZDR/data-collection toggles) — may already mitigate LL-002.
++- Which corpus rows are `verified` in production, and which Police Act chunk version (`chunks`, `chunks-v2`, `chunks-v4`) was ingested.
++- Whether a consent/disclosure step exists before document upload (a text search of `apps/web/app/dashboard/documents` found none; the page was not read in full).
++- Content of `docs/operations/deployment-checklist.md` "provider disclosure" section.
++- Full text of `legal`, `create-user-document-upload` and `apps/web` pages beyond what is cited here.
++- Rights to redistribute the committed corpus texts (PLAC and other compilations).
++- Hosting: Vercel-managed or self-hosted Next.js (affects which Next advisories are reachable).
+diff --git a/docs/security/SECURITY_AUDIT.md b/docs/security/SECURITY_AUDIT.md
+new file mode 100644
+index 0000000..188ef1d
+--- /dev/null
++++ b/docs/security/SECURITY_AUDIT.md
+@@ -0,0 +1,54 @@
++# LegalLens — Security Audit (Stage 1, read-only, first pass)
++
++Date: 2026-11-23. Method: code and configuration review plus tooling output (see `REPOSITORY_AUDIT.md` §4). This is not a penetration test. Items labelled *Confirmed* were seen in code or tool output; *Potential* need verification. No exploit was attempted and no secrets were read.
++
++## Summary
++
++No critical authentication, authorisation or secret-exposure defect was confirmed. The main risks are (1) vulnerable dependencies, (2) unenforced provider data policy for private content, (3) missing rate/cost limits, and (4) thin automated security testing.
++
++## 1. Findings
++
++| ID (register) | Severity | Status | Finding |
++|---|---|---|---|
++| LL-001 | High | Confirmed (version) / reachability unverified | `next@16.3.4` is within the range flagged by `npm audit` (1 critical advisory entry for `next`, covering multiple advisories including image-optimization and cache issues); `sharp` and `source-map-js` high. App uses `next/image`. Some advisories apply to self-hosted deployments only — hosting model unknown |
++| LL-002 | High | Confirmed | No `provider.zdr` / `data_collection` on OpenRouter calls; OpenRouter's documented default is `allow`. Private-document text and questions are in scope |
++| LL-020 | High | Potential | No consent step found before sending private documents to third parties (text search only) |
++| LL-003 | Medium | Confirmed | No rate limiting on `ask-user-document`, `process-user-document`, `create-user-document-upload`, `legal`; `ask`/`draft-document` limits are per-isolate and reset across instances → paid-API cost abuse and brute-force surface |
++| LL-021 | Medium | Potential | Corpus verification performed from the browser with client-supplied `verified_by`; admin policy permits any-column update; no audit log or content-hash pinning |
++| LL-006 | Low–Med | Confirmed | Swallowed persistence errors; unchecked client-supplied `conversation_id` (RLS blocks cross-user writes — not an access-control bypass) |
++| LL-012 | Low | Confirmed | CORS `*` on all functions (bearer-token auth limits impact) |
++| LL-010 | Low | Confirmed | `supabase/.temp` committed (project ref, org id, pooler host; no password found); real project URL in ingestion README; these are identifiers, not secrets |
++| LL-040 | Unknown | — | Hosted Auth settings (admin MFA, inactivity timeout, refresh-token reuse detection, email confirmation, password policy) cannot be verified from the repo; `SECURITY.md` itself says they are manual |
++| — | Info | Confirmed | No Dependabot, secret scanning, CodeQL or SAST configuration in `.github` (only `ci.yml`) |
++
++## 2. Controls verified as present
++
++- Server-side JWT validation (`auth.getUser()`) in all six functions; `proxy.ts` plus per-page `getUser()` checks; safe-redirect helper for OAuth `next`.
++- RLS enabled on all corpus, conversation and user-document tables; revoke/grant statements restrict `authenticated` to select/insert/delete as needed; SECURITY DEFINER functions set `search_path = public` and are revoked from `public/anon`.
++- Admin identity derived from `app_metadata` (not user-editable).
++- User-document ownership enforced in four places: RLS, owner-bound composite FKs, `match_user_document_chunks` owner+ready check, service-role queries pinned to `owner_id = user.id`.
++- Storage: private bucket, MIME allow-list, 15 MiB limit, per-user folder policies, no direct authenticated inserts, signed upload tokens.
++- Upload processing: size match, MIME/signature checks, DOCX archive-size check, page/character limits, OCR page cap, HTTPS-only OCR gateway URL, constant-time gateway key comparison.
++- Input limits: question length, body-size caps on document functions.
++- Prompt hygiene: untrusted text escaped and fenced; rules say sources are data.
++- No hard-coded keys, JWTs or private keys found by pattern scan of tracked source files (JSON/TXT corpus files excluded from that scan).
++
++## 3. AI-specific threat review
++
++See table in `docs/ai/AI_ARCHITECTURE.md` §4. Current-state notes:
++
++- **Indirect injection:** the corpus is admin-verified, which is a good gate, but verification is not bound to a content hash (LL-021). User documents are retrieved only for their owner and only into that owner's own Q&A, which limits blast radius to self-inflicted injection.
++- **Cross-user leakage:** design is sound on paper; there are no automated two-user RLS/RPC tests (LL-005).
++- **Tool abuse / agent loops:** not applicable today (no tools, single model call per request).
++- **Output safety:** no PII redaction before provider calls; no output filtering beyond citation ID stripping.
++
++## 4. Recommended remediation order
++
++1. Upgrade Next.js and flagged packages; add Dependabot/audit gate (LL-001).
++2. Enforce ZDR/no-collection on every provider call; add provider-eligibility by data class (LL-002).
++3. Add a consent record and UI step before any private document is processed (LL-020).
++4. DB-backed atomic rate and cost limiter on every AI-calling function (LL-003).
++5. Move corpus verification behind a server-side RPC that records actor, time and content hash in an append-only log (LL-021).
++6. Add two-user RLS/RPC tests and a secret scan to CI (LL-005).
++7. Restrict CORS; remove committed `.temp`; rotate nothing unless a secret is later found (LL-010, LL-012).
++8. Confirm hosted Auth settings and require admin MFA (LL-040).
+-- 
+2.43.0
+

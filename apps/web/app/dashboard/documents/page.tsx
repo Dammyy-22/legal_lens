@@ -14,6 +14,8 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { askAboutUserDocument, type UserDocumentAnswer } from '@/lib/api-client'
 import { CONSENT_PURPOSES, ensureConsent, hasCurrentConsent } from '@/lib/consent'
+import { motion, useReducedMotion } from 'motion/react'
+import { CountUp } from '@/components/motion/CountUp'
 
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 const ACCEPTED_TYPES = {
@@ -69,6 +71,7 @@ const DOCUMENT_REVIEW_PROMPTS = [
 ] as const
 
 export default function DocumentsPage() {
+  const reduceMotion = useReducedMotion()
   const [documents, setDocuments] = useState<UserDocument[]>([])
   const fileInput = useRef<HTMLInputElement>(null)
   const [selectedDocumentId, setSelectedDocumentId] = useState('')
@@ -81,7 +84,7 @@ export default function DocumentsPage() {
   const [asking, setAsking] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState('')
-
+  const [dragging, setDragging] = useState(false)
   const selectedDocument = useMemo(
     () => documents.find((document) => document.id === selectedDocumentId) ?? null,
     [documents, selectedDocumentId],
@@ -358,7 +361,36 @@ export default function DocumentsPage() {
         </div>
       )}
 
-      <form onSubmit={handleUpload} className="mb-10 bg-white border border-ink-100 rounded-lg p-5 space-y-4">
+      <form
+        onSubmit={handleUpload}
+        onDragOver={(event) => {
+          if (uploading) return
+          event.preventDefault()
+          setDragging(true)
+        }}
+        onDragLeave={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false)
+        }}
+        onDrop={(event) => {
+          event.preventDefault()
+          setDragging(false)
+          const dropped = event.dataTransfer.files?.[0]
+          if (uploading || !dropped) return
+          if (fileInput.current) fileInput.current.files = event.dataTransfer.files
+          setFile(dropped)
+        }}
+        className={`mb-10 bg-white border border-dashed border-ink-100 rounded-lg p-5 space-y-4 transition-all duration-200 ${dragging ? 'dropzone-active' : ''}`}
+      >
+        {dragging && (
+          <p role="status" className="font-mono text-xs uppercase tracking-widest text-brass-600">
+            Release to select this file
+          </p>
+        )}
+        {file && !dragging && (
+          <p className="rounded-lg bg-paper px-3 py-2 text-sm text-ink workflow-step">
+            Selected: <span className="font-medium">{file.name}</span>
+          </p>
+        )}
         <label htmlFor="user-document-file" className="block text-sm font-medium text-ink">
           Choose a PDF, DOCX, or TXT file
         </label>
@@ -400,6 +432,12 @@ export default function DocumentsPage() {
 
       <section aria-labelledby="documents-heading" className="mb-10">
         <h2 id="documents-heading" className="font-display text-2xl text-ink mb-4">Your files</h2>
+        {!loading && documents.length > 0 && (
+          <p className="mb-4 text-sm text-ink-400">
+            <CountUp value={documents.length} className="font-medium text-ink" /> {documents.length === 1 ? 'file' : 'files'} ·{' '}
+            <CountUp value={documents.filter((d) => d.processing_status === 'ready').length} className="font-medium text-ink" /> ready for questions
+          </p>
+        )}
         {loading && <p className="text-sm text-ink-400">Loading documents…</p>}
         {!loading && !error && documents.length === 0 && (
           <p className="p-5 rounded-lg border border-ink-100 bg-white text-sm text-ink-400">
@@ -408,14 +446,33 @@ export default function DocumentsPage() {
         )}
         <ul className="space-y-3">
           {documents.map((document) => (
-            <li key={document.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-ink-100 bg-white p-4">
+            <motion.li
+              key={document.id}
+              layout={!reduceMotion}
+              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.2, 0.75, 0.25, 1] }}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-ink-100 bg-white p-4 transition-colors hover:border-brass/40"
+            >
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-ink">{document.original_filename}</p>
-                <p className="mt-1 text-xs text-ink-400">
-                  {(document.file_size_bytes / (1024 * 1024)).toFixed(1)} MB
-                  {document.page_count ? ` · ${document.page_count} pages` : ''}
-                  {' · '}
-                  {document.processing_status === 'ready' ? 'Ready for questions' : document.processing_status}
+                <p className="mt-1 flex items-center gap-2 text-xs text-ink-400">
+                  <span
+                    aria-hidden="true"
+                    className={`inline-block h-2 w-2 rounded-full ${
+                      document.processing_status === 'ready'
+                        ? 'bg-ink-600'
+                        : document.processing_status === 'failed'
+                          ? 'bg-seal'
+                          : 'bg-brass status-dot-processing'
+                    }`}
+                  />
+                  <span>
+                    {(document.file_size_bytes / (1024 * 1024)).toFixed(1)} MB
+                    {document.page_count ? ` · ${document.page_count} pages` : ''}
+                    {' · '}
+                    {document.processing_status === 'ready' ? 'Ready for questions' : document.processing_status}
+                  </span>
                 </p>
                 {document.processing_error && (
                   <p className="mt-2 text-xs text-seal">{document.processing_error}</p>
@@ -454,7 +511,7 @@ export default function DocumentsPage() {
                   {deleting === document.id ? <LoaderCircle size={17} className="animate-spin" /> : <Trash2 size={17} />}
                 </button>
               </div>
-            </li>
+            </motion.li>
           ))}
         </ul>
       </section>
@@ -520,8 +577,24 @@ export default function DocumentsPage() {
             </div>
           </form>
 
+          {asking && (
+            <div role="status" aria-live="polite" className="mt-6 flex items-center gap-3 rounded-lg border border-brass/25 bg-white p-4 text-sm text-ink-400">
+              <span className="flex items-end gap-1" aria-hidden="true">
+                {[0, 1, 2].map((i) => (
+                  <span key={i} className="ask-dot h-1.5 w-1.5 rounded-full bg-brass" style={{ animationDelay: `${i * 150}ms` }} />
+                ))}
+              </span>
+              Reading the retrieved passages…
+            </div>
+          )}
+
           {answer && (
-            <article className="mt-6 rounded-lg border border-ink-100 bg-white p-6">
+            <motion.article
+              initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.2, 0.75, 0.25, 1] }}
+              className="mt-6 rounded-lg border border-ink-100 bg-white p-6"
+            >
               <p className="whitespace-pre-line leading-relaxed text-ink">{answer.answer}</p>
               {answer.uncertain && (
                 <p className="mt-4 text-sm text-ink-400">
@@ -544,7 +617,7 @@ export default function DocumentsPage() {
                 This response explains the uploaded text only. It is not legal advice
                 and may not reflect the document&apos;s legal effect.
               </p>
-            </article>
+            </motion.article>
           )}
         </section>
       )}

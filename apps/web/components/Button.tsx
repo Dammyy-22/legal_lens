@@ -16,15 +16,13 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const baseClass = 'font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+  const baseClass =
+    'font-medium rounded-lg transition-all duration-200 active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed'
 
   const variantClass = {
-    primary:
-      'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:scale-105 active:scale-95',
-    secondary:
-      'bg-gray-200 text-gray-900 hover:bg-gray-300 active:scale-95',
-    outline:
-      'border-2 border-blue-600 text-blue-600 hover:bg-blue-50 active:scale-95',
+    primary: 'bg-ink text-white shadow-sm hover:bg-ink-600 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(20,38,30,0.14)]',
+    secondary: 'bg-paper text-ink hover:bg-paper-200',
+    outline: 'border border-ink-100 bg-white text-ink hover:border-brass/50 hover:bg-paper',
   }
 
   const sizeClass = {
@@ -37,11 +35,12 @@ export function Button({
     <button
       className={`${baseClass} ${variantClass[variant]} ${sizeClass[size]} ${className}`}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       {...props}
     >
       <span className="flex items-center justify-center gap-2">
         {loading && (
-          <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path
               className="opacity-75"

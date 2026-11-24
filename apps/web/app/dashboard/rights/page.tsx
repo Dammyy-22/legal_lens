@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { Reveal } from '@/components/motion/Reveal'
 import {
   AlertCircle,
   ArrowUpRight,
@@ -216,6 +218,7 @@ const SOURCE_KIND_STYLES: Record<SourceLink['kind'], string> = {
 }
 
 export default function RightsPage() {
+  const reduceMotion = useReducedMotion()
   const [openId, setOpenId] = useState<string | null>(null)
   const [resultsById, setResultsById] = useState<Record<string, LegalSearchResult[]>>({})
   const [loadingId, setLoadingId] = useState<string | null>(null)
@@ -292,7 +295,7 @@ export default function RightsPage() {
           const results = resultsById[situation.id]
 
           return (
-            <article key={situation.id} className="bg-white border border-ink-100 rounded-2xl overflow-hidden">
+            <Reveal as="article" key={situation.id} className="bg-white border border-ink-100 rounded-2xl overflow-hidden transition-shadow hover:shadow-[0_10px_24px_rgba(20,38,30,0.06)]">
               <button
                 type="button"
                 onClick={() => void toggleSituation(situation)}
@@ -314,7 +317,16 @@ export default function RightsPage() {
                 <ChevronDown size={20} className={`shrink-0 text-brass-600 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
               </button>
 
+              <AnimatePresence initial={false}>
               {isOpen && (
+                <motion.div
+                  key="details"
+                  initial={reduceMotion ? false : { height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: [0.2, 0.75, 0.25, 1] }}
+                  className="overflow-hidden"
+                >
                 <div id={`${situation.id}-details`} className="border-t border-ink-100 px-5 py-6 md:px-6 space-y-7">
                   <div>
                     <h2 className="font-display text-xl text-ink mb-2">Start here</h2>
@@ -402,8 +414,10 @@ export default function RightsPage() {
                     Open full results in Legal Search <ArrowUpRight size={16} />
                   </Link>
                 </div>
+                </motion.div>
               )}
-            </article>
+              </AnimatePresence>
+            </Reveal>
           )
         })}
       </div>

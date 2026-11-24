@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 interface ToastProps {
@@ -17,6 +18,7 @@ export function Toast({
   onClose,
 }: ToastProps) {
   const [isVisible, setIsVisible] = useState(true)
+  const reduce = useReducedMotion()
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -29,29 +31,30 @@ export function Toast({
 
   if (!isVisible) return null
 
-  const bgColor =
+  const tone =
     type === 'success'
-      ? 'bg-green-50 border-green-200'
+      ? 'bg-white border-ink-400/30 text-ink'
       : type === 'error'
-        ? 'bg-red-50 border-red-200'
-        : 'bg-blue-50 border-blue-200'
-
-  const textColor =
-    type === 'success' ? 'text-green-800' : type === 'error' ? 'text-red-800' : 'text-blue-800'
+        ? 'bg-seal/5 border-seal/25 text-seal'
+        : 'bg-white border-brass/30 text-ink'
 
   const icon =
     type === 'success' ? (
-      <CheckCircleIcon className="w-5 h-5 text-green-500" />
+      <CheckCircleIcon className="w-5 h-5 text-ink-600" />
     ) : type === 'error' ? (
-      <XCircleIcon className="w-5 h-5 text-red-500" />
+      <XCircleIcon className="w-5 h-5 text-seal" />
     ) : null
 
   return (
-    <div
-      className={`fixed top-4 right-4 max-w-md p-4 border rounded-lg shadow-lg flex items-center gap-3 animate-fadeIn ${bgColor}`}
+    <motion.div
+      role={type === 'error' ? 'alert' : 'status'}
+      initial={reduce ? false : { opacity: 0, y: -12, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.3, ease: [0.2, 0.75, 0.25, 1] }}
+      className={`fixed top-4 right-4 z-50 max-w-md p-4 border rounded-lg shadow-lg flex items-center gap-3 ${tone}`}
     >
       {icon}
-      <span className={`text-sm font-medium ${textColor}`}>{message}</span>
-    </div>
+      <span className="text-sm font-medium">{message}</span>
+    </motion.div>
   )
 }

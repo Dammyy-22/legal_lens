@@ -1,0 +1,917 @@
+From eda990e391ff743ff2df1f1de6526df61b074e75 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 24 Nov 2026 11:18:33 +0000
+Subject: [PATCH] Batch 2: server-enforced, recorded and withdrawable consent
+ for AI processing
+
+---
+ .github/workflows/ci.yml                      |  11 ++
+ apps/web/app/dashboard/ask/page.tsx           |   4 +
+ apps/web/app/dashboard/documents/page.tsx     |  18 ++-
+ apps/web/app/dashboard/drafting/page.tsx      |   4 +-
+ apps/web/app/dashboard/settings/page.tsx      |   3 +
+ apps/web/components/ConsentSettings.tsx       | 105 ++++++++++++++++++
+ apps/web/lib/consent.ts                       |  47 ++++++++
+ database/rollbacks/user_consent_rollback.sql  |   6 +
+ database/tests/user_consent_test.sql          |  75 +++++++++++++
+ database/user_consent_migration.sql           | 102 +++++++++++++++++
+ docs/engineering/CHANGELOG.md                 |  36 ++++++
+ docs/engineering/ISSUE_REGISTER.md            |   5 +-
+ docs/engineering/REPOSITORY_AUDIT.md          |   2 +-
+ docs/operations/staging-setup.md              |  25 +++++
+ docs/security/SECURITY_AUDIT.md               |   4 +-
+ supabase/functions/_shared/consent.mjs        |  49 ++++++++
+ supabase/functions/_shared/consent.test.mjs   |  68 ++++++++++++
+ supabase/functions/ask-user-document/index.ts |   4 +
+ .../create-user-document-upload/index.ts      |   4 +
+ supabase/functions/draft-document/index.ts    |   4 +
+ .../functions/process-user-document/index.ts  |   4 +
+ 21 files changed, 572 insertions(+), 8 deletions(-)
+ create mode 100644 apps/web/components/ConsentSettings.tsx
+ create mode 100644 apps/web/lib/consent.ts
+ create mode 100644 database/rollbacks/user_consent_rollback.sql
+ create mode 100644 database/tests/user_consent_test.sql
+ create mode 100644 database/user_consent_migration.sql
+ create mode 100644 docs/operations/staging-setup.md
+ create mode 100644 supabase/functions/_shared/consent.mjs
+ create mode 100644 supabase/functions/_shared/consent.test.mjs
+
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 0d3e5ba..0030a52 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -59,6 +59,7 @@ jobs:
+         run: |
+           node --test supabase/functions/ask/logic.test.mjs
+           node --test supabase/functions/_shared/openrouter-policy.test.mjs
++          node --test supabase/functions/_shared/consent.test.mjs
+           node --test supabase/functions/process-user-document/logic.test.mjs
+           node --test supabase/functions/ask-user-document/logic.test.mjs
+           node --test scripts/ingestion/constitution-structure.test.mjs
+@@ -124,3 +125,13 @@ jobs:
+         run: |
+           PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/matter_management_migration.sql
+           PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/lexical_search_migration.sql
++      - name: Apply user consent migration
++        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_consent_migration.sql
++      - name: Verify consent migration is rerunnable
++        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_consent_migration.sql
++      - name: Two-user consent authorization tests
++        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/tests/user_consent_test.sql
++      - name: Verify consent rollback and re-apply
++        run: |
++          PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/rollbacks/user_consent_rollback.sql
++          PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_consent_migration.sql
+diff --git a/apps/web/app/dashboard/ask/page.tsx b/apps/web/app/dashboard/ask/page.tsx
+index 6d623d9..b204381 100644
+--- a/apps/web/app/dashboard/ask/page.tsx
++++ b/apps/web/app/dashboard/ask/page.tsx
+@@ -67,6 +67,10 @@ export default function AskPage() {
+           maxLength={2000}
+           className="w-full resize-y bg-transparent text-ink leading-relaxed placeholder:text-ink-400 focus:outline-none"
+         />
++        <p className="pb-3 text-xs text-ink-400">
++          Your question is sent through OpenRouter to an AI model (we ask for zero-data-retention
++          providers only). Avoid including names, account numbers or other personal details.
++        </p>
+         <div className="flex items-center justify-between gap-4 pt-3 border-t border-ink-100">
+           <span className="text-xs text-ink-400">{question.length}/2000</span>
+           <button
+diff --git a/apps/web/app/dashboard/documents/page.tsx b/apps/web/app/dashboard/documents/page.tsx
+index 9800d77..ec6262f 100644
+--- a/apps/web/app/dashboard/documents/page.tsx
++++ b/apps/web/app/dashboard/documents/page.tsx
+@@ -13,6 +13,7 @@ import {
+ } from 'lucide-react'
+ import { createClient } from '@/lib/supabase/client'
+ import { askAboutUserDocument, type UserDocumentAnswer } from '@/lib/api-client'
++import { CONSENT_PURPOSES, ensureConsent, hasCurrentConsent } from '@/lib/consent'
+ 
+ const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+ const ACCEPTED_TYPES = {
+@@ -88,6 +89,13 @@ export default function DocumentsPage() {
+ 
+   useEffect(() => {
+     void loadDocuments()
++    let active = true
++    hasCurrentConsent(CONSENT_PURPOSES.privateDocuments).then((current) => {
++      if (active && current) setProviderConsent(true)
++    })
++    return () => {
++      active = false
++    }
+   }, [])
+ 
+   async function loadDocuments() {
+@@ -150,6 +158,7 @@ export default function DocumentsPage() {
+ 
+     try {
+       supabase = createClient()
++      await ensureConsent(CONSENT_PURPOSES.privateDocuments)
+       const { data, error: reservationError } = await supabase.functions.invoke(
+         'create-user-document-upload',
+         {
+@@ -258,6 +267,7 @@ export default function DocumentsPage() {
+     setError('')
+     setAnswer(null)
+     try {
++      if (providerConsent) await ensureConsent(CONSENT_PURPOSES.privateDocuments)
+       const result = await askAboutUserDocument(documentId, prompt.trim())
+       setAnswer(result)
+       setQuestion('')
+@@ -271,6 +281,7 @@ export default function DocumentsPage() {
+   async function handleRetry(documentId: string) {
+     setError('')
+     try {
++      if (providerConsent) await ensureConsent(CONSENT_PURPOSES.privateDocuments)
+       const supabase = createClient()
+       const { error: processingError } = await supabase.functions.invoke('process-user-document', {
+         body: { document_id: documentId },
+@@ -369,11 +380,12 @@ export default function DocumentsPage() {
+             className="mt-1"
+           />
+           <span>
+-            I agree that extracted document text may be processed by OpenRouter for
++            I agree that extracted document text may be processed through OpenRouter for
+             indexing and that relevant passages and my questions may be processed
+-            through OpenRouter to its selected model provider to provide answers. For PDFs with scanned
++            through OpenRouter to a model provider to provide answers. We ask OpenRouter to
++            use only providers it lists as zero-data-retention. For PDFs with scanned
+             pages, those pages may be sent to the configured Baidu Unlimited-OCR
+-            service for text extraction.
++            service for text extraction. I can withdraw this consent in Settings. (Tick this box to ask questions about or retry documents you uploaded earlier.)
+           </span>
+         </label>
+         <button
+diff --git a/apps/web/app/dashboard/drafting/page.tsx b/apps/web/app/dashboard/drafting/page.tsx
+index fda31bd..1b66e79 100644
+--- a/apps/web/app/dashboard/drafting/page.tsx
++++ b/apps/web/app/dashboard/drafting/page.tsx
+@@ -14,6 +14,7 @@ import {
+   type DraftDocumentResponse,
+   type DraftType,
+ } from '@/lib/api-client'
++import { CONSENT_PURPOSES, ensureConsent } from '@/lib/consent'
+ 
+ const DRAFT_OPTIONS: { value: DraftType; label: string; description: string }[] = [
+   {
+@@ -64,6 +65,7 @@ export default function DraftingPage() {
+     setResult(null)
+     setCopyStatus('')
+     try {
++      await ensureConsent(CONSENT_PURPOSES.drafting)
+       setResult(await draftCorrespondence(draftType, recipient, facts))
+     } catch (draftError) {
+       setError(draftError instanceof Error ? draftError.message : 'Unable to prepare this draft.')
+@@ -163,7 +165,7 @@ export default function DraftingPage() {
+             disabled={loading}
+             className="mt-1"
+           />
+-          <span>I understand my description is sent through OpenRouter to its selected model provider, the output is AI-generated and not lawyer-reviewed, and I will verify every detail before using it.</span>
++          <span>I understand my description is sent through OpenRouter (which we ask to use only zero-data-retention providers) to a model provider, I can withdraw consent in Settings, the output is AI-generated and not lawyer-reviewed, and I will verify every detail before using it.</span>
+         </label>
+ 
+         <button
+diff --git a/apps/web/app/dashboard/settings/page.tsx b/apps/web/app/dashboard/settings/page.tsx
+index d4eee1d..b6eb6fd 100644
+--- a/apps/web/app/dashboard/settings/page.tsx
++++ b/apps/web/app/dashboard/settings/page.tsx
+@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
+ import { useRouter } from 'next/navigation'
+ import { UserCircle } from 'lucide-react'
+ import { createClient } from '@/lib/supabase/client'
++import ConsentSettings from '@/components/ConsentSettings'
+ 
+ export default function SettingsPage() {
+   const router = useRouter()
+@@ -193,6 +194,8 @@ export default function SettingsPage() {
+           {revokingSessions ? 'Revoking sessions…' : 'Sign out all devices'}
+         </button>
+       </section>
++
++      <ConsentSettings />
+     </div>
+   )
+ }
+diff --git a/apps/web/components/ConsentSettings.tsx b/apps/web/components/ConsentSettings.tsx
+new file mode 100644
+index 0000000..0024e50
+--- /dev/null
++++ b/apps/web/components/ConsentSettings.tsx
+@@ -0,0 +1,105 @@
++'use client'
++
++import { useCallback, useEffect, useState } from 'react'
++import {
++  CONSENT_PURPOSES,
++  hasCurrentConsent,
++  withdrawConsent,
++  type ConsentPurpose,
++} from '@/lib/consent'
++
++const ROWS: { purpose: ConsentPurpose; title: string; description: string }[] = [
++  {
++    purpose: CONSENT_PURPOSES.privateDocuments,
++    title: 'Private document processing',
++    description:
++      'Lets us index your uploaded documents and answer questions about them using an AI model.',
++  },
++  {
++    purpose: CONSENT_PURPOSES.drafting,
++    title: 'Drafting assistant',
++    description: 'Lets us send the description you type to an AI model to prepare a draft.',
++  },
++]
++
++export default function ConsentSettings() {
++  const [granted, setGranted] = useState<Record<string, boolean | null>>({})
++  const [busy, setBusy] = useState<string | null>(null)
++  const [error, setError] = useState('')
++
++  const refresh = useCallback(async () => {
++    const entries = await Promise.all(
++      ROWS.map(async (row) => [row.purpose, await hasCurrentConsent(row.purpose)] as const),
++    )
++    setGranted(Object.fromEntries(entries))
++  }, [])
++
++  useEffect(() => {
++    let active = true
++    Promise.all(ROWS.map(async (row) => [row.purpose, await hasCurrentConsent(row.purpose)] as const))
++      .then((entries) => {
++        if (active) setGranted(Object.fromEntries(entries))
++      })
++      .catch(() => {
++        if (active) setError('Unable to load your consent settings.')
++      })
++    return () => {
++      active = false
++    }
++  }, [])
++
++  async function handleWithdraw(purpose: ConsentPurpose) {
++    setBusy(purpose)
++    setError('')
++    try {
++      await withdrawConsent(purpose)
++      await refresh()
++    } catch (withdrawError) {
++      setError(withdrawError instanceof Error ? withdrawError.message : 'Unable to withdraw consent.')
++    } finally {
++      setBusy(null)
++    }
++  }
++
++  return (
++    <section className="bg-white/90 border border-ink-100 rounded-2xl p-6 mt-6">
++      <h2 className="font-display text-lg text-ink mb-1">AI processing consent</h2>
++      <p className="text-ink-400 text-sm mb-4">
++        You give consent when you first upload a document or use the drafting assistant. Withdrawing it
++        stops further processing straight away. It does not delete documents you already uploaded; delete
++        those from the Documents page.
++      </p>
++      {error && (
++        <p role="alert" className="mb-3 text-sm text-seal">
++          {error}
++        </p>
++      )}
++      <ul className="space-y-4">
++        {ROWS.map((row) => (
++          <li key={row.purpose} className="flex items-start justify-between gap-4 text-sm">
++            <div>
++              <p className="text-ink font-medium">{row.title}</p>
++              <p className="text-ink-400">{row.description}</p>
++              <p className="text-ink-400 mt-1">
++                Status:{' '}
++                {granted[row.purpose] === undefined
++                  ? 'checking…'
++                  : granted[row.purpose]
++                    ? 'consent given'
++                    : 'no current consent'}
++              </p>
++            </div>
++            <button
++              type="button"
++              onClick={() => handleWithdraw(row.purpose)}
++              disabled={busy !== null || granted[row.purpose] !== true}
++              className="shrink-0 px-4 py-2 border border-seal/30 text-seal font-medium rounded-lg hover:bg-seal/5 disabled:opacity-50 transition-colors text-sm"
++            >
++              {busy === row.purpose ? 'Withdrawing…' : 'Withdraw'}
++            </button>
++          </li>
++        ))}
++      </ul>
++    </section>
++  )
++}
+diff --git a/apps/web/lib/consent.ts b/apps/web/lib/consent.ts
+new file mode 100644
+index 0000000..d5ae063
+--- /dev/null
++++ b/apps/web/lib/consent.ts
+@@ -0,0 +1,47 @@
++import { createClient } from '@/lib/supabase/client'
++
++// MUST equal CONSENT_POLICY_VERSION in supabase/functions/_shared/consent.mjs
++// (a test there fails if they drift). Bump when the consent wording changes;
++// everyone is then asked again because the server only accepts the current version.
++export const CONSENT_POLICY_VERSION = '2026-11-v1'
++
++export type ConsentPurpose = 'private_document_processing' | 'drafting_assistance'
++
++export const CONSENT_PURPOSES: Record<string, ConsentPurpose> = {
++  privateDocuments: 'private_document_processing',
++  drafting: 'drafting_assistance',
++}
++
++// Records the user's consent on the server (append-only audit log). The Edge
++// Functions refuse to process content unless this has been recorded.
++export async function recordConsent(purpose: ConsentPurpose): Promise<void> {
++  const supabase = createClient()
++  const { error } = await supabase.rpc('grant_consent', {
++    p_purpose: purpose,
++    p_policy_version: CONSENT_POLICY_VERSION,
++  })
++  if (error) throw new Error('We could not record your consent. Please try again.')
++}
++
++// Records consent only if there is no current consent yet, so the audit log is
++// not filled with a new event on every action.
++export async function ensureConsent(purpose: ConsentPurpose): Promise<void> {
++  if (await hasCurrentConsent(purpose)) return
++  await recordConsent(purpose)
++}
++
++export async function withdrawConsent(purpose: ConsentPurpose): Promise<void> {
++  const supabase = createClient()
++  const { error } = await supabase.rpc('withdraw_consent', { p_purpose: purpose })
++  if (error) throw new Error('We could not withdraw your consent. Please try again.')
++}
++
++export async function hasCurrentConsent(purpose: ConsentPurpose): Promise<boolean> {
++  const supabase = createClient()
++  const { data, error } = await supabase.rpc('has_current_consent', {
++    p_purpose: purpose,
++    p_policy_version: CONSENT_POLICY_VERSION,
++  })
++  if (error) return false
++  return data === true
++}
+diff --git a/database/rollbacks/user_consent_rollback.sql b/database/rollbacks/user_consent_rollback.sql
+new file mode 100644
+index 0000000..b46596f
+--- /dev/null
++++ b/database/rollbacks/user_consent_rollback.sql
+@@ -0,0 +1,6 @@
++-- Rolls back database/user_consent_migration.sql. DESTROYS the consent audit log.
++-- Export it first if you need it:  \copy public.user_consent_events to 'consent_events.csv' csv header
++drop function if exists public.has_current_consent(text, text);
++drop function if exists public.withdraw_consent(text);
++drop function if exists public.grant_consent(text, text);
++drop table if exists public.user_consent_events;
+diff --git a/database/tests/user_consent_test.sql b/database/tests/user_consent_test.sql
+new file mode 100644
+index 0000000..47c5b90
+--- /dev/null
++++ b/database/tests/user_consent_test.sql
+@@ -0,0 +1,75 @@
++-- Two-user authorization tests for user_consent_events (run in CI; ON_ERROR_STOP).
++-- Uses the Supabase-style JWT claim setting that auth.uid() reads.
++\set ON_ERROR_STOP on
++begin;
++
++insert into auth.users (id, email) values
++  ('00000000-0000-0000-0000-0000000000a1', 'alice@example.test'),
++  ('00000000-0000-0000-0000-0000000000b2', 'bob@example.test');
++
++create or replace function pg_temp.as_user(uid text) returns void language plpgsql as $$
++begin
++  perform set_config('request.jwt.claim.sub', uid, true);
++end $$;
++
++create or replace function pg_temp.expect_error(stmt text, label text) returns void language plpgsql as $$
++begin
++  begin
++    execute stmt;
++  exception when others then
++    return;
++  end;
++  raise exception 'EXPECTED ERROR BUT SUCCEEDED: %', label;
++end $$;
++
++create or replace function pg_temp.assert_true(cond boolean, label text) returns void language plpgsql as $$
++begin
++  if cond is not true then raise exception 'ASSERTION FAILED: %', label; end if;
++end $$;
++
++
++-- ---------- Alice ----------
++set local role authenticated;
++select pg_temp.as_user('00000000-0000-0000-0000-0000000000a1');
++
++select pg_temp.assert_true(not public.has_current_consent('private_document_processing', 'v1'), 'no consent before granting');
++select public.grant_consent('private_document_processing', 'v1');
++select pg_temp.assert_true(public.has_current_consent('private_document_processing', 'v1'), 'granted v1 is current');
++select pg_temp.assert_true(not public.has_current_consent('private_document_processing', 'v2'), 'older version is not current for v2');
++select pg_temp.assert_true(not public.has_current_consent('drafting_assistance', 'v1'), 'purposes are independent');
++
++select public.withdraw_consent('private_document_processing');
++select pg_temp.assert_true(not public.has_current_consent('private_document_processing', 'v1'), 'withdrawn consent is not current');
++select public.grant_consent('private_document_processing', 'v1');
++select pg_temp.assert_true(public.has_current_consent('private_document_processing', 'v1'), 're-grant works');
++
++-- Direct writes are refused
++select pg_temp.expect_error($$insert into public.user_consent_events (user_id, purpose, action, policy_version) values ('00000000-0000-0000-0000-0000000000a1','drafting_assistance','granted','v1')$$, 'direct insert');
++select pg_temp.expect_error($$update public.user_consent_events set action = 'granted'$$, 'direct update');
++select pg_temp.expect_error($$delete from public.user_consent_events$$, 'direct delete');
++-- Invalid purpose is refused
++select pg_temp.expect_error($$select public.grant_consent('anything_else', 'v1')$$, 'invalid purpose');
++
++select pg_temp.assert_true((select count(*) from public.user_consent_events) = 3, 'alice sees exactly her 3 events');
++
++-- ---------- Bob must not see or inherit Alice''s consent ----------
++select pg_temp.as_user('00000000-0000-0000-0000-0000000000b2');
++select pg_temp.assert_true((select count(*) from public.user_consent_events) = 0, 'bob sees none of alice''s events');
++select pg_temp.assert_true(not public.has_current_consent('private_document_processing', 'v1'), 'bob has no consent');
++select public.withdraw_consent('private_document_processing');  -- bob withdrawing must not affect alice
++select pg_temp.as_user('00000000-0000-0000-0000-0000000000a1');
++select pg_temp.assert_true(public.has_current_consent('private_document_processing', 'v1'), 'alice unaffected by bob');
++
++-- ---------- Unauthenticated ----------
++select pg_temp.as_user('');
++select pg_temp.expect_error($$select public.grant_consent('drafting_assistance', 'v1')$$, 'grant without auth');
++select pg_temp.assert_true(not public.has_current_consent('private_document_processing', 'v1'), 'no auth => no consent');
++
++-- ---------- anon role has no access ----------
++reset role;
++set local role anon;
++select pg_temp.expect_error($$select public.grant_consent('drafting_assistance', 'v1')$$, 'anon grant');
++select pg_temp.expect_error($$select * from public.user_consent_events$$, 'anon select');
++
++rollback;
++\echo user_consent_test: all assertions passed
+diff --git a/database/user_consent_migration.sql b/database/user_consent_migration.sql
+new file mode 100644
+index 0000000..b407913
+--- /dev/null
++++ b/database/user_consent_migration.sql
+@@ -0,0 +1,102 @@
++-- Server-side record of user consent to AI processing (issue LL-020).
++--
++-- Append-only event log: consent is whatever the user's LATEST event (highest seq)
++-- for a purpose says. Users can read their own events; they can write ONLY through
++-- grant_consent / withdraw_consent. Re-runnable. Rollback:
++-- database/rollbacks/user_consent_rollback.sql
++--
++-- Purposes:
++--   private_document_processing  uploading/indexing/asking about a private document
++--   drafting_assistance          sending a user's description to the drafting model
++
++create table if not exists public.user_consent_events (
++    id uuid primary key default gen_random_uuid(),
++    -- Monotonic ordering key: timestamps can tie within one transaction, so the
++    -- "latest event" is decided by seq, never by created_at.
++    seq bigint generated always as identity,
++    user_id uuid not null references auth.users(id) on delete cascade,
++    purpose text not null check (purpose in ('private_document_processing', 'drafting_assistance')),
++    action text not null check (action in ('granted', 'withdrawn')),
++    policy_version text not null check (length(policy_version) between 1 and 64),
++    created_at timestamptz not null default now()
++);
++
++create index if not exists user_consent_events_latest_idx
++    on public.user_consent_events (user_id, purpose, seq desc);
++
++alter table public.user_consent_events enable row level security;
++
++revoke all on public.user_consent_events from public, anon, authenticated;
++grant select on public.user_consent_events to authenticated;
++grant all on public.user_consent_events to service_role;
++
++drop policy if exists "Users read their own consent events" on public.user_consent_events;
++create policy "Users read their own consent events"
++    on public.user_consent_events
++    for select
++    to authenticated
++    using (user_id = auth.uid());
++-- No insert/update/delete policies: events are written only by the functions below
++-- and can never be edited or removed by the user (audit integrity).
++
++create or replace function public.grant_consent(p_purpose text, p_policy_version text)
++returns void
++language plpgsql
++security definer
++set search_path = public
++as $$
++begin
++    if auth.uid() is null then
++        raise exception 'Authentication required' using errcode = '28000';
++    end if;
++    insert into public.user_consent_events (user_id, purpose, action, policy_version)
++    values (auth.uid(), p_purpose, 'granted', p_policy_version);
++end;
++$$;
++
++create or replace function public.withdraw_consent(p_purpose text)
++returns void
++language plpgsql
++security definer
++set search_path = public
++as $$
++declare
++    v_version text;
++begin
++    if auth.uid() is null then
++        raise exception 'Authentication required' using errcode = '28000';
++    end if;
++    select policy_version into v_version
++    from public.user_consent_events
++    where user_id = auth.uid() and purpose = p_purpose
++    order by seq desc
++    limit 1;
++    insert into public.user_consent_events (user_id, purpose, action, policy_version)
++    values (auth.uid(), p_purpose, 'withdrawn', coalesce(v_version, 'none'));
++end;
++$$;
++
++-- True only if the caller's latest event for the purpose is a grant of exactly
++-- the required policy version. Runs as the caller, so RLS limits it to their rows.
++create or replace function public.has_current_consent(p_purpose text, p_policy_version text)
++returns boolean
++language sql
++stable
++security invoker
++set search_path = public
++as $$
++    select coalesce((
++        select e.action = 'granted' and e.policy_version = p_policy_version
++        from public.user_consent_events e
++        where e.user_id = auth.uid() and e.purpose = p_purpose
++        order by e.seq desc
++        limit 1
++    ), false)
++$$;
++
++revoke all on function public.grant_consent(text, text) from public, anon;
++revoke all on function public.withdraw_consent(text) from public, anon;
++revoke all on function public.has_current_consent(text, text) from public, anon;
++grant execute on function public.grant_consent(text, text) to authenticated;
++grant execute on function public.withdraw_consent(text) to authenticated;
++grant execute on function public.has_current_consent(text, text) to authenticated;
+diff --git a/docs/engineering/CHANGELOG.md b/docs/engineering/CHANGELOG.md
+index c5ac06e..ec19280 100644
+--- a/docs/engineering/CHANGELOG.md
++++ b/docs/engineering/CHANGELOG.md
+@@ -35,3 +35,39 @@
+ 3. Merge to a preview branch first and check the Vercel preview build and one `ask` and one document question.
+ 
+ **Rollback:** revert the merge commit. No data or schema changes are involved.
++
++## Batch 2 — Server-enforced consent for AI processing (2026-11-23, branch `fix/batch-2-document-consent`, built on Batch 1)
++
++**Scope:** LL-020 (corrected), LL-054, LL-055. One additive migration with a tested rollback.
++
++**Correction to my Stage 1 audit:** I reported that no consent step existed. That was wrong — a browser checkbox exists on the Documents and Drafting pages (my text search skipped `.tsx` files). The real gap was that it was client-side only. The registry, security audit and repository audit are corrected.
++
++**Files changed**
++- `database/user_consent_migration.sql` (new) — append-only `user_consent_events` (ordered by an identity `seq`; a first draft ordered by timestamp and the new test caught ties within a transaction), RLS read-own, RPCs `grant_consent` / `withdraw_consent` / `has_current_consent`
++- `database/rollbacks/user_consent_rollback.sql` (new; destroys the consent log — export first)
++- `database/tests/user_consent_test.sql` (new) — two-user authorization tests (first RLS tests in the repo)
++- `supabase/functions/_shared/consent.mjs` (+ `consent.test.mjs`) — gate used by four functions; fail-closed
++- `supabase/functions/{create-user-document-upload,process-user-document,ask-user-document,draft-document}/index.ts` — gate right after authentication
++- `apps/web/lib/consent.ts`, `components/ConsentSettings.tsx` — record, check, withdraw; Settings page section
++- `apps/web/app/dashboard/{documents,drafting,ask,settings}/page.tsx` — record consent before processing, pre-tick if already recorded, updated wording, `ask` disclosure
++- `.github/workflows/ci.yml` — consent migration, re-run, SQL tests, rollback + re-apply, consent unit tests
++- `docs/operations/staging-setup.md` (new); audit docs corrected
++
++**Commands run and results (sandbox)**
++| Command | Result |
++|---|---|
++| Full CI SQL sequence on a clean PostgreSQL 16 + pgvector (stub, schema, all migrations, re-runs, consent migration ×2, tests, rollback, re-apply) | all succeed |
++| `database/tests/user_consent_test.sql` | all assertions pass |
++| `node --test` consent (5), openrouter-policy (6) | pass |
++| `deno check` on all 5 touched functions | exit 0 |
++| `tsc --noEmit`, `npm run lint`, `next build` | exit 0; lint 0 errors / 7 known warnings |
++
++**Not verified:** behaviour against a real Supabase project (RLS/grants differ slightly from my local stub), the GitHub Actions run, real browser flows (consent prompts, Settings withdrawal) — **no UI was exercised in a browser**.
++
++**Deploy order (important)**
++1. Apply `user_consent_migration.sql` to **staging**, test (see `docs/operations/staging-setup.md`), then production.
++2. Deploy the four Edge Functions.
++3. Deploy the web app.
++If functions go out before the migration, uploads, document questions and drafting fail closed with 503 until the migration is applied. Existing users must tick the consent box once to continue using earlier documents.
++
++**Rollback:** redeploy previous functions and web, then run `database/rollbacks/user_consent_rollback.sql` (only after the functions no longer call it).
+diff --git a/docs/engineering/ISSUE_REGISTER.md b/docs/engineering/ISSUE_REGISTER.md
+index 81362cf..e605ba9 100644
+--- a/docs/engineering/ISSUE_REGISTER.md
++++ b/docs/engineering/ISSUE_REGISTER.md
+@@ -12,6 +12,7 @@ Date: 2026-11-23. **Type** is one of: `Confirmed` (seen in code/tooling output),
+ | LL-002 | **Fixed in code** (not deployed; **deploy check required**) | Batch 1 | All chat and embedding requests now carry `provider: {zdr: true, data_collection: "deny"}` via `_shared/openrouter-policy.mjs`; no opt-out. 6 unit tests assert the request body. **Risk:** if a configured model has no ZDR endpoint, calls fail closed (HTTP 404 from OpenRouter, logged with a clear message, returned as 502). Eligibility of `openai/gpt-4.1-mini` and `openai/text-embedding-3-small` could not be checked from the sandbox — verify before deploy (see CHANGELOG) |
+ | LL-004 | **Fixed** | Batch 1 | `npm run lint` now runs `eslint .` with a flat config; exit 0 (0 errors, 7 warnings — see LL-050) |
+ | LL-005 | **Partly fixed** | Batch 1 | CI now runs: lint, `npm audit --audit-level=high`, `ask` and provider-policy tests, `draft-document` type-check, OCR gateway tests, gitleaks scan, all five migrations (+ re-run of the three idempotent ones). Still open: RLS/authorization tests, retrieval/citation evals |
++| LL-020 | **Fixed in branch** (not deployed; migration must be applied first) | Batch 2 · 2026-11-23 | New append-only `user_consent_events` table + `grant_consent` / `withdraw_consent` / `has_current_consent` functions (RLS: users read only their own; no direct writes). `create-user-document-upload`, `process-user-document`, `ask-user-document` and `draft-document` now refuse with 403 `consent_required` unless the caller's latest event is a grant of the current policy version, and fail closed (503) if the check errors. Settings page lets users withdraw. Wording updated for zero-data-retention routing; `ask` page now carries a disclosure line. Two-user SQL test suite passes; migration re-runs and rolls back cleanly |
+ | LL-053 | **Fixed** | Batch 1 | Pre-existing type errors found by running `deno check` locally for the first time on all six functions: (a) `draft-document`: `jsonResponse` was called with a third headers argument it did not accept, so the `Retry-After` header was never sent; (b) `process-user-document`: `crypto.subtle.digest` rejected `Uint8Array<ArrayBufferLike>` under current Deno/TS. All six functions now pass `deno check` (Deno 2.9.6) |
+ 
+ ## New issues found during Batch 1
+@@ -20,6 +21,8 @@ Date: 2026-11-23. **Type** is one of: `Confirmed` (seen in code/tooling output),
+ |---|---|---|---|
+ | LL-050 | P3 | 7 lint warnings in existing UI code | `react-hooks/set-state-in-effect` (login, search, DashboardShell, LegalFactOfTheDay), `react-hooks/immutability` (AdminCorpusReview, documents page), `no-location-assign-relative-destination` (register). Downgraded to warnings in `eslint.config.mjs` so CI gates on real errors; refactor later |
+ | LL-051 | P3 | React 18 is deprecated in Next 16 | Build warning: React 18 support removed in Next 17. Plan an upgrade to React 19 |
++| LL-054 | P2 | Existing users with documents must re-consent after deploy | Until a user ticks the consent box once, asking about or retrying older documents returns 403 `consent_required`. The Documents page now pre-ticks the box when consent is already recorded; otherwise the user ticks it and retries |
++| LL-055 | P3 | `ask` public Q&A has no consent gate (disclosure only) | Class A data (public text + question). Disclosure line added; a gate is a product decision |
+ | LL-052 | P3 | `schema.sql` and `waitlist_migration.sql` are not re-runnable | Re-run fails on `create policy` for existing policies. CI applies them once only |
+ 
+ ## Confirmed defects
+@@ -43,7 +46,7 @@ Date: 2026-11-23. **Type** is one of: `Confirmed` (seen in code/tooling output),
+ 
+ | ID | P | Title | Why it matters / how to verify |
+ |---|---|---|---|
+-| LL-020 | P1 | No consent/disclosure before private documents go to a third-party model | A text search of `apps/web/app/dashboard/documents` found no consent wording; page not read in full. Master prompt forbids sending confidential documents to providers before privacy terms and consent are addressed. Verify UI + `deployment-checklist.md` |
++| LL-020 | P1 | Consent was client-side only (CORRECTED — original text said no consent step existed, which was wrong) | Checkbox on Documents/Drafting pages; no server record, no version, not enforced by functions, no withdrawal; `ask` had no disclosure. Fixed in Batch 2 — see Status log |
+ | LL-021 | P2 | Admin verification is a direct client-side `UPDATE` with a client-supplied `verified_by` | `AdminCorpusReview.tsx` writes `verified_by` from the browser; RLS policy lets an admin update any column of `legal_source_versions`; no immutable audit log or content-hash pinning at verification time; admin MFA depends on dashboard settings |
+ | LL-022 | P2 | ivfflat indexes created at schema time (`lists=100` / `50`) | ivfflat quality depends on building after data load; likely poor recall until reindexed. Verify with a recall test on loaded data; consider HNSW |
+ | LL-023 | P2 | English-only regex safety triage with high-recall phrases | `under arrest` / `being detained` route to a fixed message instead of rights information; Pidgin/Yoruba/Igbo/Hausa phrasing unhandled. Product decision needed |
+diff --git a/docs/engineering/REPOSITORY_AUDIT.md b/docs/engineering/REPOSITORY_AUDIT.md
+index e130438..9f88e1e 100644
+--- a/docs/engineering/REPOSITORY_AUDIT.md
++++ b/docs/engineering/REPOSITORY_AUDIT.md
+@@ -68,7 +68,7 @@ See `ISSUE_REGISTER.md` for IDs, priority, evidence and status. Headlines:
+ - Hosted Supabase settings: MFA for admins, inactivity timeout, refresh-token reuse detection, email confirmation, password policy.
+ - OpenRouter account-level privacy settings (ZDR/data-collection toggles) — may already mitigate LL-002.
+ - Which corpus rows are `verified` in production, and which Police Act chunk version (`chunks`, `chunks-v2`, `chunks-v4`) was ingested.
+-- Whether a consent/disclosure step exists before document upload (a text search of `apps/web/app/dashboard/documents` found none; the page was not read in full).
++- ~~Whether a consent/disclosure step exists~~ **Corrected:** a client-side checkbox exists on the Documents and Drafting pages (my first search missed `.tsx` files); it was not enforced or recorded server-side — see LL-020 (the page was not read in full).
+ - Content of `docs/operations/deployment-checklist.md` "provider disclosure" section.
+ - Full text of `legal`, `create-user-document-upload` and `apps/web` pages beyond what is cited here.
+ - Rights to redistribute the committed corpus texts (PLAC and other compilations).
+diff --git a/docs/operations/staging-setup.md b/docs/operations/staging-setup.md
+new file mode 100644
+index 0000000..0857d08
+--- /dev/null
++++ b/docs/operations/staging-setup.md
+@@ -0,0 +1,25 @@
++# Setting up a Supabase staging project (for testing migrations before production)
++
++Why: database changes (like `user_consent_migration.sql`) must be tried on a copy first. Staging is a **second Supabase project** with its own URL, keys and data. Nothing you do there touches production.
++
++1. **Create the project.** Supabase dashboard → New project → name it `legal-lens-staging`, same organisation. Check your plan's limit on number of projects first (free plans limit active projects; confirm on Supabase's current pricing page).
++2. **Apply the SQL in this order** using Dashboard → SQL Editor (paste each file, Run):
++   1. `database/schema.sql`
++   2. `database/user_documents_migration.sql`
++   3. `database/waitlist_migration.sql`
++   4. `database/matter_management_migration.sql`
++   5. `database/lexical_search_migration.sql`
++   6. `database/user_consent_migration.sql`
++   Do **not** run anything in `database/ci/` (CI-only stubs) and do not run `database/tests/` on a real project.
++3. **Secrets for Edge Functions** (Dashboard → Edge Functions → Secrets, or `supabase secrets set --project-ref <staging-ref>`): `OPENROUTER_API_KEY` (a separate key with a low spend limit), plus the same variable names listed in `docs/operations/deployment-checklist.md`. Never reuse production service-role keys.
++4. **Deploy the functions to staging:** `supabase functions deploy <name> --project-ref <staging-ref>` for `ask`, `legal`, `draft-document`, `create-user-document-upload`, `process-user-document`, `ask-user-document`.
++5. **Point a Vercel Preview deployment at staging:** in Vercel → Project → Settings → Environment Variables, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the **Preview** environment only, with the staging project's values.
++6. **Test checklist on the preview URL** (use a throwaway account):
++   - Documents page: upload without ticking → blocked; tick → upload succeeds; Settings shows "consent given".
++   - Withdraw in Settings → ask about the document → refused with a consent message.
++   - Tick again on the Documents page → ask works.
++   - Drafting: same pattern.
++   - `ask` page answers a corpus question (needs some corpus data; see `database/seeds/` and the ingestion README).
++7. Only after staging passes, repeat steps 2.6 (migration), 4 (functions) and the web deploy on production, **in that order**.
++
++Alternative without a second hosted project: `supabase start` runs the stack locally in Docker (install the Supabase CLI first).
+diff --git a/docs/security/SECURITY_AUDIT.md b/docs/security/SECURITY_AUDIT.md
+index 188ef1d..13b4bfc 100644
+--- a/docs/security/SECURITY_AUDIT.md
++++ b/docs/security/SECURITY_AUDIT.md
+@@ -12,7 +12,7 @@ No critical authentication, authorisation or secret-exposure defect was confirme
+ |---|---|---|---|
+ | LL-001 | High | Confirmed (version) / reachability unverified | `next@16.3.4` is within the range flagged by `npm audit` (1 critical advisory entry for `next`, covering multiple advisories including image-optimization and cache issues); `sharp` and `source-map-js` high. App uses `next/image`. Some advisories apply to self-hosted deployments only — hosting model unknown |
+ | LL-002 | High | Confirmed | No `provider.zdr` / `data_collection` on OpenRouter calls; OpenRouter's documented default is `allow`. Private-document text and questions are in scope |
+-| LL-020 | High | Potential | No consent step found before sending private documents to third parties (text search only) |
++| LL-020 | High | **Corrected in Batch 2** | Original finding said no consent step existed; that was wrong (my text search missed `.tsx` files). A browser checkbox exists on the Documents and Drafting pages, but it was **client-side only**: not recorded, not versioned, not enforced by the Edge Functions (a direct call skipped it), and not withdrawable. `ask` had no disclosure at all |
+ | LL-003 | Medium | Confirmed | No rate limiting on `ask-user-document`, `process-user-document`, `create-user-document-upload`, `legal`; `ask`/`draft-document` limits are per-isolate and reset across instances → paid-API cost abuse and brute-force surface |
+ | LL-021 | Medium | Potential | Corpus verification performed from the browser with client-supplied `verified_by`; admin policy permits any-column update; no audit log or content-hash pinning |
+ | LL-006 | Low–Med | Confirmed | Swallowed persistence errors; unchecked client-supplied `conversation_id` (RLS blocks cross-user writes — not an access-control bypass) |
+@@ -46,7 +46,7 @@ See table in `docs/ai/AI_ARCHITECTURE.md` §4. Current-state notes:
+ 
+ 1. Upgrade Next.js and flagged packages; add Dependabot/audit gate (LL-001).
+ 2. Enforce ZDR/no-collection on every provider call; add provider-eligibility by data class (LL-002).
+-3. Add a consent record and UI step before any private document is processed (LL-020).
++3. ~~Add a consent record and UI step~~ Record consent server-side and enforce it in the functions (LL-020) — done in Batch 2 (branch), not deployed.
+ 4. DB-backed atomic rate and cost limiter on every AI-calling function (LL-003).
+ 5. Move corpus verification behind a server-side RPC that records actor, time and content hash in an append-only log (LL-021).
+ 6. Add two-user RLS/RPC tests and a secret scan to CI (LL-005).
+diff --git a/supabase/functions/_shared/consent.mjs b/supabase/functions/_shared/consent.mjs
+new file mode 100644
+index 0000000..fbafa56
+--- /dev/null
++++ b/supabase/functions/_shared/consent.mjs
+@@ -0,0 +1,49 @@
++// Server-side consent gate (issue LL-020). The browser checkbox is a UX step;
++// this is the enforcement: functions that send user content to a model call
++// checkConsent() right after authentication and refuse (fail closed) unless the
++// caller's latest recorded consent for the purpose is a grant of the CURRENT
++// policy version. The database function runs as the caller, so RLS scopes it.
++
++// MUST equal CONSENT_POLICY_VERSION in apps/web/lib/consent.ts
++// (a test in this folder fails if they drift). Bump when the consent wording changes.
++export const CONSENT_POLICY_VERSION = '2026-11-v1'
++
++export const CONSENT_PURPOSES = Object.freeze({
++  privateDocuments: 'private_document_processing',
++  drafting: 'drafting_assistance',
++})
++
++export async function checkConsent(client, purpose, version = CONSENT_POLICY_VERSION) {
++  let result
++  try {
++    result = await client.rpc('has_current_consent', {
++      p_purpose: purpose,
++      p_policy_version: version,
++    })
++  } catch {
++    return unavailable()
++  }
++  if (!result || result.error) return unavailable()
++  if (result.data !== true) {
++    return {
++      ok: false,
++      status: 403,
++      body: {
++        error: 'Your consent is required before this content can be processed.',
++        code: 'consent_required',
++        purpose,
++        required_version: version,
++      },
++    }
++  }
++  return { ok: true }
++}
++
++function unavailable() {
++  // Fail closed: if consent cannot be verified, nothing is sent to a provider.
++  return {
++    ok: false,
++    status: 503,
++    body: { error: 'Could not verify your consent right now. Please try again.', code: 'consent_check_failed' },
++  }
++}
+diff --git a/supabase/functions/_shared/consent.test.mjs b/supabase/functions/_shared/consent.test.mjs
+new file mode 100644
+index 0000000..33d7057
+--- /dev/null
++++ b/supabase/functions/_shared/consent.test.mjs
+@@ -0,0 +1,68 @@
++import assert from 'node:assert/strict'
++import { readFileSync } from 'node:fs'
++import test from 'node:test'
++import { checkConsent, CONSENT_POLICY_VERSION, CONSENT_PURPOSES } from './consent.mjs'
++
++const fakeClient = (response) => ({
++  calls: [],
++  async rpc(name, args) {
++    this.calls.push({ name, args })
++    if (response instanceof Error) throw response
++    return response
++  },
++})
++
++test('allows processing only when the database says consent is current', async () => {
++  const client = fakeClient({ data: true, error: null })
++  const result = await checkConsent(client, CONSENT_PURPOSES.privateDocuments)
++  assert.deepEqual(result, { ok: true })
++  assert.deepEqual(client.calls, [{
++    name: 'has_current_consent',
++    args: { p_purpose: 'private_document_processing', p_policy_version: CONSENT_POLICY_VERSION },
++  }])
++})
++
++test('refuses with 403 consent_required when consent is missing, withdrawn or outdated', async () => {
++  for (const data of [false, null, undefined, 'true', 1]) {
++    const result = await checkConsent(fakeClient({ data, error: null }), CONSENT_PURPOSES.drafting)
++    assert.equal(result.ok, false)
++    assert.equal(result.status, 403)
++    assert.equal(result.body.code, 'consent_required')
++    assert.equal(result.body.purpose, 'drafting_assistance')
++    assert.equal(result.body.required_version, CONSENT_POLICY_VERSION)
++  }
++})
++
++test('fails closed (503) when the check errors or throws', async () => {
++  for (const response of [{ data: null, error: { message: 'boom' } }, undefined, new Error('network')]) {
++    const result = await checkConsent(fakeClient(response), CONSENT_PURPOSES.privateDocuments)
++    assert.equal(result.ok, false)
++    assert.equal(result.status, 503)
++    assert.equal(result.body.code, 'consent_check_failed')
++  }
++})
++
++test('server and web consent policy versions are identical', () => {
++  const web = readFileSync(new URL('../../../apps/web/lib/consent.ts', import.meta.url), 'utf8')
++  const match = web.match(/CONSENT_POLICY_VERSION\s*=\s*'([^']+)'/)
++  assert.ok(match, 'apps/web/lib/consent.ts must export CONSENT_POLICY_VERSION')
++  assert.equal(match[1], CONSENT_POLICY_VERSION)
++})
++
++test('every function that sends user content to a model enforces the consent gate', () => {
++  const guarded = {
++    'create-user-document-upload': 'privateDocuments',
++    'process-user-document': 'privateDocuments',
++    'ask-user-document': 'privateDocuments',
++    'draft-document': 'drafting',
++  }
++  for (const [fn, purpose] of Object.entries(guarded)) {
++    const src = readFileSync(new URL(`../${fn}/index.ts`, import.meta.url), 'utf8')
++    assert.match(src, /checkConsent\(/, `${fn} must call checkConsent`)
++    assert.match(src, new RegExp(`CONSENT_PURPOSES\\.${purpose}`), `${fn} must use the ${purpose} purpose`)
++    assert.ok(
++      src.indexOf('checkConsent(') > src.indexOf('auth.getUser()'),
++      `${fn} must check consent after authentication`,
++    )
++  }
++})
+diff --git a/supabase/functions/ask-user-document/index.ts b/supabase/functions/ask-user-document/index.ts
+index b811039..ba840ad 100644
+--- a/supabase/functions/ask-user-document/index.ts
++++ b/supabase/functions/ask-user-document/index.ts
+@@ -8,6 +8,7 @@ import {
+   embedWithOpenRouter,
+   generateWithOpenRouter,
+ } from '../_shared/openrouter.ts'
++import { checkConsent, CONSENT_PURPOSES } from '../_shared/consent.mjs'
+ 
+ const SIMILARITY_THRESHOLD = 0.55
+ const MAX_CHUNKS = 6
+@@ -51,6 +52,9 @@ Deno.serve(async (request: Request) => {
+   } = await supabase.auth.getUser()
+   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
+ 
++  const consent = await checkConsent(supabase, CONSENT_PURPOSES.privateDocuments)
++  if (!consent.ok) return jsonResponse(consent.body, consent.status)
++
+   let body: { document_id?: unknown; question?: unknown }
+   try {
+     body = await request.json()
+diff --git a/supabase/functions/create-user-document-upload/index.ts b/supabase/functions/create-user-document-upload/index.ts
+index 37dac7a..7d859fb 100644
+--- a/supabase/functions/create-user-document-upload/index.ts
++++ b/supabase/functions/create-user-document-upload/index.ts
+@@ -1,4 +1,5 @@
+ import { createClient } from 'npm:@supabase/supabase-js@2'
++import { checkConsent, CONSENT_PURPOSES } from '../_shared/consent.mjs'
+ 
+ const MAX_FILE_BYTES = 15 * 1024 * 1024
+ const MIME_TYPES = new Set([
+@@ -33,6 +34,9 @@ Deno.serve(async (request: Request) => {
+   } = await caller.auth.getUser()
+   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
+ 
++  const consent = await checkConsent(caller, CONSENT_PURPOSES.privateDocuments)
++  if (!consent.ok) return jsonResponse(consent.body, consent.status)
++
+   let body: { filename?: unknown; mime_type?: unknown; file_size_bytes?: unknown }
+   try {
+     body = await request.json()
+diff --git a/supabase/functions/draft-document/index.ts b/supabase/functions/draft-document/index.ts
+index 0d695a1..2d6934a 100644
+--- a/supabase/functions/draft-document/index.ts
++++ b/supabase/functions/draft-document/index.ts
+@@ -1,5 +1,6 @@
+ import { createClient } from 'npm:@supabase/supabase-js@2'
+ import { generateWithOpenRouter } from '../_shared/openrouter.ts'
++import { checkConsent, CONSENT_PURPOSES } from '../_shared/consent.mjs'
+ 
+ const DRAFT_TYPES = {
+   information_request: 'A neutral request for information or copies of records',
+@@ -44,6 +45,9 @@ Deno.serve(async (request: Request) => {
+   } = await supabase.auth.getUser()
+   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
+ 
++  const consent = await checkConsent(supabase, CONSENT_PURPOSES.drafting)
++  if (!consent.ok) return jsonResponse(consent.body, consent.status)
++
+   const now = Date.now()
+   const priorBucket = DRAFT_RATE_BUCKETS.get(user.id)
+   if (priorBucket && priorBucket.resetAt > now && priorBucket.count >= DRAFT_RATE_LIMIT) {
+diff --git a/supabase/functions/process-user-document/index.ts b/supabase/functions/process-user-document/index.ts
+index 3d00986..ac03ce3 100644
+--- a/supabase/functions/process-user-document/index.ts
++++ b/supabase/functions/process-user-document/index.ts
+@@ -11,6 +11,7 @@ import {
+   validateDocxArchiveSize,
+ } from './logic.mjs'
+ import { embedWithOpenRouter } from '../_shared/openrouter.ts'
++import { checkConsent, CONSENT_PURPOSES } from '../_shared/consent.mjs'
+ 
+ const MAX_FILE_BYTES = 15 * 1024 * 1024
+ const MAX_PDF_PAGES = 200
+@@ -71,6 +72,9 @@ Deno.serve(async (request: Request) => {
+   } = await caller.auth.getUser()
+   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
+ 
++  const consent = await checkConsent(caller, CONSENT_PURPOSES.privateDocuments)
++  if (!consent.ok) return jsonResponse(consent.body, consent.status)
++
+   let body: { document_id?: unknown }
+   try {
+     body = await request.json()
+-- 
+2.43.0
+

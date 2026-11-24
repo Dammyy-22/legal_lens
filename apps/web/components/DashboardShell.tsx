@@ -24,6 +24,8 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { BrandLogo } from '@/components/BrandLogo'
 import { QuickNavigation } from '@/components/QuickNavigation'
+import { PageTransition } from '@/components/motion/PageTransition'
+import { motion } from 'motion/react'
 import {
   isSessionInactive,
   SESSION_INACTIVITY_TIMEOUT_MS,
@@ -247,14 +249,22 @@ export function DashboardShell({
                 href={href}
                 onClick={() => setOpen(false)}
                 aria-current={active ? 'page' : undefined}
-                className={`group flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`group relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   active
-                    ? 'bg-ink text-white shadow-sm'
+                    ? 'text-white'
                     : 'text-ink-400 hover:bg-paper hover:text-ink'
                 }`}
               >
-                <Icon size={18} strokeWidth={1.8} className={`shrink-0 ${active ? 'text-brass-400' : ''}`} />
-                {label}
+                {active && (
+                  <motion.span
+                    layoutId="nav-active-pill"
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-lg bg-ink shadow-sm"
+                    transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                  />
+                )}
+                <Icon size={18} strokeWidth={1.8} className={`relative shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${active ? 'text-brass-400' : ''}`} />
+                <span className="relative">{label}</span>
               </Link>
             )
           })}
@@ -311,7 +321,7 @@ export function DashboardShell({
         </div>
       </aside>
 
-      <main id="main-content" className="min-w-0 flex-1">{children}</main>
+      <main id="main-content" className="min-w-0 flex-1"><PageTransition>{children}</PageTransition></main>
     </div>
   )
 }

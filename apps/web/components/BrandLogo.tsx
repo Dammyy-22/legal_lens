@@ -13,16 +13,16 @@ export function BrandLogo({
   return (
     <Link
       href={href}
-      aria-label="LegalLens home"
-      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden transition-transform duration-300 hover:scale-[1.03] focus-visible:outline-offset-4 ${compact ? 'h-12 w-24' : 'h-14 w-28'} ${dark ? 'px-1 py-0.5' : ''}`}
+      aria-label="LegalLens AI home"
+      className={`inline-flex shrink-0 items-center transition-transform duration-300 hover:scale-[1.03] focus-visible:outline-offset-4 ${compact ? 'h-11' : 'h-12 sm:h-14'} ${dark ? 'rounded-md bg-paper/95 px-2 py-1' : ''}`}
     >
       <Image
-        src="/brand/legalens-original.png"
-        alt="LegalLens"
-        fill
+        src="/brand/legalens-lockup.png"
+        alt="LegalLens AI"
+        width={394}
+        height={316}
         priority
-        sizes={compact ? '96px' : '112px'}
-        className="object-cover"
+        className="h-full w-auto object-contain"
       />
     </Link>
   )

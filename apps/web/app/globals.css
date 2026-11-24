@@ -382,6 +382,70 @@ img {
     outline-offset: 2px;
 }
 
+@keyframes ask-dot {
+    0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    40% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+.ask-dot {
+    animation: ask-dot 1.1s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+    0%, 100% {
+        opacity: 0.55;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+.skeleton-card {
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.dropzone-active {
+    border-color: #B08D3E !important;
+    background-color: rgba(176, 141, 62, 0.06) !important;
+    transform: translateY(-1px);
+}
+
+@keyframes input-hint-in {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.input-hint-in {
+    animation: input-hint-in 220ms ease-out both;
+}
+
+@keyframes status-pulse {
+    0%, 100% {
+        opacity: 0.35;
+        transform: scale(0.85);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+.status-dot-processing {
+    animation: status-pulse 1.2s ease-in-out infinite;
+}
+
 @keyframes quick-navigation-in {
     from {
         opacity: 0;

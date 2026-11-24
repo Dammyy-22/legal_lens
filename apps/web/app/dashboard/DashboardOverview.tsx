@@ -21,6 +21,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { LegalFactOfTheDay } from '@/components/LegalFactOfTheDay'
+import { Stagger, StaggerItem } from '@/components/motion/Reveal'
 
 const TOOLS: {
   href: string
@@ -249,12 +250,12 @@ export default function DashboardOverview({ fullName }: { fullName: string | nul
           </div>
           <BookOpenText size={21} className="mb-1 text-brass-600" />
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <Stagger className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {TOOLS.map(({ href, Icon, title, description, category }) => (
+            <StaggerItem key={href} className="h-full">
             <Link
-              key={href}
               href={href}
-              className="group flex min-h-40 flex-col rounded-xl border border-ink-100 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brass/50 hover:shadow-[0_12px_28px_rgba(20,38,30,0.08)]"
+              className="group flex h-full min-h-40 flex-col rounded-xl border border-ink-100 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brass/50 hover:shadow-[0_12px_28px_rgba(20,38,30,0.08)] active:translate-y-0"
             >
               <div className="flex items-center justify-between">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-paper text-brass-600 transition-colors group-hover:bg-ink group-hover:text-brass-400">
@@ -268,8 +269,9 @@ export default function DashboardOverview({ fullName }: { fullName: string | nul
               </span>
               <span className="mt-1 text-sm leading-6 text-ink-400">{description}</span>
             </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       <section aria-labelledby="question-ideas-heading" className="mb-10 rounded-xl border border-ink-100 bg-white p-5 sm:p-7">

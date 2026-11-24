@@ -5,8 +5,10 @@ import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { AlertTriangle, LoaderCircle, Send } from 'lucide-react'
 import { askLegalQuestion, type AskResponse } from '@/lib/api-client'
+import { motion, useReducedMotion } from 'motion/react'
 
 export default function AskPage() {
+  const reduceMotion = useReducedMotion()
   const searchParams = useSearchParams()
   const [question, setQuestion] = useState(() => searchParams.get('prompt') ?? '')
   const [response, setResponse] = useState<AskResponse | null>(null)
@@ -84,10 +86,31 @@ export default function AskPage() {
         </div>
       </form>
 
+      {loading && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-6 flex items-center gap-3 rounded-xl border border-brass/25 bg-white p-4 text-sm text-ink-400"
+        >
+          <span className="flex items-end gap-1" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="ask-dot h-1.5 w-1.5 rounded-full bg-brass" style={{ animationDelay: `${i * 150}ms` }} />
+            ))}
+          </span>
+          Searching sources and preparing an answer…
+        </div>
+      )}
+
       {error && <p role="alert" className="mb-6 p-4 rounded-lg border border-seal/25 bg-seal/5 text-seal">{error}</p>}
 
       {response && (
-        <article className="rounded-xl border border-ink-100 bg-white p-5 shadow-sm sm:p-6">
+        <motion.article
+          key={response.conversation_id ?? response.answer}
+          initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.2, 0.75, 0.25, 1] }}
+          className="rounded-xl border border-ink-100 bg-white p-5 shadow-sm sm:p-6"
+        >
           {response.risk_level === 'high_risk' && (
             <div className="flex items-start gap-2 mb-5 p-3 rounded-lg bg-seal/5 text-seal text-sm">
               <AlertTriangle size={18} className="shrink-0" />
@@ -106,15 +129,21 @@ export default function AskPage() {
             <div className="mt-6 pt-5 border-t border-ink-100">
               <p className="font-mono text-xs uppercase tracking-widest text-brass-600 mb-3">Sources used</p>
               <ul className="space-y-2">
-                {response.citations.map((citation) => (
-                  <li key={citation.chunk_id} className="text-sm text-ink-400">
+                {response.citations.map((citation, index) => (
+                  <motion.li
+                    key={citation.chunk_id}
+                    initial={reduceMotion ? false : { opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.25 + index * 0.08, ease: [0.2, 0.75, 0.25, 1] }}
+                    className="border-l-2 border-brass/40 pl-3 text-sm text-ink-400 transition-colors hover:border-brass hover:text-ink"
+                  >
                     {citation.source_title} · {citation.section_label}
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             </div>
           )}
-        </article>
+        </motion.article>
       )}
 
       <p className="mt-8 text-xs text-ink-400">

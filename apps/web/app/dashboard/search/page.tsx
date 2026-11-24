@@ -9,6 +9,8 @@ import {
   type LegalSearchFilters,
   type LegalSearchResult,
 } from '@/lib/api-client'
+import { motion, useReducedMotion } from 'motion/react'
+import { CountUp } from '@/components/motion/CountUp'
 
 const DOCUMENT_TYPES = [
   { value: 'constitution', label: 'Constitution' },
@@ -34,6 +36,7 @@ function authorityLabel(value: string): string {
 }
 
 export default function SearchPage() {
+  const reduceMotion = useReducedMotion()
   const searchParams = useSearchParams()
   const linkedQuery = searchParams.get('q')
   const [query, setQuery] = useState('')
@@ -197,13 +200,32 @@ export default function SearchPage() {
 
       {searched && !loading && !error && results.length > 0 && (
         <p className="mb-4 text-sm text-ink-400" role="status">
-          {results.length} verified {results.length === 1 ? 'passage' : 'passages'} found
+          <CountUp value={results.length} /> verified {results.length === 1 ? 'passage' : 'passages'} found
         </p>
       )}
 
+      {loading && (
+        <div role="status" aria-live="polite" className="space-y-4">
+          <span className="sr-only">Searching legal sources</span>
+          {[0, 1, 2].map((i) => (
+            <div key={i} aria-hidden="true" className="skeleton-card rounded-xl border border-ink-100 bg-white p-6" style={{ animationDelay: `${i * 120}ms` }}>
+              <div className="mb-4 h-3 w-1/3 rounded bg-ink-100" />
+              <div className="mb-2 h-3 w-full rounded bg-paper-200" />
+              <div className="h-3 w-4/5 rounded bg-paper-200" />
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="space-y-4">
-        {results.map((result) => (
-          <article key={result.chunk_id} className="rounded-xl border border-ink-100 bg-white p-5 shadow-sm sm:p-6">
+        {results.map((result, index) => (
+          <motion.article
+            key={result.chunk_id}
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: Math.min(index, 8) * 0.06, ease: [0.2, 0.75, 0.25, 1] }}
+            className="rounded-xl border border-ink-100 bg-white p-5 shadow-sm transition-[border-color,box-shadow] duration-300 hover:border-brass/40 hover:shadow-[0_12px_28px_rgba(20,38,30,0.07)] sm:p-6"
+          >
             <div className="flex flex-wrap items-center gap-2 mb-3 text-xs font-mono uppercase tracking-wide text-brass-600">
               <span>{result.source_title}</span>
               <span className="text-ink-100">/</span>
@@ -219,7 +241,7 @@ export default function SearchPage() {
             <a href={result.source_url} target="_blank" rel="noreferrer" className="inline-block mt-4 text-sm text-brass-600 hover:text-ink underline underline-offset-2">
               Open source document
             </a>
-          </article>
+          </motion.article>
         ))}
       </div>
     </div>

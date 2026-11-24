@@ -14,7 +14,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <nav aria-label="Main navigation" className="sticky top-0 z-50 border-b border-ink-100 bg-white/90 backdrop-blur">
+    <nav aria-label="Main navigation" className="sticky top-0 z-50 bg-paper/90 backdrop-blur">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="flex min-h-16 items-center justify-between py-1">
           <BrandLogo />

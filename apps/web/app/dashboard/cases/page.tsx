@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { ArrowUpRight, BookOpenText, ExternalLink, Search } from 'lucide-react'
+import { Stagger, StaggerItem } from '@/components/motion/Reveal'
 
 const NIGERIALII_SEARCH = 'https://nigerialii.org/search/'
 const NIGERIALII_JUDGMENTS = 'https://nigerialii.org/judgments/'
@@ -71,12 +72,13 @@ export default function CasesPage() {
         </section>
       )}
 
-      <section className="grid gap-4 md:grid-cols-2">
+      <Stagger className="grid gap-4 md:grid-cols-2">
+        <StaggerItem>
         <a
           href={NIGERIALII_JUDGMENTS}
           target="_blank"
           rel="noreferrer"
-          className="group rounded-xl border border-ink-100 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brass/40 hover:shadow-[0_10px_24px_rgba(20,38,30,0.07)]"
+          className="group block h-full rounded-xl border border-ink-100 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brass/40 hover:shadow-[0_10px_24px_rgba(20,38,30,0.07)]"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-paper text-brass-600">
             <BookOpenText size={20} />
@@ -88,8 +90,10 @@ export default function CasesPage() {
             Open NigeriaLII’s court and tribunal judgment index.
           </p>
         </a>
+        </StaggerItem>
 
-        <div className="rounded-xl border border-ink-100 bg-paper/60 p-5">
+        <StaggerItem className="h-full">
+        <div className="h-full rounded-xl border border-ink-100 bg-paper/60 p-5">
           <h2 className="font-display text-xl font-medium text-ink">Verify before relying on a case</h2>
           <ul className="mt-3 space-y-2 text-sm leading-6 text-ink-400">
             <li>Check the court, date, case number, and the full judgment.</li>
@@ -100,7 +104,8 @@ export default function CasesPage() {
             Find professional support <ArrowUpRight size={14} />
           </Link>
         </div>
-      </section>
+        </StaggerItem>
+      </Stagger>
 
       <p className="mt-7 text-xs leading-5 text-ink-400">
         NigeriaLII states that it publishes Nigerian law for free access. This link is an
