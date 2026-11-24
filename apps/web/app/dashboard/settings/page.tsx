@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import ConsentSettings from '@/components/ConsentSettings'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -193,6 +194,8 @@ export default function SettingsPage() {
           {revokingSessions ? 'Revoking sessions…' : 'Sign out all devices'}
         </button>
       </section>
+
+      <ConsentSettings />
     </div>
   )
 }

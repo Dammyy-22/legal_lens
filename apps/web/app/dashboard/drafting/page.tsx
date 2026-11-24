@@ -14,6 +14,7 @@ import {
   type DraftDocumentResponse,
   type DraftType,
 } from '@/lib/api-client'
+import { CONSENT_PURPOSES, ensureConsent } from '@/lib/consent'
 
 const DRAFT_OPTIONS: { value: DraftType; label: string; description: string }[] = [
   {
@@ -64,6 +65,7 @@ export default function DraftingPage() {
     setResult(null)
     setCopyStatus('')
     try {
+      await ensureConsent(CONSENT_PURPOSES.drafting)
       setResult(await draftCorrespondence(draftType, recipient, facts))
     } catch (draftError) {
       setError(draftError instanceof Error ? draftError.message : 'Unable to prepare this draft.')
@@ -163,7 +165,7 @@ export default function DraftingPage() {
             disabled={loading}
             className="mt-1"
           />
-          <span>I understand my description is sent through OpenRouter to its selected model provider, the output is AI-generated and not lawyer-reviewed, and I will verify every detail before using it.</span>
+          <span>I understand my description is sent through OpenRouter (which we ask to use only zero-data-retention providers) to a model provider, I can withdraw consent in Settings, the output is AI-generated and not lawyer-reviewed, and I will verify every detail before using it.</span>
         </label>
 
         <button

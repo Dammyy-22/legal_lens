@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { checkConsent, CONSENT_PURPOSES } from '../_shared/consent.mjs'
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024
 const MIME_TYPES = new Set([
@@ -32,6 +33,9 @@ Deno.serve(async (request: Request) => {
     error: authError,
   } = await caller.auth.getUser()
   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
+
+  const consent = await checkConsent(caller, CONSENT_PURPOSES.privateDocuments)
+  if (!consent.ok) return jsonResponse(consent.body, consent.status)
 
   let body: { filename?: unknown; mime_type?: unknown; file_size_bytes?: unknown }
   try {

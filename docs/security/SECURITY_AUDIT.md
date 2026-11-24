@@ -12,7 +12,7 @@ No critical authentication, authorisation or secret-exposure defect was confirme
 |---|---|---|---|
 | LL-001 | High | Confirmed (version) / reachability unverified | `next@16.3.4` is within the range flagged by `npm audit` (1 critical advisory entry for `next`, covering multiple advisories including image-optimization and cache issues); `sharp` and `source-map-js` high. App uses `next/image`. Some advisories apply to self-hosted deployments only — hosting model unknown |
 | LL-002 | High | Confirmed | No `provider.zdr` / `data_collection` on OpenRouter calls; OpenRouter's documented default is `allow`. Private-document text and questions are in scope |
-| LL-020 | High | Potential | No consent step found before sending private documents to third parties (text search only) |
+| LL-020 | High | **Corrected in Batch 2** | Original finding said no consent step existed; that was wrong (my text search missed `.tsx` files). A browser checkbox exists on the Documents and Drafting pages, but it was **client-side only**: not recorded, not versioned, not enforced by the Edge Functions (a direct call skipped it), and not withdrawable. `ask` had no disclosure at all |
 | LL-003 | Medium | Confirmed | No rate limiting on `ask-user-document`, `process-user-document`, `create-user-document-upload`, `legal`; `ask`/`draft-document` limits are per-isolate and reset across instances → paid-API cost abuse and brute-force surface |
 | LL-021 | Medium | Potential | Corpus verification performed from the browser with client-supplied `verified_by`; admin policy permits any-column update; no audit log or content-hash pinning |
 | LL-006 | Low–Med | Confirmed | Swallowed persistence errors; unchecked client-supplied `conversation_id` (RLS blocks cross-user writes — not an access-control bypass) |
@@ -46,7 +46,7 @@ See table in `docs/ai/AI_ARCHITECTURE.md` §4. Current-state notes:
 
 1. Upgrade Next.js and flagged packages; add Dependabot/audit gate (LL-001).
 2. Enforce ZDR/no-collection on every provider call; add provider-eligibility by data class (LL-002).
-3. Add a consent record and UI step before any private document is processed (LL-020).
+3. ~~Add a consent record and UI step~~ Record consent server-side and enforce it in the functions (LL-020) — done in Batch 2 (branch), not deployed.
 4. DB-backed atomic rate and cost limiter on every AI-calling function (LL-003).
 5. Move corpus verification behind a server-side RPC that records actor, time and content hash in an append-only log (LL-021).
 6. Add two-user RLS/RPC tests and a secret scan to CI (LL-005).

@@ -59,6 +59,7 @@ jobs:
         run: |
           node --test supabase/functions/ask/logic.test.mjs
           node --test supabase/functions/_shared/openrouter-policy.test.mjs
+          node --test supabase/functions/_shared/consent.test.mjs
           node --test supabase/functions/process-user-document/logic.test.mjs
           node --test supabase/functions/ask-user-document/logic.test.mjs
           node --test scripts/ingestion/constitution-structure.test.mjs
@@ -124,3 +125,13 @@ jobs:
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/matter_management_migration.sql
           PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/lexical_search_migration.sql
+      - name: Apply user consent migration
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_consent_migration.sql
+      - name: Verify consent migration is rerunnable
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_consent_migration.sql
+      - name: Two-user consent authorization tests
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/tests/user_consent_test.sql
+      - name: Verify consent rollback and re-apply
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/rollbacks/user_consent_rollback.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_consent_migration.sql

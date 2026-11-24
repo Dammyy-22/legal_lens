@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { generateWithOpenRouter } from '../_shared/openrouter.ts'
+import { checkConsent, CONSENT_PURPOSES } from '../_shared/consent.mjs'
 
 const DRAFT_TYPES = {
   information_request: 'A neutral request for information or copies of records',
@@ -43,6 +44,9 @@ Deno.serve(async (request: Request) => {
     error: authError,
   } = await supabase.auth.getUser()
   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
+
+  const consent = await checkConsent(supabase, CONSENT_PURPOSES.drafting)
+  if (!consent.ok) return jsonResponse(consent.body, consent.status)
 
   const now = Date.now()
   const priorBucket = DRAFT_RATE_BUCKETS.get(user.id)

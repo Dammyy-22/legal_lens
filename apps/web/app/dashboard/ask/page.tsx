@@ -67,6 +67,10 @@ export default function AskPage() {
           maxLength={2000}
           className="w-full resize-y bg-transparent text-ink leading-relaxed placeholder:text-ink-400 focus:outline-none"
         />
+        <p className="pb-3 text-xs text-ink-400">
+          Your question is sent through OpenRouter to an AI model (we ask for zero-data-retention
+          providers only). Avoid including names, account numbers or other personal details.
+        </p>
         <div className="flex items-center justify-between gap-4 pt-3 border-t border-ink-100">
           <span className="text-xs text-ink-400">{question.length}/2000</span>
           <button

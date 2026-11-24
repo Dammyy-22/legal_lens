@@ -8,6 +8,7 @@ import {
   embedWithOpenRouter,
   generateWithOpenRouter,
 } from '../_shared/openrouter.ts'
+import { checkConsent, CONSENT_PURPOSES } from '../_shared/consent.mjs'
 
 const SIMILARITY_THRESHOLD = 0.55
 const MAX_CHUNKS = 6
@@ -50,6 +51,9 @@ Deno.serve(async (request: Request) => {
     error: authError,
   } = await supabase.auth.getUser()
   if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
+
+  const consent = await checkConsent(supabase, CONSENT_PURPOSES.privateDocuments)
+  if (!consent.ok) return jsonResponse(consent.body, consent.status)
 
   let body: { document_id?: unknown; question?: unknown }
   try {

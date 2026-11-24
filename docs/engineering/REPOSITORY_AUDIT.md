@@ -68,7 +68,7 @@ See `ISSUE_REGISTER.md` for IDs, priority, evidence and status. Headlines:
 - Hosted Supabase settings: MFA for admins, inactivity timeout, refresh-token reuse detection, email confirmation, password policy.
 - OpenRouter account-level privacy settings (ZDR/data-collection toggles) — may already mitigate LL-002.
 - Which corpus rows are `verified` in production, and which Police Act chunk version (`chunks`, `chunks-v2`, `chunks-v4`) was ingested.
-- Whether a consent/disclosure step exists before document upload (a text search of `apps/web/app/dashboard/documents` found none; the page was not read in full).
+- ~~Whether a consent/disclosure step exists~~ **Corrected:** a client-side checkbox exists on the Documents and Drafting pages (my first search missed `.tsx` files); it was not enforced or recorded server-side — see LL-020 (the page was not read in full).
 - Content of `docs/operations/deployment-checklist.md` "provider disclosure" section.
 - Full text of `legal`, `create-user-document-upload` and `apps/web` pages beyond what is cited here.
 - Rights to redistribute the committed corpus texts (PLAC and other compilations).

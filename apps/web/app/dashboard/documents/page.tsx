@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { askAboutUserDocument, type UserDocumentAnswer } from '@/lib/api-client'
+import { CONSENT_PURPOSES, ensureConsent, hasCurrentConsent } from '@/lib/consent'
 
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 const ACCEPTED_TYPES = {
@@ -88,6 +89,13 @@ export default function DocumentsPage() {
 
   useEffect(() => {
     void loadDocuments()
+    let active = true
+    hasCurrentConsent(CONSENT_PURPOSES.privateDocuments).then((current) => {
+      if (active && current) setProviderConsent(true)
+    })
+    return () => {
+      active = false
+    }
   }, [])
 
   async function loadDocuments() {
@@ -150,6 +158,7 @@ export default function DocumentsPage() {
 
     try {
       supabase = createClient()
+      await ensureConsent(CONSENT_PURPOSES.privateDocuments)
       const { data, error: reservationError } = await supabase.functions.invoke(
         'create-user-document-upload',
         {
@@ -258,6 +267,7 @@ export default function DocumentsPage() {
     setError('')
     setAnswer(null)
     try {
+      if (providerConsent) await ensureConsent(CONSENT_PURPOSES.privateDocuments)
       const result = await askAboutUserDocument(documentId, prompt.trim())
       setAnswer(result)
       setQuestion('')
@@ -271,6 +281,7 @@ export default function DocumentsPage() {
   async function handleRetry(documentId: string) {
     setError('')
     try {
+      if (providerConsent) await ensureConsent(CONSENT_PURPOSES.privateDocuments)
       const supabase = createClient()
       const { error: processingError } = await supabase.functions.invoke('process-user-document', {
         body: { document_id: documentId },
@@ -369,11 +380,12 @@ export default function DocumentsPage() {
             className="mt-1"
           />
           <span>
-            I agree that extracted document text may be processed by OpenRouter for
+            I agree that extracted document text may be processed through OpenRouter for
             indexing and that relevant passages and my questions may be processed
-            through OpenRouter to its selected model provider to provide answers. For PDFs with scanned
+            through OpenRouter to a model provider to provide answers. We ask OpenRouter to
+            use only providers it lists as zero-data-retention. For PDFs with scanned
             pages, those pages may be sent to the configured Baidu Unlimited-OCR
-            service for text extraction.
+            service for text extraction. I can withdraw this consent in Settings. (Tick this box to ask questions about or retry documents you uploaded earlier.)
           </span>
         </label>
         <button
