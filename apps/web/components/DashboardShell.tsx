@@ -219,8 +219,8 @@ export function DashboardShell({
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[#F7F7F4]">
-      {/* Fixed top bar across all viewports so menu remains accessible while scrolling */}
-      <header className="fixed inset-x-0 top-0 z-30 bg-[#F7F7F4]/95 backdrop-blur">
+      {/* Mobile-only fixed top bar with right-aligned hamburger toggle */}
+      <header className="fixed inset-x-0 top-0 z-30 bg-[#F7F7F4]/95 backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 sm:px-8">
           <BrandLogo href="/dashboard" compact />
           <button
@@ -235,27 +235,26 @@ export function DashboardShell({
         </div>
       </header>
 
-      {/* Non-blocking overlay sidebar drawer — page remains visible and interactive alongside it */}
+      {/* Fixed left sidebar on desktop (md+), non-scrolling list; overlay toggle drawer on mobile */}
       <aside
-        aria-hidden={!open}
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 max-w-[85vw] flex-col border-r border-ink-100 bg-white shadow-2xl transition-transform duration-200 ease-out ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-ink-100 bg-white shadow-2xl transition-transform duration-200 ease-out md:w-60 lg:w-64 md:translate-x-0 md:pointer-events-auto md:shadow-none ${
           open ? 'translate-x-0' : '-translate-x-full pointer-events-none'
         }`}
       >
-        <div className="flex items-center justify-between border-b border-ink-100 px-5 py-3.5">
+        <div className="flex items-center justify-between border-b border-ink-100 px-5 py-3">
           <BrandLogo href="/dashboard" compact />
           <button
             type="button"
             aria-label="Close navigation menu"
             onClick={() => setOpen(false)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-paper hover:text-ink"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-paper hover:text-ink md:hidden"
           >
             <X size={18} />
           </button>
         </div>
 
-        <nav aria-label="Workspace" className="flex-1 space-y-0.5 px-3 py-3">
-          <p className="mb-1.5 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">Workspace</p>
+        <nav aria-label="Workspace" className="flex-1 space-y-0.5 px-2.5 py-2">
+          <p className="mb-1 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">Workspace</p>
           {NAV_ITEMS.map(({ href, label, Icon }) => {
             const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(`${href}/`))
             return (
@@ -264,7 +263,7 @@ export function DashboardShell({
                 href={href}
                 onClick={() => setOpen(false)}
                 aria-current={active ? 'page' : undefined}
-                className={`group relative flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`group relative flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[13px] font-medium leading-tight transition-colors ${
                   active
                     ? 'text-white'
                     : 'text-ink-400 hover:bg-paper hover:text-ink'
@@ -278,65 +277,65 @@ export function DashboardShell({
                     transition={{ type: 'spring', stiffness: 420, damping: 36 }}
                   />
                 )}
-                <Icon size={17} strokeWidth={1.8} className={`relative shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${active ? 'text-brass-400' : ''}`} />
+                <Icon size={16} strokeWidth={1.8} className={`relative shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${active ? 'text-brass-400' : ''}`} />
                 <span className="relative">{label}</span>
               </Link>
             )
           })}
         </nav>
 
-        <div className="border-t border-ink-100 px-3 py-3">
+        <div className="border-t border-ink-100 px-2.5 py-2">
           {user.isAdmin && (
             <Link
               href="/dashboard/admin"
               onClick={() => setOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[13px] font-medium leading-tight transition-colors ${
                 pathname === '/dashboard/admin'
                   ? 'bg-ink text-paper'
                   : 'text-brass-600 hover:bg-paper'
               }`}
             >
-              <ShieldCheck size={17} strokeWidth={1.75} className="shrink-0" />
+              <ShieldCheck size={16} strokeWidth={1.75} className="shrink-0" />
               Admin
             </Link>
           )}
           <Link
             href="/dashboard/settings"
             onClick={() => setOpen(false)}
-            className={`flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[13px] font-medium leading-tight transition-colors ${
               pathname === '/dashboard/settings'
                 ? 'bg-ink text-paper'
                 : 'text-ink-400 hover:bg-paper hover:text-ink'
             }`}
           >
-            <Settings size={17} strokeWidth={1.75} className="shrink-0" />
+            <Settings size={16} strokeWidth={1.75} className="shrink-0" />
             Settings
           </Link>
 
-          <div className="mt-1 flex items-center justify-between rounded-lg bg-paper/70 px-3 py-2">
+          <div className="mt-1 flex items-center justify-between rounded-lg bg-paper/70 px-2.5 py-1.5">
             <div className="flex min-w-0 items-center gap-2">
-              <UserCircle size={26} strokeWidth={1.5} className="shrink-0 text-ink-400" />
-              <span className="truncate text-sm font-medium text-ink">{displayName}</span>
+              <UserCircle size={24} strokeWidth={1.5} className="shrink-0 text-ink-400" />
+              <span className="truncate text-[13px] font-medium text-ink">{displayName}</span>
             </div>
             <button
               onClick={handleLogout}
               aria-label="Sign out"
               title="Sign out"
               disabled={loggingOut}
-              className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white hover:text-seal disabled:opacity-50"
+              className="ml-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white hover:text-seal disabled:opacity-50"
             >
-              <LogOut size={16} strokeWidth={1.75} />
+              <LogOut size={15} strokeWidth={1.75} />
             </button>
           </div>
           {logoutError && (
-            <p role="alert" className="px-3 pt-2 text-xs text-seal">
+            <p role="alert" className="px-3 pt-1.5 text-xs text-seal">
               {logoutError}
             </p>
           )}
         </div>
       </aside>
 
-      <main id="main-content" className="min-w-0 flex-1 pt-16"><PageTransition>{children}</PageTransition></main>
+      <main id="main-content" className="min-w-0 flex-1 pt-16 md:pt-0 md:pl-60 lg:pl-64"><PageTransition>{children}</PageTransition></main>
     </div>
   )
 }
