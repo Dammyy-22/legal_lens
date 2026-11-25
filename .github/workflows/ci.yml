@@ -2,7 +2,7 @@ name: ci
 
 on:
   push:
-    branches: [main]
+    branches: [main, "release/*"]
   pull_request:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
         run: npm run lint
       - name: Audit production dependencies
         working-directory: apps/web
-        run: npm audit --omit=dev --audit-level=high
+        run: npm audit --omit=dev --audit-level=moderate
       - name: Build
         working-directory: apps/web
         run: npx next build
@@ -60,9 +60,13 @@ jobs:
           node --test supabase/functions/ask/logic.test.mjs
           node --test supabase/functions/_shared/openrouter-policy.test.mjs
           node --test supabase/functions/_shared/consent.test.mjs
+          node --test supabase/functions/_shared/rate-limit.test.mjs
+          node --test supabase/functions/_shared/ai/policy.test.mjs
+          node --test supabase/functions/_shared/ai/security.test.mjs
           node --test supabase/functions/process-user-document/logic.test.mjs
           node --test supabase/functions/ask-user-document/logic.test.mjs
           node --test scripts/ingestion/constitution-structure.test.mjs
+          node --test scripts/ingestion/chunking.test.mjs
 
   ocr-gateway-tests:
     runs-on: ubuntu-latest
@@ -135,3 +139,13 @@ jobs:
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/rollbacks/user_consent_rollback.sql
           PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/user_consent_migration.sql
+      - name: Apply audit hardening migration (and verify idempotency)
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/audit_hardening_migration.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/audit_hardening_migration.sql
+      - name: Apply AI provider hardening migration (and verify idempotency)
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/ai_provider_hardening_migration.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/ai_provider_hardening_migration.sql
+      - name: Multi-table security & RLS tests
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d legalens -v ON_ERROR_STOP=1 -f database/tests/security_hardening_test.sql

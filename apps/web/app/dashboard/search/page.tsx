@@ -238,9 +238,15 @@ export default function SearchPage() {
               <span className="rounded-full bg-ink/5 px-2.5 py-1">{result.status}</span>
             </div>
             <p className="text-ink leading-relaxed whitespace-pre-line">{result.text}</p>
-            <a href={result.source_url} target="_blank" rel="noreferrer" className="inline-block mt-4 text-sm text-brass-600 hover:text-ink underline underline-offset-2">
-              Open source document
-            </a>
+            {/^https?:\/\//i.test(result.source_url) ? (
+              <a href={result.source_url} target="_blank" rel="noreferrer" className="inline-block mt-4 text-sm text-brass-600 hover:text-ink underline underline-offset-2">
+                Open source document
+              </a>
+            ) : (
+              <span className="inline-block mt-4 font-mono text-[11px] uppercase tracking-wide text-ink-400">
+                Local verified corpus copy
+              </span>
+            )}
           </motion.article>
         ))}
       </div>

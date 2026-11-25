@@ -50,6 +50,7 @@ export default function AdminCorpusReview() {
       .from('legal_source_versions')
       .select('id, version_label, status, processing_status, source_id')
       .eq('verified', false)
+      .neq('status', 'rejected')
       .order('id')
 
     if (versionsError) {

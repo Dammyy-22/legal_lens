@@ -42,15 +42,19 @@ test('fails closed (503) when the check errors or throws', async () => {
   }
 })
 
-test('server and web consent policy versions are identical', () => {
+test('server and web consent policy versions and purposes are identical', () => {
   const web = readFileSync(new URL('../../../apps/web/lib/consent.ts', import.meta.url), 'utf8')
   const match = web.match(/CONSENT_POLICY_VERSION\s*=\s*'([^']+)'/)
   assert.ok(match, 'apps/web/lib/consent.ts must export CONSENT_POLICY_VERSION')
   assert.equal(match[1], CONSENT_POLICY_VERSION)
+  for (const purposeValue of Object.values(CONSENT_PURPOSES)) {
+    assert.ok(web.includes(`'${purposeValue}'`), `apps/web/lib/consent.ts must include '${purposeValue}'`)
+  }
 })
 
 test('every function that sends user content to a model enforces the consent gate', () => {
   const guarded = {
+    'ask': 'legalQa',
     'create-user-document-upload': 'privateDocuments',
     'process-user-document': 'privateDocuments',
     'ask-user-document': 'privateDocuments',

@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 
 // Server-side Supabase client for Server Components / Route Handlers. Reads/writes
 // the session via cookies so auth state is available during SSR, not just client-side.
@@ -28,3 +29,11 @@ export async function createClient() {
     }
   )
 }
+
+export const getServerUser = cache(async () => {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  return user
+})

@@ -1,18 +1,12 @@
-// Supabase Edge Function: GET /functions/v1/legal?mode=search&q=...&limit=20
+// Supabase Edge Function: GET /functions/v1/legal?mode=search&q=...&limit=20&offset=0
 //                          GET /functions/v1/legal?mode=constitution
-//
-// Ports apps/api/app/api/legal.py (FastAPI + Supabase-JWT-via-REST) to a native
-// Supabase Edge Function. Behavior is intentionally kept equivalent to the original
-// — a substring, all-terms-must-match search over verified+current legal content —
-// this is a platform port, not a search-quality rewrite. Semantic/vector search
-// belongs in supabase/functions/ask, not here.
-//
-// Uses the calling user's own JWT (via supabase-js, not a raw REST fetch) so
-// PostgREST/RLS enforces "verified content only" — the same enforcement point
-// proven out for supabase/functions/ask. This function does not use the service
-// role key at all; it only ever sees what the calling user is allowed to see.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { buildCorsHeaders } from '../_shared/cors.mjs'
+import { enforceRateLimit, rateLimitHeaders } from '../_shared/rate-limit.mjs'
+
+const LEGAL_RATE_BUCKETS = new Map<string, { count: number; resetAt: number }>()
+const LEGAL_RATE_LIMIT = { maxRequests: 60, windowSeconds: 60 }
 
 interface LegalSearchResult {
   chunk_id: string
@@ -32,12 +26,13 @@ interface LegalSearchResult {
 }
 
 Deno.serve(async (req: Request) => {
+  const corsHeaders = buildCorsHeaders(req, 'GET, OPTIONS')
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }
 
   if (req.method !== 'GET') {
-    return jsonResponse({ error: 'Method not allowed' }, 405)
+    return jsonResponse({ error: 'Method not allowed' }, 405, corsHeaders)
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -45,7 +40,7 @@ Deno.serve(async (req: Request) => {
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
-    return jsonResponse({ error: 'Missing Authorization header' }, 401)
+    return jsonResponse({ error: 'Missing Authorization header' }, 401, corsHeaders)
   }
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -57,16 +52,39 @@ Deno.serve(async (req: Request) => {
     error: authError,
   } = await supabase.auth.getUser()
   if (authError || !user) {
-    return jsonResponse({ error: 'Unauthorized' }, 401)
+    return jsonResponse({ error: 'Unauthorized' }, 401, corsHeaders)
+  }
+
+  const rateLimit = await enforceRateLimit(
+    supabase,
+    user.id,
+    'search',
+    LEGAL_RATE_LIMIT,
+    LEGAL_RATE_BUCKETS,
+  )
+  if (!rateLimit.allowed) {
+    return jsonResponse(
+      { error: 'Too many search requests. Please wait a moment before trying again.' },
+      429,
+      corsHeaders,
+      rateLimitHeaders(rateLimit),
+    )
   }
 
   const url = new URL(req.url)
   const mode = url.searchParams.get('mode')
 
   try {
-    const { chunks, versionsById, sourcesById, sectionsById } = await loadVerifiedCorpus(supabase)
-
     if (mode === 'constitution') {
+      const { data: rpcResults, error: rpcError } = await supabase.rpc('get_verified_constitution')
+      if (!rpcError && Array.isArray(rpcResults)) {
+        return jsonResponse(rpcResults as LegalSearchResult[], 200, corsHeaders)
+      }
+      if (rpcError && rpcError.code !== 'PGRST202') {
+        throw rpcError
+      }
+
+      const { chunks, versionsById, sourcesById, sectionsById } = await loadVerifiedCorpus(supabase)
       const results = chunks
         // deno-lint-ignore no-explicit-any
         .map((chunk: any) => toResult(chunk, versionsById, sourcesById, sectionsById))
@@ -74,17 +92,17 @@ Deno.serve(async (req: Request) => {
           (r: LegalSearchResult | null): r is LegalSearchResult =>
             r !== null && r.source_title.toLowerCase().includes('constitution')
         )
-      return jsonResponse(results)
+      return jsonResponse(results, 200, corsHeaders)
     }
 
     if (mode === 'search') {
       const q = url.searchParams.get('q')?.trim()
       if (!q || q.length < 2 || q.length > 500) {
-        return jsonResponse({ error: 'q must be between 2 and 500 characters' }, 400)
+        return jsonResponse({ error: 'q must be between 2 and 500 characters' }, 400, corsHeaders)
       }
-      const jurisdiction = url.searchParams.get('jurisdiction')?.trim()
-      const documentType = url.searchParams.get('document_type')
-      const authorityLevel = url.searchParams.get('authority_level')
+      const jurisdiction = url.searchParams.get('jurisdiction')?.trim() || null
+      const documentType = url.searchParams.get('document_type') || null
+      const authorityLevel = url.searchParams.get('authority_level') || null
       const documentTypes = new Set([
         'constitution',
         'legislation',
@@ -95,17 +113,37 @@ Deno.serve(async (req: Request) => {
       ])
       const authorityLevels = new Set(['primary', 'institutional', 'secondary'])
       if (jurisdiction && (jurisdiction.length > 100 || /[\r\n]/.test(jurisdiction))) {
-        return jsonResponse({ error: 'jurisdiction must be 100 characters or fewer' }, 400)
+        return jsonResponse({ error: 'jurisdiction must be 100 characters or fewer' }, 400, corsHeaders)
       }
       if (documentType && !documentTypes.has(documentType)) {
-        return jsonResponse({ error: 'document_type is invalid' }, 400)
+        return jsonResponse({ error: 'document_type is invalid' }, 400, corsHeaders)
       }
       if (authorityLevel && !authorityLevels.has(authorityLevel)) {
-        return jsonResponse({ error: 'authority_level is invalid' }, 400)
+        return jsonResponse({ error: 'authority_level is invalid' }, 400, corsHeaders)
       }
       const limitParam = Number(url.searchParams.get('limit') ?? '20')
-      const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 50) : 20
+      const limit = Number.isFinite(limitParam) ? Math.min(Math.max(Math.trunc(limitParam), 1), 50) : 20
+      const offsetParam = Number(url.searchParams.get('offset') ?? '0')
+      const offset = Number.isFinite(offsetParam) ? Math.max(Math.trunc(offsetParam), 0) : 0
 
+      const { data: rpcResults, error: rpcError } = await supabase.rpc('search_legal_corpus', {
+        p_query: q,
+        p_jurisdiction: jurisdiction,
+        p_document_type: documentType,
+        p_authority_level: authorityLevel,
+        p_limit: limit,
+        p_offset: offset,
+      })
+
+      if (!rpcError && Array.isArray(rpcResults)) {
+        return jsonResponse({ query: q, results: rpcResults as LegalSearchResult[] }, 200, corsHeaders)
+      }
+      if (rpcError && rpcError.code !== 'PGRST202') {
+        throw rpcError
+      }
+
+      // Fallback only if SQL RPC has not been applied yet during a rolling deploy.
+      const { chunks, versionsById, sourcesById, sectionsById } = await loadVerifiedCorpus(supabase)
       const terms = q.toLowerCase().split(/\s+/).filter(Boolean)
       const scoredResults: Array<LegalSearchResult & { score: number }> = []
 
@@ -131,32 +169,32 @@ Deno.serve(async (req: Request) => {
 
       const results = scoredResults
         .sort((a, b) => b.score - a.score)
-        .slice(0, limit)
-        .map(({ score, ...result }) => result)
+        .slice(offset, offset + limit)
+        .map(({ score: _score, ...result }) => result)
 
-      return jsonResponse({ query: q, results })
+      return jsonResponse({ query: q, results }, 200, corsHeaders)
     }
 
-    return jsonResponse({ error: 'mode must be "search" or "constitution"' }, 400)
+    return jsonResponse({ error: 'mode must be "search" or "constitution"' }, 400, corsHeaders)
   } catch (err) {
     console.error('Legal corpus query failed:', err)
-    return jsonResponse({ error: 'Failed to query the legal corpus' }, 502)
+    return jsonResponse({ error: 'Failed to query the legal corpus' }, 502, corsHeaders)
   }
 })
 
 interface VerifiedCorpus {
-  chunks: any[] // deno-lint-ignore-line
+  // deno-lint-ignore no-explicit-any
+  chunks: any[]
+  // deno-lint-ignore no-explicit-any
   versionsById: Map<string, any>
+  // deno-lint-ignore no-explicit-any
   sourcesById: Map<string, any>
+  // deno-lint-ignore no-explicit-any
   sectionsById: Map<string, any>
 }
 
 // deno-lint-ignore no-explicit-any
 async function loadVerifiedCorpus(supabase: any): Promise<VerifiedCorpus> {
-  // RLS restricts these selects to verified=true content automatically (see
-  // database/schema.sql) — the explicit .eq('verified', true) below is deliberate
-  // defense in depth, matching the pattern used throughout this project, not
-  // reliance on RLS alone.
   const { data: versions, error: versionsError } = await supabase
     .from('legal_source_versions')
     .select('id, source_id, version_label, status, effective_date, verified')
@@ -169,9 +207,13 @@ async function loadVerifiedCorpus(supabase: any): Promise<VerifiedCorpus> {
   const versionIds = (versions ?? []).map((v: any) => v.id)
   if (versionIds.length === 0) {
     return {
+      // deno-lint-ignore no-explicit-any
       chunks: [] as any[],
+      // deno-lint-ignore no-explicit-any
       versionsById: new Map<string, any>(),
+      // deno-lint-ignore no-explicit-any
       sourcesById: new Map<string, any>(),
+      // deno-lint-ignore no-explicit-any
       sectionsById: new Map<string, any>(),
     }
   }
@@ -232,15 +274,14 @@ function toResult(
   }
 }
 
-function jsonResponse(body: unknown, status = 200): Response {
+function jsonResponse(
+  body: unknown,
+  status = 200,
+  corsHeaders: Record<string, string>,
+  extraHeaders: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...corsHeaders, ...extraHeaders, 'Content-Type': 'application/json' },
   })
-}
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
 }

@@ -23,7 +23,6 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { BrandLogo } from '@/components/BrandLogo'
-import { QuickNavigation } from '@/components/QuickNavigation'
 import { PageTransition } from '@/components/motion/PageTransition'
 import { motion } from 'motion/react'
 import {
@@ -66,8 +65,13 @@ export function DashboardShell({
   const router = useRouter()
 
   useEffect(() => {
-    setOpen(false)
-  }, [pathname])
+    if (!open) return
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [open])
 
   useEffect(() => {
     const supabase = createClient()
@@ -214,33 +218,50 @@ export function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#F7F7F4] md:flex">
-      {/* Mobile top bar with hamburger */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-ink-100 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
-        <BrandLogo href="/dashboard" compact />
+    <div className="min-h-screen overflow-x-hidden bg-[#F7F7F4]">
+      {/* Top navigation trigger across all viewports */}
+      <header className="sticky top-0 z-30 flex items-center gap-3 bg-[#F7F7F4]/95 px-4 py-3 backdrop-blur sm:px-6">
         <button
-          aria-label={open ? 'Close menu' : 'Open menu'}
+          type="button"
+          aria-label="Open navigation menu"
           aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink-100 text-ink transition-colors hover:bg-paper"
+          onClick={() => setOpen(true)}
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink-100 bg-white/80 text-ink transition-colors hover:bg-white"
         >
-          {open ? <X size={18} /> : <Menu size={18} />}
+          <Menu size={18} />
         </button>
-      </div>
+        <BrandLogo href="/dashboard" compact />
+      </header>
 
-      {/* Sidebar — persistent on desktop (md+), slide-down panel on mobile when open */}
+      {open && (
+        <div
+          aria-hidden="true"
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-40 bg-ink/35 backdrop-blur-[2px]"
+        />
+      )}
+
+      {/* Overlay sidebar drawer — opens on click, non-scrolling full item list */}
       <aside
-        className={`${
-          open ? 'flex' : 'hidden'
-        } md:flex md:w-60 lg:w-[17rem] w-full shrink-0 flex-col border-b border-ink-100 bg-white md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r`}
+        aria-hidden={!open}
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col border-r border-ink-100 bg-white shadow-2xl transition-transform duration-200 ease-out ${
+          open ? 'translate-x-0' : '-translate-x-full pointer-events-none'
+        }`}
       >
-        <div className="hidden border-b border-ink-100 px-6 py-6 md:block">
+        <div className="flex items-center justify-between border-b border-ink-100 px-5 py-3.5">
           <BrandLogo href="/dashboard" compact />
+          <button
+            type="button"
+            aria-label="Close navigation menu"
+            onClick={() => setOpen(false)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-paper hover:text-ink"
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        <nav aria-label="Workspace" className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
-          <p className="mb-3 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">Workspace</p>
-          <QuickNavigation isAdmin={user.isAdmin} />
+        <nav aria-label="Workspace" className="flex-1 space-y-0.5 px-3 py-3">
+          <p className="mb-1.5 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">Workspace</p>
           {NAV_ITEMS.map(({ href, label, Icon }) => {
             const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(`${href}/`))
             return (
@@ -249,7 +270,7 @@ export function DashboardShell({
                 href={href}
                 onClick={() => setOpen(false)}
                 aria-current={active ? 'page' : undefined}
-                className={`group relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`group relative flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   active
                     ? 'text-white'
                     : 'text-ink-400 hover:bg-paper hover:text-ink'
@@ -263,52 +284,52 @@ export function DashboardShell({
                     transition={{ type: 'spring', stiffness: 420, damping: 36 }}
                   />
                 )}
-                <Icon size={18} strokeWidth={1.8} className={`relative shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${active ? 'text-brass-400' : ''}`} />
+                <Icon size={17} strokeWidth={1.8} className={`relative shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 ${active ? 'text-brass-400' : ''}`} />
                 <span className="relative">{label}</span>
               </Link>
             )
           })}
         </nav>
 
-        <div className="border-t border-ink-100 px-3 py-4">
+        <div className="border-t border-ink-100 px-3 py-3">
           {user.isAdmin && (
             <Link
               href="/dashboard/admin"
               onClick={() => setOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 pathname === '/dashboard/admin'
                   ? 'bg-ink text-paper'
                   : 'text-brass-600 hover:bg-paper'
               }`}
             >
-              <ShieldCheck size={18} strokeWidth={1.75} className="shrink-0" />
+              <ShieldCheck size={17} strokeWidth={1.75} className="shrink-0" />
               Admin
             </Link>
           )}
           <Link
             href="/dashboard/settings"
             onClick={() => setOpen(false)}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               pathname === '/dashboard/settings'
                 ? 'bg-ink text-paper'
                 : 'text-ink-400 hover:bg-paper hover:text-ink'
             }`}
           >
-            <Settings size={18} strokeWidth={1.75} className="shrink-0" />
+            <Settings size={17} strokeWidth={1.75} className="shrink-0" />
             Settings
           </Link>
 
-          <div className="flex items-center justify-between px-3 py-3 mt-1 rounded-lg bg-paper/70">
-            <div className="flex items-center gap-2 min-w-0">
-              <UserCircle size={28} strokeWidth={1.5} className="text-ink-400 shrink-0" />
-              <span className="text-sm text-ink font-medium truncate">{displayName}</span>
+          <div className="mt-1 flex items-center justify-between rounded-lg bg-paper/70 px-3 py-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <UserCircle size={26} strokeWidth={1.5} className="shrink-0 text-ink-400" />
+              <span className="truncate text-sm font-medium text-ink">{displayName}</span>
             </div>
             <button
               onClick={handleLogout}
               aria-label="Sign out"
               title="Sign out"
               disabled={loggingOut}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white hover:text-seal disabled:opacity-50 shrink-0 ml-2"
+              className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white hover:text-seal disabled:opacity-50"
             >
               <LogOut size={16} strokeWidth={1.75} />
             </button>

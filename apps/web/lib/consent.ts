@@ -5,11 +5,12 @@ import { createClient } from '@/lib/supabase/client'
 // everyone is then asked again because the server only accepts the current version.
 export const CONSENT_POLICY_VERSION = '2026-11-v1'
 
-export type ConsentPurpose = 'private_document_processing' | 'drafting_assistance'
+export type ConsentPurpose = 'private_document_processing' | 'drafting_assistance' | 'legal_qa'
 
 export const CONSENT_PURPOSES: Record<string, ConsentPurpose> = {
   privateDocuments: 'private_document_processing',
   drafting: 'drafting_assistance',
+  legalQa: 'legal_qa',
 }
 
 // Records the user's consent on the server (append-only audit log). The Edge

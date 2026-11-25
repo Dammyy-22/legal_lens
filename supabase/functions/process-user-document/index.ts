@@ -10,14 +10,23 @@ import {
   MAX_EXTRACTED_CHARACTERS,
   validateDocxArchiveSize,
 } from './logic.mjs'
-import { embedWithOpenRouter } from '../_shared/openrouter.ts'
+import { embedWithOpenRouterResult } from '../_shared/openrouter.ts'
 import { checkConsent, CONSENT_PURPOSES } from '../_shared/consent.mjs'
+import { recordAiUsage } from '../_shared/ai/providers.ts'
+import { buildCorsHeaders } from '../_shared/cors.mjs'
+import {
+  enforceRateLimit,
+  rateLimitHeaders,
+  readBoundedJson,
+} from '../_shared/rate-limit.mjs'
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024
 const MAX_PDF_PAGES = 200
 const MAX_OCR_PAGES = 10
 const MIN_PAGE_TEXT_CHARACTERS = 40
 const EMBEDDING_BATCH_SIZE = 32
+const PROCESS_RATE_BUCKETS = new Map<string, { count: number; resetAt: number }>()
+const PROCESS_RATE_LIMIT = { maxRequests: 10, windowSeconds: 60 }
 
 interface ExtractedDocumentText {
   pages: Array<{ page_number: number | null; text: string }>
@@ -45,11 +54,9 @@ class DocumentProcessingError extends Error {
 }
 
 Deno.serve(async (request: Request) => {
+  const corsHeaders = buildCorsHeaders(request, 'POST, OPTIONS')
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders })
-  if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405)
-  if (Number(request.headers.get('content-length') ?? 0) > 10_000) {
-    return jsonResponse({ error: 'Request body is too large' }, 413)
-  }
+  if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405, corsHeaders)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
@@ -57,11 +64,11 @@ Deno.serve(async (request: Request) => {
   const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')
   if (!supabaseUrl || !anonKey || !serviceRoleKey || !openRouterKey) {
     console.error('Document processing environment is incomplete')
-    return jsonResponse({ error: 'Document processing is not configured' }, 503)
+    return jsonResponse({ error: 'Document processing is not configured' }, 503, corsHeaders)
   }
 
   const authorization = request.headers.get('Authorization')
-  if (!authorization) return jsonResponse({ error: 'Missing Authorization header' }, 401)
+  if (!authorization) return jsonResponse({ error: 'Missing Authorization header' }, 401, corsHeaders)
 
   const caller = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authorization } },
@@ -70,20 +77,35 @@ Deno.serve(async (request: Request) => {
     data: { user },
     error: authError,
   } = await caller.auth.getUser()
-  if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
+  if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401, corsHeaders)
 
   const consent = await checkConsent(caller, CONSENT_PURPOSES.privateDocuments)
-  if (!consent.ok) return jsonResponse(consent.body, consent.status)
+  if (!consent.ok) return jsonResponse(consent.body, consent.status, corsHeaders)
 
-  let body: { document_id?: unknown }
-  try {
-    body = await request.json()
-  } catch {
-    return jsonResponse({ error: 'Invalid JSON body' }, 400)
+  const rateLimit = await enforceRateLimit(
+    caller,
+    user.id,
+    'document_process',
+    PROCESS_RATE_LIMIT,
+    PROCESS_RATE_BUCKETS,
+  )
+  if (!rateLimit.allowed) {
+    return jsonResponse(
+      { error: 'Too many document processing requests. Please wait a minute before trying again.' },
+      429,
+      corsHeaders,
+      rateLimitHeaders(rateLimit),
+    )
   }
 
+  const parsedBody = await readBoundedJson(request, 10_000)
+  if (!parsedBody.ok) {
+    return jsonResponse({ error: parsedBody.error }, parsedBody.status, corsHeaders)
+  }
+  const body = parsedBody.data as { document_id?: unknown }
+
   if (typeof body.document_id !== 'string' || !isUuid(body.document_id)) {
-    return jsonResponse({ error: 'A valid document_id is required' }, 400)
+    return jsonResponse({ error: 'A valid document_id is required' }, 400, corsHeaders)
   }
 
   const service = createClient(supabaseUrl, serviceRoleKey, {
@@ -100,9 +122,9 @@ Deno.serve(async (request: Request) => {
       .maybeSingle()
 
     if (lookupError) throw new Error('Could not load document record')
-    if (!document) return jsonResponse({ error: 'Document not found' }, 404)
+    if (!document) return jsonResponse({ error: 'Document not found' }, 404, corsHeaders)
     if (document.processing_status === 'ready') {
-      return jsonResponse({ document_id: document.id, status: 'ready' })
+      return jsonResponse({ document_id: document.id, status: 'ready' }, 200, corsHeaders)
     }
 
     const { data: claimed, error: claimError } = await service
@@ -116,15 +138,18 @@ Deno.serve(async (request: Request) => {
 
     if (claimError) throw new Error('Could not start document processing')
     if (!claimed) {
-      return jsonResponse({ error: 'Document is already being processed' }, 409)
+      return jsonResponse({ error: 'Document is already being processed' }, 409, corsHeaders)
     }
     claimedDocument = document
 
+    const expectedExt = extensionForMime(document.mime_type)
+    const expectedPath = expectedExt ? `${user.id}/${document.id}.${expectedExt}` : null
     if (
       document.owner_id !== user.id ||
       document.file_size_bytes < 1 ||
       document.file_size_bytes > MAX_FILE_BYTES ||
-      !document.storage_path.startsWith(`${user.id}/`)
+      !expectedPath ||
+      document.storage_path !== expectedPath
     ) {
       throw new DocumentProcessingError('Document metadata is invalid.')
     }
@@ -160,7 +185,31 @@ Deno.serve(async (request: Request) => {
       throw new DocumentProcessingError('This document contains too much text to process safely.')
     }
 
-    const embeddings = await embedWithOpenRouter(openRouterKey, chunks.map((chunk) => chunk.text))
+    const embeddings: number[][] = []
+    let embeddingModel = 'openai/text-embedding-3-small'
+    let promptTokens = 0
+    let completionTokens = 0
+    let totalTokens = 0
+    for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
+      const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE).map((chunk) => chunk.text)
+      const batchResult = await embedWithOpenRouterResult(openRouterKey, batch)
+      embeddings.push(...batchResult.vectors)
+      embeddingModel = batchResult.model
+      promptTokens += batchResult.usage.promptTokens
+      completionTokens += batchResult.usage.completionTokens
+      totalTokens += batchResult.usage.totalTokens
+    }
+
+    await recordAiUsage(caller, {
+      feature: 'process_user_document',
+      provider: 'openrouter',
+      model: embeddingModel,
+      promptTokens,
+      completionTokens,
+      totalTokens,
+      status: 'ok',
+    })
+
     const { error: clearError } = await service
       .from('user_document_chunks')
       .delete()
@@ -204,7 +253,7 @@ Deno.serve(async (request: Request) => {
       status: 'ready',
       sections_indexed: rows.length,
       page_count: extracted.page_count,
-    })
+    }, 200, corsHeaders)
   } catch (error) {
     console.error('Document processing failed:', error)
     if (claimedDocument) {
@@ -227,10 +276,10 @@ Deno.serve(async (request: Request) => {
         .eq('processing_status', 'processing')
       if (statusError) console.error('Failed to record document processing failure:', statusError)
       const status = error instanceof DocumentProcessingError ? error.status : 502
-      return jsonResponse({ error: message }, status)
+      return jsonResponse({ error: message }, status, corsHeaders)
     }
 
-    return jsonResponse({ error: 'Could not process document' }, 502)
+    return jsonResponse({ error: 'Could not process document' }, 502, corsHeaders)
   }
 })
 
@@ -286,9 +335,14 @@ async function extractDocumentText(
     if (!hasZipSignature(bytes)) throw new DocumentProcessingError('This file is not a valid DOCX document.')
     try {
       validateDocxArchiveSize(bytes)
-      const archive = unzipSync(bytes)
+      const archive = unzipSync(bytes, {
+        filter: (file) => file.name === 'word/document.xml' && (file.originalSize ?? 0) <= MAX_EXTRACTED_CHARACTERS * 4,
+      })
       const xmlBytes = archive['word/document.xml']
       if (!xmlBytes) throw new DocumentProcessingError('DOCX file is missing its document body.')
+      if (xmlBytes.byteLength > MAX_EXTRACTED_CHARACTERS * 4) {
+        throw new DocumentProcessingError('DOCX expands beyond the safe processing limit.')
+      }
       const xml = new TextDecoder('utf-8', { fatal: true }).decode(xmlBytes)
       const text = docxXmlToText(xml)
       return { pages: [{ page_number: null, text }], page_count: null, character_count: text.length }
@@ -416,6 +470,13 @@ async function recognizeScannedPdfPages(
   return { ...extracted, pages, character_count: characterCount }
 }
 
+function extensionForMime(mimeType: string): string | null {
+  if (mimeType === 'application/pdf') return 'pdf'
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return 'docx'
+  if (mimeType === 'text/plain') return 'txt'
+  return null
+}
+
 function hasPdfSignature(bytes: Uint8Array): boolean {
   const prefix = new TextDecoder().decode(bytes.subarray(0, Math.min(bytes.length, 1024)))
   return prefix.includes('%PDF-')
@@ -434,15 +495,14 @@ function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 }
 
-function jsonResponse(body: unknown, status = 200): Response {
+function jsonResponse(
+  body: unknown,
+  status = 200,
+  corsHeaders: Record<string, string>,
+  extraHeaders: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...corsHeaders, ...extraHeaders, 'Content-Type': 'application/json' },
   })
-}
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }

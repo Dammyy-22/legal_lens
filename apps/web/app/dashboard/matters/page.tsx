@@ -229,7 +229,7 @@ export default function MattersPage() {
 
       <form onSubmit={handleCreateMatter} className="mb-8 rounded-xl border border-ink-100 bg-white p-5 sm:p-6">
         <h2 className="font-display text-xl font-medium text-ink">Create a matter</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_14rem_auto] sm:items-end">
+        <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_14rem_auto] lg:items-end">
           <label className="text-sm font-medium text-ink">
             Short name
             <input

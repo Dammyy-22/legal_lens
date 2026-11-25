@@ -4,6 +4,16 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
+  const pathname = request.nextUrl.pathname
+  const isProtected = pathname === '/dashboard' || pathname.startsWith('/dashboard/')
+  const hasSupabaseSessionCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith('sb-'))
+
+  if (!isProtected && !hasSupabaseSessionCookie) {
+    return response
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -29,9 +39,6 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  const pathname = request.nextUrl.pathname
-  const isProtected = pathname === '/dashboard' || pathname.startsWith('/dashboard/')
 
   if (isProtected && !user) {
     const loginUrl = request.nextUrl.clone()

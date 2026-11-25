@@ -11,6 +11,7 @@ export const CONSENT_POLICY_VERSION = '2026-11-v1'
 export const CONSENT_PURPOSES = Object.freeze({
   privateDocuments: 'private_document_processing',
   drafting: 'drafting_assistance',
+  legalQa: 'legal_qa',
 })
 
 export async function checkConsent(client, purpose, version = CONSENT_POLICY_VERSION) {

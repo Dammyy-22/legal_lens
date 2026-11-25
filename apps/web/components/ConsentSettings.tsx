@@ -10,6 +10,12 @@ import {
 
 const ROWS: { purpose: ConsentPurpose; title: string; description: string }[] = [
   {
+    purpose: CONSENT_PURPOSES.legalQa,
+    title: 'Legal Q&A assistant',
+    description:
+      'Lets us send your legal research question through zero-data-retention AI providers to explain verified sources.',
+  },
+  {
     purpose: CONSENT_PURPOSES.privateDocuments,
     title: 'Private document processing',
     description:

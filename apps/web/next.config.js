@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    poweredByHeader: false,
     reactStrictMode: true,
     images: {
         qualities: [75, 90],
@@ -9,13 +10,26 @@ const nextConfig = {
         }],
     },
     env: {
-        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
         NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     },
     headers: async() => [{
         source: '/:path*',
         headers: [{
+                key: 'Content-Security-Policy',
+                value: [
+                    "default-src 'self'",
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+                    "style-src 'self' 'unsafe-inline'",
+                    "img-src 'self' data: blob: https://images.unsplash.com",
+                    "font-src 'self' data:",
+                    "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+                    "frame-ancestors 'none'",
+                    "base-uri 'self'",
+                    "form-action 'self'",
+                ].join('; '),
+            },
+            {
                 key: 'X-Content-Type-Options',
                 value: 'nosniff',
             },

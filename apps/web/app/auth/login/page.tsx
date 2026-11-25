@@ -16,10 +16,13 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('reason') === 'idle_timeout') {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('reason') === 'idle_timeout') {
       setNotice('You were signed out after one hour of inactivity. Sign in again to continue.')
-    } else if (new URLSearchParams(window.location.search).get('reason') === 'session_expired') {
+    } else if (params.get('reason') === 'session_expired') {
       setNotice('Your session could not be validated. Sign in again to continue.')
+    } else if (params.get('error') === 'oauth_callback_failed') {
+      setError('Google sign-in could not be completed. Please try again.')
     }
   }, [])
 

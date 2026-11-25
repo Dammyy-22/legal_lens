@@ -5,6 +5,8 @@ import {
   buildSourceExtract,
   computeRateLimitState,
   extractCitationIds,
+  finalizeGroundedAnswer,
+  formatConversationHistory,
   normalizeQuestion,
   selectValidCitationIds,
 } from './logic.mjs'
@@ -117,4 +119,57 @@ test('search scoring prioritizes title and section matches over generic text hit
   }
 
   assert.ok(scoreLegalResult(exactMatch) > scoreLegalResult(genericMatch))
+})
+
+test('finalizeGroundedAnswer replaces uncited LLM prose with verified source extract or refusal', () => {
+  const chunks = [
+    {
+      id: 'chunk-35',
+      source_title: 'Constitution of Nigeria',
+      section_label: 'Chapter IV',
+      text: 'A person arrested or detained shall be informed in writing of the facts and grounds for his arrest.',
+    },
+  ]
+
+  const uncited = finalizeGroundedAnswer(
+    'arrested without reason',
+    'Hallucinated claim with no valid citation',
+    ['fake-id-999'],
+    chunks,
+  )
+  assert.equal(uncited.uncertain, true)
+  assert.equal(uncited.answerMode, 'source_extract')
+  assert.doesNotMatch(uncited.answer, /Hallucinated claim/)
+  assert.deepEqual(uncited.citedChunkIds, ['chunk-35'])
+
+  const cited = finalizeGroundedAnswer(
+    'arrested without reason',
+    'You must be informed in writing.',
+    ['chunk-35'],
+    chunks,
+  )
+  assert.equal(cited.uncertain, false)
+  assert.equal(cited.answerMode, 'generated')
+  assert.deepEqual(cited.citedChunkIds, ['chunk-35'])
+})
+
+test('formatConversationHistory filters invalid turns and bounds count and characters', () => {
+  const raw = [
+    { role: 'system', content: 'should be ignored' },
+    { role: 'user', content: 'First   question' },
+    { role: 'assistant', content: 'First   answer' },
+    { role: 'user', content: '   ' },
+    { role: 'user', content: 'Second question' },
+    { role: 'assistant', content: 'Second answer' },
+  ]
+  assert.deepEqual(formatConversationHistory(raw, 2, 500), [
+    { role: 'user', content: 'Second question' },
+    { role: 'assistant', content: 'Second answer' },
+  ])
+
+  const charCapped = formatConversationHistory(raw, 6, 45)
+  assert.ok(charCapped.length >= 2)
+  const totalLen = charCapped.reduce((sum, item) => sum + item.content.length, 0)
+  assert.ok(totalLen <= 45)
+  assert.equal(charCapped[charCapped.length - 1].content, 'Second answer')
 })

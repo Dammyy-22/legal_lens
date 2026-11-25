@@ -226,7 +226,7 @@ export default function LawyersPage() {
         </p>
         {lawyerSearchCopyError && <p role="alert" className="mt-2 text-xs text-seal">{lawyerSearchCopyError}</p>}
 
-        <div className="mt-6 grid sm:grid-cols-2 gap-3">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
           <a
             href={NBA_LICENSE_URL}
             target="_blank"
@@ -272,7 +272,7 @@ export default function LawyersPage() {
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4 mb-5">
+        <div className="grid gap-4 mb-5 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
           <label className="block text-sm font-medium text-ink">
             State or FCT
             <select
@@ -334,7 +334,7 @@ export default function LawyersPage() {
           <h2 className="font-display text-2xl text-ink">Prepare for your first conversation</h2>
         </div>
         <p className="text-sm text-ink-400 mb-5">{area.detail}</p>
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-sm font-semibold text-ink mb-3">Bring or prepare</h3>
             <ul className="space-y-2">

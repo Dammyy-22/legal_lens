@@ -3,6 +3,14 @@ import {
   buildEmbeddingBody,
   describePolicyFailure,
 } from './openrouter-policy.mjs'
+import {
+  DEFAULT_EMBEDDING_MODEL,
+  DEFAULT_OPENROUTER_FALLBACK_MODEL,
+  DEFAULT_OPENROUTER_MODEL,
+  extractUsage,
+  isFallbackEligibleStatus,
+  isRetryableProviderStatus,
+} from './ai/policy.mjs'
 
 export type OpenRouterMessage = {
   role: 'system' | 'user' | 'assistant'
@@ -13,6 +21,27 @@ export type OpenRouterRequest = {
   messages: OpenRouterMessage[]
   maxTokens: number
   temperature?: number
+}
+
+export type OpenRouterUsage = {
+  promptTokens: number
+  completionTokens: number
+  totalTokens: number
+}
+
+export type OpenRouterChatResult = {
+  content: string
+  model: string
+  provider: 'openrouter'
+  usage: OpenRouterUsage
+  fallbackUsed: boolean
+}
+
+export type OpenRouterEmbeddingResult = {
+  vectors: number[][]
+  model: string
+  provider: 'openrouter'
+  usage: OpenRouterUsage
 }
 
 export class OpenRouterError extends Error {
@@ -26,14 +55,30 @@ export class OpenRouterError extends Error {
 }
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const DEFAULT_MODEL = 'openai/gpt-4.1-mini'
 
-export async function generateWithOpenRouter(
+async function fetchWithTransientRetry(
+  url: string,
+  init: RequestInit,
+): Promise<Response> {
+  try {
+    const response = await fetch(url, init)
+    if (!response.ok && isRetryableProviderStatus(response.status)) {
+      await new Promise((resolve) => setTimeout(resolve, 350))
+      return await fetch(url, { ...init, signal: AbortSignal.timeout(45_000) })
+    }
+    return response
+  } catch {
+    await new Promise((resolve) => setTimeout(resolve, 350))
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(45_000) })
+  }
+}
+
+async function callChatModel(
   apiKey: string,
+  model: string,
   request: OpenRouterRequest,
-): Promise<string> {
-  const model = Deno.env.get('OPENROUTER_MODEL')?.trim() || DEFAULT_MODEL
-  const response = await fetch(OPENROUTER_URL, {
+): Promise<{ content: string; usage: OpenRouterUsage }> {
+  const response = await fetchWithTransientRetry(OPENROUTER_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -74,16 +119,63 @@ export async function generateWithOpenRouter(
     throw new OpenRouterError('OpenRouter returned an empty completion', response.status)
   }
 
-  return content.trim()
+  return {
+    content: content.trim(),
+    usage: extractUsage(payload),
+  }
 }
 
-export async function embedWithOpenRouter(
+export async function generateWithOpenRouterResult(
+  apiKey: string,
+  request: OpenRouterRequest,
+): Promise<OpenRouterChatResult> {
+  const primaryModel = Deno.env.get('OPENROUTER_MODEL')?.trim() || DEFAULT_OPENROUTER_MODEL
+  const configuredFallback = Deno.env.get('OPENROUTER_FALLBACK_MODEL')?.trim()
+  const fallbackModel = configuredFallback || DEFAULT_OPENROUTER_FALLBACK_MODEL
+
+  try {
+    const result = await callChatModel(apiKey, primaryModel, request)
+    return {
+      content: result.content,
+      model: primaryModel,
+      provider: 'openrouter',
+      usage: result.usage,
+      fallbackUsed: false,
+    }
+  } catch (error) {
+    if (error instanceof OpenRouterError && !isFallbackEligibleStatus(error.status)) {
+      throw error
+    }
+    if (fallbackModel && fallbackModel !== primaryModel) {
+      console.warn(`Primary model "${primaryModel}" failed; retrying with ZDR fallback "${fallbackModel}".`)
+      const fallbackResult = await callChatModel(apiKey, fallbackModel, request)
+      return {
+        content: fallbackResult.content,
+        model: fallbackModel,
+        provider: 'openrouter',
+        usage: fallbackResult.usage,
+        fallbackUsed: true,
+      }
+    }
+    throw error
+  }
+}
+
+export async function generateWithOpenRouter(
+  apiKey: string,
+  request: OpenRouterRequest,
+): Promise<string> {
+  const result = await generateWithOpenRouterResult(apiKey, request)
+  return result.content
+}
+
+export async function embedWithOpenRouterResult(
   apiKey: string,
   input: string | string[],
-): Promise<number[][]> {
+): Promise<OpenRouterEmbeddingResult> {
   const model = Deno.env.get('OPENROUTER_EMBEDDING_MODEL')?.trim()
-    || 'openai/text-embedding-3-small'
-  const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
+    || DEFAULT_EMBEDDING_MODEL
+  const response = await fetchWithTransientRetry('https://openrouter.ai/api/v1/embeddings', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -143,5 +235,18 @@ export async function embedWithOpenRouter(
     vectors[index] = vector
   }
 
-  return vectors
+  return {
+    vectors,
+    model,
+    provider: 'openrouter',
+    usage: extractUsage(payload),
+  }
+}
+
+export async function embedWithOpenRouter(
+  apiKey: string,
+  input: string | string[],
+): Promise<number[][]> {
+  const result = await embedWithOpenRouterResult(apiKey, input)
+  return result.vectors
 }

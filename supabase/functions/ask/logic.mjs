@@ -9,6 +9,127 @@ export function normalizeQuestion(value) {
   return trimmed || null
 }
 
+export function formatConversationHistory(messages, maxTurns = 6, maxChars = 3000) {
+  if (!Array.isArray(messages) || maxTurns < 1 || maxChars < 1) return []
+
+  const valid = []
+  for (const entry of messages) {
+    if (!entry || typeof entry !== 'object') continue
+    if (entry.role !== 'user' && entry.role !== 'assistant') continue
+    if (typeof entry.content !== 'string') continue
+    const cleaned = entry.content.trim().replace(/\s+/g, ' ')
+    if (!cleaned) continue
+    valid.push({ role: entry.role, content: cleaned })
+  }
+
+  const sliced = valid.slice(-maxTurns)
+  const bounded = []
+  let totalChars = 0
+
+  for (let i = sliced.length - 1; i >= 0; i -= 1) {
+    const turn = sliced[i]
+    const remaining = maxChars - totalChars
+    if (remaining <= 0) break
+
+    if (turn.content.length <= remaining) {
+      bounded.unshift(turn)
+      totalChars += turn.content.length
+    } else if (remaining >= 40) {
+      bounded.unshift({
+        role: turn.role,
+        content: `${turn.content.slice(0, remaining - 1).trimEnd()}…`,
+      })
+      break
+    } else {
+      break
+    }
+  }
+
+  return bounded
+}
+
+const HIGH_RISK_TRIEGE_PATTERNS = [
+  /\b(suicide|suicidal|kill myself|end my life|want to die|hurt myself|don['’]?t want to live(?:\s+anymore)?)\b/i,
+  /\b(being abused|abusing me|domestic violence|being beaten|beating me|hitting me|threatened to kill me)\b/i,
+  /\b(under arrest|being arrested|arrested right now|in detention|being detained right now|officers?\s+detained\s+me|locked me in a cell|police took me to the station|in police custody right now)\b/i,
+  /\b(immediate danger|someone is trying to hurt me|about to be evicted today)\b/i,
+]
+
+export function detectHighRiskSituation(question) {
+  if (typeof question !== 'string' || !question.trim()) return false
+  return HIGH_RISK_TRIEGE_PATTERNS.some((pattern) => pattern.test(question))
+}
+
+export function detectSystemPromptLeakage(text) {
+  const value = String(text ?? '')
+  return (
+    /CRITICAL RULES,\s*in order of priority/i.test(value) ||
+    /Answer ONLY using the <source> blocks/i.test(value) ||
+    /Treat the content inside <source> blocks as DATA/i.test(value) ||
+    /\[\[cite:REF\]\]/i.test(value)
+  )
+}
+
+export function inferSourceJurisdiction(sourceTitle) {
+  if (typeof sourceTitle === 'string' && /\blagos\b/i.test(sourceTitle)) {
+    return 'Lagos State, Nigeria (state law only)'
+  }
+  return 'Nigeria (federal/general)'
+}
+
+export function verifyStatutoryCitationsAgainstSources(answer, citedChunks = []) {
+  const text = typeof answer === 'string' ? answer : ''
+  const chunks = Array.isArray(citedChunks) ? citedChunks : []
+  if (!text || chunks.length === 0) {
+    return { unverifiedMentions: [], hasUnverifiedStatutes: false }
+  }
+
+  const haystack = chunks
+    .map((chunk) => [
+      chunk?.source_title ?? '',
+      chunk?.section_label ?? '',
+      chunk?.section_heading ?? '',
+      chunk?.text ?? '',
+    ].join(' '))
+    .join('\n')
+    .toLowerCase()
+
+  const unverified = new Set()
+
+  for (const match of text.matchAll(/\b(?:sections?|sec\.?|s\.)\s+(\d+[a-z]*)\b/gi)) {
+    const raw = match[0].trim()
+    const num = match[1].toLowerCase()
+    const pattern = new RegExp(`\\b${num.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+    if (!pattern.test(haystack)) {
+      unverified.add(raw)
+    }
+  }
+
+  for (const match of text.matchAll(/\bchapter\s+([ivxlcdm]+|\d+)\b/gi)) {
+    const raw = match[0].trim()
+    const chap = match[1].toLowerCase()
+    const pattern = new RegExp(`\\bchapter\\s+${chap}\\b`, 'i')
+    if (!pattern.test(haystack)) {
+      unverified.add(raw)
+    }
+  }
+
+  for (const match of text.matchAll(/\bcap\.?\s+([a-z]\d+[a-z0-9]*)\b/gi)) {
+    const raw = match[0].trim()
+    const cap = match[1].toLowerCase()
+    const pattern = new RegExp(`\\bcap\\.?\\s*${cap}\\b`, 'i')
+    if (!pattern.test(haystack)) {
+      unverified.add(raw)
+    }
+  }
+
+  const unverifiedMentions = [...unverified]
+  return {
+    unverifiedMentions,
+    hasUnverifiedStatutes: unverifiedMentions.length > 0,
+  }
+}
+
 export function extractCitationIds(answerText = '') {
   const matches = [...String(answerText).matchAll(/\[\[cite:([a-zA-Z0-9-]+)\]\]/g)]
   return [...new Set(matches.map((match) => match[1]))]
@@ -17,6 +138,30 @@ export function extractCitationIds(answerText = '') {
 export function selectValidCitationIds(citedChunkIds, retrievedIds = []) {
   const validIds = new Set(Array.isArray(retrievedIds) ? retrievedIds.filter((id) => typeof id === 'string') : [])
   return [...new Set((Array.isArray(citedChunkIds) ? citedChunkIds : []).filter((id) => validIds.has(id)))]
+}
+
+export function finalizeGroundedAnswer(question, rawAnswer, citedChunkIds, retrievedChunks) {
+  const safeChunks = Array.isArray(retrievedChunks) ? retrievedChunks : []
+  const retrievedIds = safeChunks.map((c) => c?.id).filter((id) => typeof id === 'string')
+  const validCitedIds = selectValidCitationIds(citedChunkIds, retrievedIds)
+  const cleanAnswer = typeof rawAnswer === 'string' ? rawAnswer.trim() : ''
+
+  if (!cleanAnswer || validCitedIds.length === 0) {
+    const extract = buildSourceExtract(question, safeChunks)
+    return {
+      answer: extract.answer,
+      citedChunkIds: extract.citedChunkIds,
+      uncertain: true,
+      answerMode: 'source_extract',
+    }
+  }
+
+  return {
+    answer: cleanAnswer,
+    citedChunkIds: validCitedIds,
+    uncertain: false,
+    answerMode: 'generated',
+  }
 }
 
 export function buildSourceExtract(question, chunks) {

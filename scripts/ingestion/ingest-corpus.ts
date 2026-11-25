@@ -11,9 +11,9 @@ import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import pdfParse from 'pdf-parse'
 import { splitConstitutionSections } from './constitution-structure.mjs'
+import { EMBEDDING_BATCH_SIZE, splitTextWithOverlap } from './chunking.mjs'
 
 const EMBEDDING_MODEL = 'text-embedding-3-small'
-const MAX_CHUNK_CHARS = 6000
 const DEFAULT_CORPUS_DIR = join(process.cwd(), '..', '..', 'legal corpus')
 
 // Common structural heading patterns in Nigerian legislation. Real structural
@@ -90,6 +90,12 @@ const SOURCE_METADATA: Record<string, SourceMeta> = {
     authority: 'Federal Republic of Nigeria',
     jurisdiction: 'Nigeria',
   },
+  'FCCPA-2018.pdf': {
+    title: 'Federal Competition and Consumer Protection Act 2018',
+    documentType: 'legislation',
+    authority: 'Federal Republic of Nigeria',
+    jurisdiction: 'Nigeria',
+  },
   'Lagos-State-Road-Traffic-Law.pdf': {
     title: 'Lagos State Road Traffic Law',
     documentType: 'legislation',
@@ -137,11 +143,30 @@ function requireSupabaseUrl(): string {
 }
 
 function splitIntoChunks(text: string): string[] {
-  const chunks: string[] = []
-  for (let offset = 0; offset < text.length; offset += MAX_CHUNK_CHARS) {
-    chunks.push(text.slice(offset, offset + MAX_CHUNK_CHARS).trim())
+  return splitTextWithOverlap(text)
+}
+
+async function embedBatchWithRetry(
+  openai: OpenAI,
+  inputs: string[],
+  maxRetries = 2,
+): Promise<number[][]> {
+  let attempt = 0
+  while (true) {
+    try {
+      const response = await openai.embeddings.create({
+        model: EMBEDDING_MODEL,
+        input: inputs,
+      })
+      return response.data.map((item) => item.embedding)
+    } catch (error) {
+      attempt += 1
+      if (attempt > maxRetries) throw error
+      const delayMs = 500 * (2 ** (attempt - 1))
+      console.warn(`  Embedding batch failed (attempt ${attempt}/${maxRetries}); retrying in ${delayMs}ms...`)
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
   }
-  return chunks.filter(Boolean)
 }
 
 async function main() {
@@ -271,16 +296,24 @@ async function main() {
       if (sectionError) throw sectionError
 
       const chunks = splitIntoChunks(structSection.text)
+      const chunkEmbeddings: Array<number[] | null> = new Array(chunks.length).fill(null)
+      if (openai) {
+        for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
+          const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE)
+          const vectors = await embedBatchWithRetry(openai, batch)
+          for (let offset = 0; offset < vectors.length; offset += 1) {
+            chunkEmbeddings[start + offset] = vectors[offset]
+          }
+        }
+      }
       for (let index = 0; index < chunks.length; index++) {
-        const embedding = openai
-          ? (await openai.embeddings.create({ model: EMBEDDING_MODEL, input: chunks[index] })).data[0].embedding
-          : null
         const { error: chunkError } = await supabase.from('document_chunks').insert({
           section_id: section.id,
           version_id: version.id,
           chunk_index: index,
           text: chunks[index],
-          embedding,
+          embedding: chunkEmbeddings[index],
+          embedding_model: EMBEDDING_MODEL,
         })
         if (chunkError) throw chunkError
         totalChunks++

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getServerUser } from '@/lib/supabase/server'
 import AdminCorpusReview from './AdminCorpusReview'
 
 // UX-level gate only — the REAL enforcement is Row Level Security in
@@ -7,10 +7,7 @@ import AdminCorpusReview from './AdminCorpusReview'
 // affects 0 rows, a non-admin's SELECT on unverified content returns 0 rows). This
 // redirect just avoids showing a non-admin an empty page; it grants no actual access.
 export default async function AdminPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getServerUser()
 
   if (!user) {
     redirect('/auth/login')

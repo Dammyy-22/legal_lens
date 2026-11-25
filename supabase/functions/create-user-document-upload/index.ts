@@ -1,5 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { checkConsent, CONSENT_PURPOSES } from '../_shared/consent.mjs'
+import { buildCorsHeaders } from '../_shared/cors.mjs'
+import {
+  enforceRateLimit,
+  rateLimitHeaders,
+  readBoundedJson,
+} from '../_shared/rate-limit.mjs'
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024
 const MIME_TYPES = new Set([
@@ -7,24 +13,24 @@ const MIME_TYPES = new Set([
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'text/plain',
 ])
+const UPLOAD_RATE_BUCKETS = new Map<string, { count: number; resetAt: number }>()
+const UPLOAD_RATE_LIMIT = { maxRequests: 10, windowSeconds: 60 }
 
 Deno.serve(async (request: Request) => {
+  const corsHeaders = buildCorsHeaders(request, 'POST, OPTIONS')
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders })
-  if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405)
-  if (Number(request.headers.get('content-length') ?? 0) > 4000) {
-    return jsonResponse({ error: 'Request body is too large' }, 413)
-  }
+  if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405, corsHeaders)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   if (!supabaseUrl || !anonKey || !serviceRoleKey) {
     console.error('Document upload environment is incomplete')
-    return jsonResponse({ error: 'Document uploads are not configured' }, 503)
+    return jsonResponse({ error: 'Document uploads are not configured' }, 503, corsHeaders)
   }
 
   const authorization = request.headers.get('Authorization')
-  if (!authorization) return jsonResponse({ error: 'Missing Authorization header' }, 401)
+  if (!authorization) return jsonResponse({ error: 'Missing Authorization header' }, 401, corsHeaders)
   const caller = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authorization } },
   })
@@ -32,17 +38,32 @@ Deno.serve(async (request: Request) => {
     data: { user },
     error: authError,
   } = await caller.auth.getUser()
-  if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401)
+  if (authError || !user) return jsonResponse({ error: 'Unauthorized' }, 401, corsHeaders)
 
   const consent = await checkConsent(caller, CONSENT_PURPOSES.privateDocuments)
-  if (!consent.ok) return jsonResponse(consent.body, consent.status)
+  if (!consent.ok) return jsonResponse(consent.body, consent.status, corsHeaders)
 
-  let body: { filename?: unknown; mime_type?: unknown; file_size_bytes?: unknown }
-  try {
-    body = await request.json()
-  } catch {
-    return jsonResponse({ error: 'Invalid JSON body' }, 400)
+  const rateLimit = await enforceRateLimit(
+    caller,
+    user.id,
+    'document_upload',
+    UPLOAD_RATE_LIMIT,
+    UPLOAD_RATE_BUCKETS,
+  )
+  if (!rateLimit.allowed) {
+    return jsonResponse(
+      { error: 'Too many upload requests. Please wait a minute before trying again.' },
+      429,
+      corsHeaders,
+      rateLimitHeaders(rateLimit),
+    )
   }
+
+  const parsedBody = await readBoundedJson(request, 4_000)
+  if (!parsedBody.ok) {
+    return jsonResponse({ error: parsedBody.error }, parsedBody.status, corsHeaders)
+  }
+  const body = parsedBody.data as { filename?: unknown; mime_type?: unknown; file_size_bytes?: unknown }
 
   if (
     typeof body.filename !== 'string' ||
@@ -53,18 +74,22 @@ Deno.serve(async (request: Request) => {
     body.file_size_bytes < 1 ||
     body.file_size_bytes > MAX_FILE_BYTES
   ) {
-    return jsonResponse({ error: 'Invalid filename, file type, or file size' }, 400)
+    return jsonResponse({ error: 'Invalid filename, file type, or file size' }, 400, corsHeaders)
   }
 
   const extension = extensionForMime(body.mime_type)
   if (!body.filename.toLowerCase().endsWith(`.${extension}`)) {
-    return jsonResponse({ error: 'Filename extension does not match the declared file type' }, 400)
+    return jsonResponse({ error: 'Filename extension does not match the declared file type' }, 400, corsHeaders)
   }
+
+  const service = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
 
   const documentId = crypto.randomUUID()
   const storagePath = `${user.id}/${documentId}.${extension}`
   const safeFilename = body.filename.replace(/[\u0000-\u001f\u007f]/g, '_').slice(0, 255)
-  const { error: insertError } = await caller.from('user_documents').insert({
+  const { error: insertError } = await service.from('user_documents').insert({
     id: documentId,
     owner_id: user.id,
     original_filename: safeFilename,
@@ -80,25 +105,22 @@ Deno.serve(async (request: Request) => {
       error: status === 413
         ? 'Document limit reached. Delete an existing document before uploading another.'
         : 'Could not register this document upload.',
-    }, status)
+    }, status, corsHeaders)
   }
 
-  const service = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  })
   const { data: signedUpload, error: signedUploadError } = await service.storage
     .from('user-documents')
     .createSignedUploadUrl(storagePath, { upsert: false })
 
   if (signedUploadError || !signedUpload) {
-    const { error: cleanupError } = await caller
+    const { error: cleanupError } = await service
       .from('user_documents')
       .delete()
       .eq('id', documentId)
       .eq('owner_id', user.id)
     if (cleanupError) console.error('Could not release failed upload reservation:', cleanupError)
     console.error('Could not create signed user document upload:', signedUploadError)
-    return jsonResponse({ error: 'Could not prepare a secure upload' }, 502)
+    return jsonResponse({ error: 'Could not prepare a secure upload' }, 502, corsHeaders)
   }
 
   return jsonResponse({
@@ -108,7 +130,7 @@ Deno.serve(async (request: Request) => {
     original_filename: safeFilename,
     mime_type: body.mime_type,
     file_size_bytes: body.file_size_bytes,
-  })
+  }, 200, corsHeaders)
 })
 
 function extensionForMime(mimeType: string): string {
@@ -117,15 +139,14 @@ function extensionForMime(mimeType: string): string {
   return 'txt'
 }
 
-function jsonResponse(body: unknown, status = 200): Response {
+function jsonResponse(
+  body: unknown,
+  status = 200,
+  corsHeaders: Record<string, string>,
+  extraHeaders: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...corsHeaders, ...extraHeaders, 'Content-Type': 'application/json' },
   })
-}
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }

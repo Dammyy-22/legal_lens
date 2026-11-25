@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
     // Supabase's own behavior already avoids leaking account existence — it returns
     // success regardless of whether the email is registered.
     await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
     })
     setSubmitted(true)
     setLoading(false)
