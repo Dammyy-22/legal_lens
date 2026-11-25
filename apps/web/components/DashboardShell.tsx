@@ -218,35 +218,27 @@ export function DashboardShell({
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#F7F7F4]">
-      {/* Top navigation trigger across all viewports */}
-      <header className="sticky top-0 z-30 bg-[#F7F7F4]/95 backdrop-blur">
+    <div className="min-h-screen overflow-x-clip bg-[#F7F7F4]">
+      {/* Fixed top bar across all viewports so menu remains accessible while scrolling */}
+      <header className="fixed inset-x-0 top-0 z-30 bg-[#F7F7F4]/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 sm:px-8">
           <BrandLogo href="/dashboard" compact />
           <button
             type="button"
-            aria-label="Open navigation menu"
+            aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={open}
-            onClick={() => setOpen(true)}
+            onClick={() => setOpen((v) => !v)}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink-100 bg-white/80 text-ink transition-colors hover:bg-white"
           >
-            <Menu size={18} />
+            {open ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </header>
 
-      {open && (
-        <div
-          aria-hidden="true"
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-40 bg-ink/35 backdrop-blur-[2px]"
-        />
-      )}
-
-      {/* Overlay sidebar drawer — opens on click, non-scrolling full item list */}
+      {/* Non-blocking overlay sidebar drawer — page remains visible and interactive alongside it */}
       <aside
         aria-hidden={!open}
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col border-r border-ink-100 bg-white shadow-2xl transition-transform duration-200 ease-out ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 max-w-[85vw] flex-col border-r border-ink-100 bg-white shadow-2xl transition-transform duration-200 ease-out ${
           open ? 'translate-x-0' : '-translate-x-full pointer-events-none'
         }`}
       >
@@ -344,7 +336,7 @@ export function DashboardShell({
         </div>
       </aside>
 
-      <main id="main-content" className="min-w-0 flex-1"><PageTransition>{children}</PageTransition></main>
+      <main id="main-content" className="min-w-0 flex-1 pt-16"><PageTransition>{children}</PageTransition></main>
     </div>
   )
 }
