@@ -220,17 +220,19 @@ export function DashboardShell({
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#F7F7F4]">
       {/* Top navigation trigger across all viewports */}
-      <header className="sticky top-0 z-30 flex items-center justify-between bg-[#F7F7F4]/95 px-4 py-3 backdrop-blur sm:px-6">
-        <BrandLogo href="/dashboard" compact />
-        <button
-          type="button"
-          aria-label="Open navigation menu"
-          aria-expanded={open}
-          onClick={() => setOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink-100 bg-white/80 text-ink transition-colors hover:bg-white"
-        >
-          <Menu size={18} />
-        </button>
+      <header className="sticky top-0 z-30 bg-[#F7F7F4]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 sm:px-8">
+          <BrandLogo href="/dashboard" compact />
+          <button
+            type="button"
+            aria-label="Open navigation menu"
+            aria-expanded={open}
+            onClick={() => setOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink-100 bg-white/80 text-ink transition-colors hover:bg-white"
+          >
+            <Menu size={18} />
+          </button>
+        </div>
       </header>
 
       {open && (
